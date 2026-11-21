@@ -5,9 +5,9 @@ Team The Good Engineers: Chirag, Abhijeet, Bhumika, Ayush.
 
 **A model reads, code decides, a person approves, and money only goes to the account we already have on file.**
 
-[![The 25-second story: nine bills, five lying, one phone call](docs/PayRight_story.jpg)](docs/PayRight_story.mp4)
+[![The 25-second story: nine bills, five lying, one phone call](docs/PayRight_story.gif)](https://github.com/thegoodengineers/cashfreexsarvam-hckthn/raw/main/docs/PayRight_story.mp4)
 
-*25-second animated story of one real run, narrated by Sarvam text-to-speech (Bulbul v3; the owner's line is spoken in Hindi). Click to play: [docs/PayRight_story.mp4](docs/PayRight_story.mp4).*
+*25-second animated story of one real run, narrated by Sarvam text-to-speech (Bulbul v3; the owner's line is spoken in Hindi). The preview above is silent; [click here for the version with sound](https://github.com/thegoodengineers/cashfreexsarvam-hckthn/raw/main/docs/PayRight_story.mp4).*
 
 ## What is new here
 
