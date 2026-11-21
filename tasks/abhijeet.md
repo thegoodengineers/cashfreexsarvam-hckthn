@@ -120,3 +120,30 @@ IMPORTANT, new: Relay's built-in "Request Transfer (Sync)" returns 403 "payout v
 v1.2 APIs have been deprecated". Payouts must go through Cashfree Payouts v2
 (POST https://sandbox.cashfree.com/payout/transfers, header x-api-version 2024-01-01).
 Claude is replacing that Relay step with an HTTP step; send.py's event fields stay the same.
+
+## Status 1:57 PM (Abhijeet) — NOW.md tasks 6, 7, 8
+Task 8, done and pushed:
+- `--fake fake_answer.json` reads the owner's answer from a file (PowerShell-safe). Edit `spoken_total`
+  to the batch total. On stage: `python payright/run.py payright/invoices.json --cash 100000 --fake fake_answer.json`
+  (invoices.json, so nothing is read again).
+- `send.py` refuses to send without an approval; standalone it uses up `approval.json` once, for that batch only.
+- `approve.py` prints what it is waiting for every 6 s, stops after 3 bad answers or one 401/403, waits 5 minutes at most.
+Task 6, done and pushed, NOT run against Sarvam:
+- `python payright/run.py <folder> --latest` prints the variables to paste into the Test panel, then waits for a
+  call of our agent that begins after that moment and reads its result. Needs only `SARVAM_AGENT_API_KEY,
+  SARVAM_ORG_ID, SARVAM_WORKSPACE_ID, SARVAM_APP_ID`. A call already used for an approval is never used again.
+- To verify on the first real call: that Test-panel calls appear in the Analytics attempts list at all.
+Task 7:
+- Fixed: a bill shows PAID only when Cashfree confirms (`python payright/send.py --confirm`, or
+  `python payright/run.py --refresh`; needs `CASHFREE_PAYOUT_CLIENT_ID` / `CASHFREE_PAYOUT_CLIENT_SECRET` in `.env`).
+  Without those keys the board says "sent, waiting for Cashfree". Not run against Cashfree yet.
+- Board built: Pay / Ask / Stop lanes with rupee totals, tap a stopped bill for check.py's evidence (wrong value
+  in red, account numbers masked to the last four), owner's call labelled Hindi.
+- Both Lambdas are created and deployed in the organisers' account and run when invoked from the console, BUT the
+  organisers' call link answers 403 "forbidden" to every outside request (curl and browser, any path). Judges'
+  phones cannot reach them that way. Worth one question at the desk: is the call link open only to Relay?
+- Working route: the same code runs on Abhijeet's laptop behind a public tunnel:
+  board https://giants-made-stamp-wines.trycloudflare.com/
+  In Chirag's `payright/.env`: `STATUS_URL=https://giants-made-stamp-wines.trycloudflare.com/status` and
+  `STATUS_TOKEN=` (Abhijeet sends the value privately). The address dies if that laptop sleeps or the tunnel restarts.
+
