@@ -437,7 +437,7 @@ def _card(r):
 
 HAS_TRY = False   # serve.py turns this on: the "Try to fool it" page needs the checker next to it
 NAV = (("home", "./", "Live board"), ("problem", "./?page=problem", "The problem"), ("evidence", "./?page=evidence", "Evidence"),
-       ("how", "./?page=how", "How it works"))
+       ("how", "./?page=how", "How it works"), ("run", "./?page=run", "Run it live"))
 HOW_STEPS = (
     ("Read", "Sarvam Vision reads each bill in its own language and script. It only reads. A field it is not sure of is flagged, never guessed."),
     ("Check", "Plain code compares the bill with itself, with the vendor file and with every bill already seen. A refusal carries the two values that were compared."),
@@ -732,8 +732,36 @@ By then it had left. So the check has to happen before the payment, every time, 
 the original. Amounts and facts are as reported there. Several cases are still under police investigation.</p></div></section>"""
 
 
+# ------------------------------------------------------------ the run page: where the live demo is started
+# The buttons themselves are payright/demo.py, which answers only on the presenter's laptop. This page is the
+# way to it from the site, and says why it is not public.
+CONSOLE = "http://localhost:8765"
+RUN_STEPS = (
+    ("New round", "Sets the ledger aside, so the sandbox accepts the demo bills again. Never pressed in the middle of a run."),
+    ("Read and check", "Sarvam reads the bills and plain code sorts them into Pay, Ask or Stop. Nothing is paid yet."),
+    ("Call the owner", "Placed from Sarvam's own Test panel. He hears every refusal, then has to say the total himself."),
+    ("Pay", "Happens by itself after APPROVED: Relay sends the clean bills to Cashfree Payouts, to the account on file."),
+    ("Ask Cashfree", "A bill shows Paid only when Cashfree confirms it, with its bank reference."),
+    ("Run again", "The same batch a second time pays nothing. One bill, one transfer ID, for life."))
+
+
+def _run(data, rs):
+    steps = "".join(f'<div class="step" data-r style="--i:{i}"><span class="n">0{i + 1}</span><b>{t}</b><p>{p}</p></div>'
+                    for i, (t, p) in enumerate(RUN_STEPS))
+    return f"""<header>{ART}<div class="wrap"><p class="eyebrow">Run it live</p>
+<h1 class="mega mid">Six buttons. One phone call.</h1>
+<p class="lede"><span class="cap">T</span>he whole chain, started from one page on the presenter's laptop, with this board beside it.</p>
+<div class="cta"><a class="pill" href="{CONSOLE}" target="_top">Open the run console</a><a class="pill ghost" href="./">Watch the live board</a></div></div></header>
+<section class="alt"><div class="wrap"><p class="eyebrow">The console</p><h2 data-r>What each button does.</h2>
+<div class="steps">{steps}</div></div></section>
+<section class="ink"><div class="wrap"><p class="eyebrow">Why it is not public</p><h2 data-r>A public pay button would defeat the point.</h2>
+<p class="serif">The console answers only on the presenter's laptop, and every button needs a token that only that page holds.
+On any other device the button above opens nothing. That is deliberate. Even there, pressing Run pays nothing: money moves only after the owner says the total on the phone.</p></div></section>"""
+
+
 VIEWS = {"home": ("PayRight: the agent that says no", _home), "evidence": ("PayRight: why we said no", _evidence),
-         "how": ("PayRight: how it works", _how), "problem": ("PayRight: it already happened", _problem)}
+         "how": ("PayRight: how it works", _how), "problem": ("PayRight: it already happened", _problem),
+         "run": ("PayRight: run it live", _run)}
 
 
 def page(data, view="home"):
@@ -862,6 +890,8 @@ def selftest():
     q = handler({"httpMethod": "GET", "queryStringParameters": {"page": "problem"}})["body"]
     assert "It already happened" in q and q.count('<article class="case"') == len(CASES) and "manipal_1cr.jpg" in q
     assert all(c[4].startswith("https://") and c[9] in ("digit", "other_account") for c in CASES)
+    r = handler({"httpMethod": "GET", "queryStringParameters": {"page": "run"}})["body"]
+    assert "Open the run console" in r and CONSOLE in r and r.count('class="step"') == len(RUN_STEPS) and "?page=run" in q
     del os.environ["PAYRIGHT_TOKEN"]
     print("selftest ok")
 
