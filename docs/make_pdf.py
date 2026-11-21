@@ -66,8 +66,8 @@ p("<b>Red lines set by the organisers.</b> Money never moves to an unverified ac
 
 h2("2. Our solution in one paragraph")
 p("PayRight is an accounts-payable agent. Sarvam reads each invoice. Plain, testable code decides PAY, ASK or STOP and "
-  "writes the reason in words a shop owner can understand. Cashfree, through a Relay agent, verifies the vendor's "
-  "bank account. A Sarvam voice agent then phones the owner in his own language (Hindi, Kannada, English or Hinglish), "
+  "writes the reason in words a shop owner can understand. Payment details are taken only from the vendor's "
+  "record on file, never from the invoice. A Sarvam voice agent then phones the owner in his own language (Hindi, Kannada, English or Hinglish), "
   "tells him what is clean and what was stopped and why, and takes his approval. Only then does Relay pay the clean "
   "invoices through Cashfree Payouts in the sandbox, and each payment comes back with a status. Our core rule: "
   "<b>a model reads, code decides, a person approves, and money only goes to the account we already have on file.</b>")
@@ -85,12 +85,13 @@ table([
      "payright/check.py"],
     ["3. Order", "Payable invoices are sorted by days left to the legal deadline and paid within the cash available. "
                  "Anything that does not fit is marked LATER with the reason.", "payright/check.py"],
-    ["4. Verify", "The vendor's bank account is verified and the name at the bank is compared with the vendor name. "
-                  "A poor match stops the payment.", "Cashfree Verify Bank Details, inside Relay"],
+    ["4. Verify", "The account, IFSC and holder name on the invoice are compared with the vendor's record on file. Any "
+                  "difference stops the payment. Cashfree's own bank verification is not enabled on our test account yet.",
+     "payright/check.py"],
     ["5. Ask", "The agent phones the owner. It says how many bills are clean and the total, which bills it stopped "
                "and why, and asks for approval. Before accepting a yes it asks him to say the total himself.",
      "Sarvam voice agent"],
-    ["6. Pay", "For each approved invoice Relay adds the beneficiary and requests the transfer. The transfer ID is "
+    ["6. Pay", "For each approved invoice Relay sends the transfer to Cashfree Payouts (v2 API). The transfer ID is "
                "derived from the invoice, so the same invoice can never be sent twice.",
      "Cashfree Payouts, inside Relay"],
     ["7. Record", "Every invoice is written to a ledger before the payment call, with its checks, its approval and "
@@ -103,7 +104,7 @@ table([
     ["When should the agent pay on its own, and when must it stop and ask?",
      "It never pays without the owner's approval of the batch. Within a batch it proposes PAY only when every check "
      "passes. It ASKS when it is unsure (new vendor, unclear field, possible duplicate). It STOPS when something is "
-     "wrong (bad arithmetic, changed account, certain duplicate, name mismatch at the bank)."],
+     "wrong (bad arithmetic, changed account, certain duplicate, account holder name mismatch)."],
     ["How should it treat a familiar vendor whose bank details have changed?",
      "It stops that invoice and never pays the new account on the invoice's word. It tells the owner to call the "
      "vendor on the number already on file. Other invoices from the same vendor are unaffected."],
@@ -119,8 +120,8 @@ h2("5. How we meet each red line")
 table([
     ["Red line", "How PayRight meets it"],
     ["Money never moves to an unverified account",
-     "Payment details come from the vendor list, not the invoice, and the account is verified by Cashfree with a "
-     "name match before any transfer."],
+     "Payment details come from the vendor list, never the invoice. An invoice showing any other account is stopped. "
+     "Not done yet: Cashfree's own bank verification is not enabled on our test account."],
     ["Approval cannot be spoofed, replayed or given by accident",
      "The agent calls the owner's registered number, the owner must say the total amount aloud, and one approval is "
      "valid for one batch only."],
@@ -137,7 +138,7 @@ bullets([
     "and each one has a reason a manager can read aloud.",
     "<b>We do not trust bank details printed on an invoice.</b> They are only compared with the account on file.",
     "<b>We do not retry payments automatically.</b> A failure goes to a person.",
-    "<b>We did not build our own payments backend.</b> Verification and payouts run inside Cashfree Relay, so the "
+    "<b>We did not build our own payments backend.</b> Payouts run inside Cashfree Relay, so the "
     "sponsor's own agent does the money work and every run is visible in its Runs tab.",
     "<b>We did not build a website first.</b> The score card marks the problem, the voice, the money and the live demo.",
 ])
@@ -147,21 +148,25 @@ table([
     ["Tool", "Role"],
     ["Sarvam Document AI", "Reads printed and handwritten invoices in several scripts into structured fields."],
     ["Sarvam voice agent", "Owner approval call in Hindi, Kannada, English and Hinglish; switches when the owner does."],
-    ["Cashfree Relay", "The agent canvas: webhook trigger, verify bank details, add beneficiary, request transfer."],
-    ["Cashfree Payouts (sandbox)", "Bank account verification with name match, and the payouts themselves."],
+    ["Cashfree Relay", "The agent canvas: webhook trigger, then an HTTP step that requests the transfer from Payouts v2."],
+    ["Cashfree Payouts (sandbox)", "The payouts themselves, each confirmed with a status and a bank reference (UTR)."],
 ], [55, 120])
 
-h2("8. Status at 1:00 PM on the day (honest)")
+h2("8. Status at 3:00 PM on the day (honest)")
 table([
     ["Part", "Status"],
-    ["Invoice checker", "Working. Self-test passes; on five sample invoices it paid two and stopped three with "
-                        "correct reasons."],
-    ["Invoice reader", "Working on one synthetic English invoice read through Sarvam. Tamil, Hindi and handwritten "
-                       "invoices are not tested yet."],
-    ["Relay agent", "Built: webhook, verify bank details, add beneficiary, request transfer. Not active yet."],
-    ["Bank verification", "Blocked: Cashfree returns 'Verification Suite is not enabled for this account'."],
-    ["Voice agent", "Being built on Sarvam. No phone number on the account yet, so no live call yet."],
-    ["Payout", "Not attempted yet."],
+    ["Invoice checker", "Working. On the nine demo invoices: 5 of 5 traps caught, 0 of 4 good bills blocked. Across "
+                        "all our test sets: 7 of 7 traps caught, 2 of 34 good bills not paid automatically."],
+    ["Invoice reader", "Working through Sarvam Document AI on printed and handwritten test invoices in several "
+                       "languages. A field the reader is unsure of goes to a person, never a guess."],
+    ["Relay agent", "Live. Relay's built-in transfer step calls a retired Cashfree API and reports success while "
+                    "Cashfree refuses it. We found that and pay through an HTTP step to Payouts v2."],
+    ["Bank verification", "Not enabled: Cashfree returns 'Verification Suite is not enabled for this account'. "
+                          "Until it is, money only goes to the account already on file."],
+    ["Voice agent", "Working. A live Hindi phone call approved a batch after the owner said the total himself. "
+                    "Switching to Kannada and English mid-call is not logged yet."],
+    ["Payout", "Working in the sandbox. Two rounds of three payouts: 6 successful, Rs 1,03,014 in total, each "
+               "confirmed by Cashfree with a bank reference."],
 ], [45, 130])
 
 h2("9. The demo")
@@ -171,7 +176,7 @@ bullets([
     "<b>Success case.</b> The clean invoices are approved by the owner on the phone, paid through Relay, and come "
     "back confirmed in the Cashfree test dashboard.",
     "<b>Proof.</b> We run the same batch again and nothing is paid twice. We report traps caught and good invoices "
-    "wrongly blocked on the judges' fresh batch.",
+    "wrongly blocked on our own test invoices.",
 ])
 
 out = Path(__file__).parent / "PayRight_Problem_and_Solution.pdf"
