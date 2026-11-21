@@ -70,3 +70,15 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
 - [ ] New trap (Abhijeet's idea): Hope Electricals with account 388108022659 (one digit
       off from 388108022658). Add it to the demo set and the answer key as STOP.
 - [ ] The rehearsal table is empty. Three timed runs after 2:45.
+
+## Done at 2 PM (NOW.md tasks 10 and 11)
+- [x] Task 10: `payright/invoices/inv09_hope.png`, Hope Electricals with account 388108022659
+      (one digit off), in the answer key as STOP. On its true values the checker STOPs it.
+      NOT READ YET: my Sarvam account is out of credits (402). Chirag, please run
+      `python payright/evidence.py demo --read` (or the reader) on your account.
+- [x] Task 11: judges' pack corrected. Generated handwriting is called generated. Counts are honest:
+      7/7 planted traps caught, 22/34 genuine bills cleared to pay (10 asked, 2 stopped), 0 wrong
+      payments. Payout, bank verification, repeated-ID rejection, the recorded call and failed-payout
+      handling are marked planned / not yet tested. PDF rebuilt.
+- [ ] Task 9: photograph ONE real handwritten invoice (me, by hand), push it, Chirag runs the reader.
+- [ ] Task 14: run the timer at the three rehearsals.

@@ -167,7 +167,7 @@
     "accept": [
       "PAY"
     ],
-    "trap": "clean, handwritten bill-book page, photographed",
+    "trap": "clean, generated handwritten-style bill-book page made to look like a phone photo",
     "language": "en-IN",
     "truth": {
       "vendor_id": "v2",
@@ -182,6 +182,29 @@
       "bank_account": "1233943142",
       "ifsc": "ICIC0000009",
       "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "inv09_hope.png",
+    "expected": "STOP",
+    "accept": [
+      "STOP"
+    ],
+    "trap": "one digit off: Hope Electricals' account printed as 388108022659 (on file: 388108022658), no warning note",
+    "language": "en-IN",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "Hope Electricals",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-312",
+      "invoice_date": "19-11-2026",
+      "subtotal": 11000,
+      "tax": 1980.0,
+      "total": 12980.0,
+      "total_in_words_value": 12980.0,
+      "bank_account": "388108022659",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
     }
   }
 ]

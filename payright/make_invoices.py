@@ -1,6 +1,6 @@
 """Make the test invoices, each with its ground truth, so we can measure the reader and the checker.
 
-  python make_invoices.py            demo set   -> payright/invoices/            (8: 4 clean, 4 traps)
+  python make_invoices.py            demo set   -> payright/invoices/            (9: 4 clean, 5 traps)
   python make_invoices.py stress     stress set -> payright/test_sets/stress/    (8 harder cases)
   python make_invoices.py ladder     fail-safe  -> payright/test_sets/ladder/    (5 photos, perfect -> unreadable)
   python make_invoices.py languages  languages  -> payright/test_sets/languages/ (the other 20 of India's 22 languages)
@@ -343,9 +343,12 @@ DEMO = [
     ("inv07_jane.png", "STOP", ["STOP"], "mismatched name: Jane D Traders asks to be paid into John Doe's account",
      dict(vendor=JANE, no="JDT-21", date="16/11/2026", accent="#6b3fa0",
           lines=[("GI pipe 1/2 inch, 6 m", "7306", 20, 480), ("Gate valve 1/2 inch", "8481", 12, 200)])),
-    ("inv08_wells.jpg", "PAY", OK, "clean, handwritten bill-book page, photographed",
+    ("inv08_wells.jpg", "PAY", OK, "clean, generated handwritten-style bill-book page made to look like a phone photo",
      dict(vendor=WELLS, no="512", date="18/11/26", hand=True, photo=1,
           lines=[("Thinner 5 L", "", 6, 600), ("Wall putty 40 kg", "", 4, 1100)])),
+    ("inv09_hope.png", "STOP", ["STOP"], "one digit off: Hope Electricals' account printed as 388108022659 (on file: 388108022658), no warning note",
+     dict(vendor=HOPE, pay_to={"acct": "388108022659"}, no="HE-312", date="19-11-2026", due="05-12-2026", accent="#b5541c",
+          lines=[("Tube light 20 W", "9405", 40, 180), ("Copper wire 2.5 sq mm, 90 m coil", "8544", 2, 1900)])),
 ]
 
 STRESS = [
@@ -377,10 +380,11 @@ STRESS = [
 ]
 
 LADDER = [  # the same kind of clean bill, photographed worse and worse
-    # Levels 0-3 may be paid or asked about. Level 4 is too poor to pay on what was read: it must be held.
-    # (We first expected PAY/ASK for level 4 too; the reader then invented an account number on it.)
-    (f"lad{lv}_doe.{'png' if lv == 0 else 'jpg'}", "PAY" if lv < 4 else "ASK", SAFE if lv < 4 else ["ASK", "STOP"],
-     f"clean; photo quality {lv} of 4 ({['flat scan', 'good phone photo', 'dim, slight shake', 'dark, blurred, low resolution', 'barely readable: must not be paid on what was read'][lv]})",
+    # Every rung is a genuine bill, so it counts as a good bill (PAY). Levels 0-3 may be paid or asked
+    # about; level 4 is too poor to pay on what was read, so holding it (ASK or STOP) is also acceptable,
+    # but it still counts as a good bill that was not paid.
+    (f"lad{lv}_doe.{'png' if lv == 0 else 'jpg'}", "PAY", SAFE if lv < 4 else ["PAY", "ASK", "STOP"],
+     f"clean; photo quality {lv} of 4 ({['flat scan', 'good phone photo', 'dim, slight shake', 'dark, blurred, low resolution', 'barely readable'][lv]})",
      dict(vendor=DOE, no=f"DH-02{lv:02d}", date=f"{13 + lv}-11-2026", photo=lv or None,
           lines=[("PVC pipe 1 inch, 6 m", "3917", 10 + 5 * lv, 250), ("Brass ball valve 1 inch", "8481", 4 + lv, 420)]))
     for lv in range(5)

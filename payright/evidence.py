@@ -113,6 +113,8 @@ def score(name):
             inv["unsure_fields"] = unsure_fields(inv["confidence"])
     vendors = json.loads((HERE / "vendors.json").read_text(encoding="utf-8"))
     by_file = {r["file"]: r for r in read}
+    unread = [k["file"] for k in key if k["file"] not in by_file]  # made, but not read by Sarvam yet: not scored
+    key = [k for k in key if k["file"] in by_file]
     # a fresh ledger and unlimited cash: we score the checks, not today's bank balance
     decisions = {d["file"]: d for d in check.plan([by_file[k["file"]] for k in key], vendors, [], float("inf"))}
     rows = []
@@ -131,14 +133,16 @@ def score(name):
         rows.append({**k, "got": dec["status"], "reasons": dec["reasons"], "decision_ok": dec["status"] in k["accept"],
                      "unsafe": unsafe, "fields": fields, "unsure": inv.get("unsure_fields", [])})
     n_fields = sum(len(r["fields"]) for r in rows)
+    # A trap is a bill planted to be refused; every other bill is genuine, however bad the photo.
     traps = [r for r in rows if r["expected"] != "PAY"]
-    clean = [r for r in rows if r["expected"] == "PAY"]
+    good = [r for r in rows if r["expected"] == "PAY"]
     summary = {
-        "set": name, "title": title, "blurb": blurb, "invoices": len(rows),
+        "set": name, "title": title, "blurb": blurb, "invoices": len(rows), "unread": unread,
         "decisions_ok": sum(r["decision_ok"] for r in rows),
         "traps": len(traps), "traps_caught": sum(r["got"] in ("STOP", "ASK") for r in traps),
-        "clean": len(clean), "clean_blocked": sum(r["got"] == "STOP" for r in clean),
-        "clean_asked": sum(r["got"] == "ASK" for r in clean),
+        "good": len(good), "good_paid": sum(r["got"] in ("PAY", "LATER") for r in good),
+        "good_asked": sum(r["got"] == "ASK" for r in good),
+        "good_stopped": sum(r["got"] == "STOP" for r in good),
         "fields": n_fields, "fields_ok": sum(f["ok"] for r in rows for f in r["fields"]),
         "money_fields": sum(f["field"] in MONEY for r in rows for f in r["fields"]),
         "money_fields_ok": sum(f["ok"] and f["field"] in MONEY for r in rows for f in r["fields"]),
@@ -251,17 +255,22 @@ def card(r, folder):
 
 def report(results):
     tot = {k: sum(s[k] for s, _ in results) for k in
-           ("invoices", "decisions_ok", "traps", "traps_caught", "clean", "clean_blocked", "fields", "fields_ok",
-            "money_fields", "money_fields_ok", "unsafe_payments")}
+           ("invoices", "decisions_ok", "traps", "traps_caught", "good", "good_paid", "good_asked", "good_stopped",
+            "fields", "fields_ok", "money_fields", "money_fields_ok", "unsafe_payments")}
+    unread = [f for s, _ in results for f in s["unread"]]
     head = "".join([
-        kpi(f"{tot['traps_caught']}/{tot['traps']}", "traps caught before any money moved", "good"),
-        kpi(f"{tot['clean_blocked']}/{tot['clean']}", "clean invoices wrongly stopped", "good" if not tot["clean_blocked"] else "bad"),
+        kpi(f"{tot['traps_caught']}/{tot['traps']}", "planted traps caught before any money moved", "good"),
+        kpi(f"{tot['good_paid']}/{tot['good']}",
+            f"genuine bills cleared to pay; not paid: {tot['good_asked']} asked about, {tot['good_stopped']} stopped",
+            "good" if tot["good_paid"] == tot["good"] else ""),
         kpi(f"{tot['unsafe_payments']}", f"wrong payments approved across {tot['invoices']} invoices",
             "good" if not tot["unsafe_payments"] else "bad"),
         kpi(pct(tot["fields_ok"], tot["fields"]), f"of {tot['fields']} critical fields read exactly right"),
         kpi(pct(tot["money_fields_ok"], tot["money_fields"]), f"of {tot['money_fields']} money fields (total, account, IFSC) read right"),
         kpi(f"{tot['decisions_ok']}/{tot['invoices']}", "invoices got an accepted decision"),
     ])
+    pending = (f"<p class=lede><b>Not read yet:</b> <span class=mono>{esc(', '.join(unread))}</span> "
+               "(made and in the answer key, waiting for Sarvam credits). Not counted above.</p>") if unread else ""
     langs = sorted({l for s, _ in results for l in s["languages"]})
     indian = [l for l in langs if l != "en-IN"]
     head = kpi(f"{len(langs)}", f"languages read: {len(indian)} Indian languages + English" if "en-IN" in langs
@@ -270,7 +279,7 @@ def report(results):
     for i, (s, rows) in enumerate(results):
         folder = SETS[s["set"]][0]
         line = (f"<b>{s['decisions_ok']}/{s['invoices']}</b> accepted decisions · traps caught <b>{s['traps_caught']}/{s['traps']}</b> · "
-                f"clean stopped <b>{s['clean_blocked']}/{s['clean']}</b> (asked {s['clean_asked']}) · "
+                f"genuine bills paid <b>{s['good_paid']}/{s['good']}</b> (asked {s['good_asked']}, stopped {s['good_stopped']}) · "
                 f"fields read right <b>{s['fields_ok']}/{s['fields']}</b> · wrong payments <b>{s['unsafe_payments']}</b>")
         sections.append(f'<h2 class="{"first" if i == 0 else ""}">{s["title"]}</h2><p class=set-blurb>{esc(s["blurb"])}</p>'
                         f'<div class=sumline>{line}</div>' + "".join(card(r, folder) for r in rows))
@@ -279,8 +288,9 @@ def report(results):
 <h1>PayRight — evidence</h1>
 <p class=lede>Every invoice below went through the live Sarvam Document AI reader (advanced mode) and our real
 <span class=mono>check.py</span>. We generated each invoice ourselves, so we know what is truly printed on it and can
-score the reader field by field. Nothing here is typed in by hand.</p>
-<div class=kpis>{head}</div>
+score the reader field by field. Nothing here is typed in by hand. The "handwritten" bills are generated pages in a
+handwriting font made to look like phone photos; no real handwritten bill has been tested yet.</p>
+<div class=kpis>{head}</div>{pending}
 {LEARNED if {s['set'] for s, _ in results} == set(SETS) else ''}
 {''.join(sections)}
 <p class=foot>Generated {datetime.now():%d %b %Y, %H:%M} by <span class=mono>payright/evidence.py</span> from saved reads
@@ -315,7 +325,8 @@ def main(argv):
         s, rows = score(n)
         results.append((s, rows))
         print(f"{s['title']:17} decisions {s['decisions_ok']}/{s['invoices']}  traps {s['traps_caught']}/{s['traps']}  "
-              f"clean stopped {s['clean_blocked']}/{s['clean']}  fields {s['fields_ok']}/{s['fields']}  "
+              f"good paid {s['good_paid']}/{s['good']} (asked {s['good_asked']}, stopped {s['good_stopped']})  "
+              f"fields {s['fields_ok']}/{s['fields']}  " + (f"unread {s['unread']}  " if s["unread"] else "") +
               f"wrong payments {s['unsafe_payments']}")
         for r in rows:
             miss = [f"{f['label']}: read {f['read']!r}, bill says {f['truth']!r}" for f in r["fields"] if not f["ok"]]

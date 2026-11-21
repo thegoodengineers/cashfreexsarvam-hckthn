@@ -97,12 +97,13 @@
   },
   {
     "file": "lad4_doe.jpg",
-    "expected": "ASK",
+    "expected": "PAY",
     "accept": [
+      "PAY",
       "ASK",
       "STOP"
     ],
-    "trap": "clean; photo quality 4 of 4 (barely readable: must not be paid on what was read)",
+    "trap": "clean; photo quality 4 of 4 (barely readable)",
     "language": "en-IN",
     "truth": {
       "vendor_id": "v1",

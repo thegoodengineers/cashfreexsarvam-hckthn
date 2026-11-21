@@ -26,7 +26,8 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 | inv05_wells.png | WP/78 | English | wrong arithmetic | STOP | **STOP** | Subtotal 20000 plus tax 3600 is 23600, but the total says 26300. |
 | inv06_doe.png | dh/101 | English, different layout | duplicate in disguise (number and date format changed) | STOP | **STOP** | Invoice number DH-0101 from Doe Hardware Supplies has already been queued. |
 | inv07_jane.png | JDT-21 | English | mismatched name: John Doe's account on Jane D Traders' bill | STOP | **STOP** | The bank account on this invoice belongs to John Doe (Doe Hardware Supplies), but the bill is from Jane D Traders. Do not pay until both vendors confirm. |
-| inv08_wells.jpg | 512 | handwritten bill book, phone photo | clean | PAY | **PAY** | |
+| inv08_wells.jpg | 512 | generated handwritten-style bill book, made to look like a phone photo | clean | PAY | **PAY** | |
+| inv09_hope.png | HE-312 | English | account one digit off (388108022659) | STOP | *not read yet* | Added at 2 PM; Sarvam credits ran out. On its true values the checker STOPs it. Chirag to run the reader. |
 
 ## What the numbers say
 - The reader got every amount, account number and IFSC right, including Tamil and Hindi amounts in words and the handwritten photo.
@@ -35,18 +36,21 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 - On inv05 the reader also flagged its own confidence on `total` as low. That was the right instinct: the total is the number that is wrong.
 
 ## Honest notes
-- inv08 is a generated handwritten page made to look like a phone photo, not a real pen-and-paper photo. A real photographed bill would be a stronger test.
+- inv08 is a generated handwritten-style page made to look like a phone photo, not a real pen-and-paper photo. A real photographed handwritten bill is still to be added (NOW.md task 9).
 - LATER on inv02 depends on the `--cash 100000` limit and today's date (MSME 45-day rule for Wells). With more cash it is PAY.
 
 ## Beyond the demo set: 41 invoices in 23 languages, scored field by field
+
+Counting rule: a *trap* is a bill planted to be refused. Every other bill is *genuine*, however bad its photo,
+and counts as not paid if it is asked about or stopped.
 
 `python payright/evidence.py all` re-scores the saved reads; full report with every image:
 `docs/evidence/PayRight_Evidence.pdf`.
 
 | | Demo (8) | Stress (8) | Fail-safe ladder (5) | 20 languages (20) | All 41 |
 |---|---|---|---|---|---|
-| Traps caught | 4/4 | 3/3 | 1/1 | none planted | **8/8** |
-| Clean invoices wrongly stopped | 0/4 | 0/5 | 0/4 | 1/20 | **1/33** |
+| Planted traps caught | 4/4 | 3/3 | none planted | none planted | **7/7** |
+| Genuine bills cleared to pay | 4/4 | 4/5 (1 asked) | 4/5 (1 stopped) | 10/20 (9 asked, 1 stopped) | **22/34** (10 asked, 2 stopped) |
 | Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
 | Critical fields read right | 78/80 | 77/80 | 45/50 | 193/200 | **393/410 (96%)** |
 | Money fields (total, account, IFSC) read right | | | | 60/60 | **121/123 (98%)** |
