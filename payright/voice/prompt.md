@@ -13,8 +13,8 @@ do not type it as plain text, or Sarvam will not fill it in.
 | Agent model | `sarvam-105b` |
 
 ## Input variables
-Make these in the editor. `approve.py` fills them on a real call; to see the
-values for a batch, run `python payright/approve.py --dry-run` (set
+Make these in the editor. `approve.py` fills them on a real call (built by `call_vars.py`); to see
+the values for a batch, run `python payright/approve.py --dry-run` (set
 `OWNER_NAME=Ramesh` in `payright/.env`). For test calls, paste the sample values.
 
 | Variable | What it is | Sample (from `sample_invoices.json`) |
@@ -22,9 +22,9 @@ values for a batch, run `python payright/approve.py --dry-run` (set
 | `owner_name` | Owner's name | `Ramesh` |
 | `pay_count` | Clean bills to pay | `2` |
 | `pay_total` | Their total, digits only | `70800` |
-| `pay_list` | Vendor, amount; separated by `;` | `Doe Hardware Supplies, 11800 rupees; Wells Paints and Chemicals, 59000 rupees` |
+| `pay_list` | Numbered: vendor, amount | `1) Doe Hardware Supplies, 11800 rupees. 2) Wells Paints and Chemicals, 59000 rupees.` |
 | `held_count` | Bills stopped or waiting | `3` |
-| `held_list` | Vendor, invoice no: reason; separated by `;` | `Hope Electricals, invoice HE-310: The bank account on this invoice is not the account we have on file for Hope Electricals. Call the vendor on the number we already have before paying.; Doe Hardware Supplies, invoice dh/101: Invoice number DH-0101 from Doe Hardware Supplies has already been queued.; Wells Paints and Chemicals, invoice WP/78: Subtotal 20000 plus tax 3600 is 23600, but the total says 26300.` |
+| `held_list` | Numbered: vendor, amount: reason | `1) Hope Electricals, 23600 rupees: bank account changed on the invoice, call the vendor on the old number first. 2) Doe Hardware Supplies, 11800 rupees: this bill was already paid or is already in this batch, it looks like a duplicate. 3) Wells Paints and Chemicals, 26300 rupees: the total on the bill is wrong, subtotal plus tax does not match.` |
 
 ## Output variables
 Paste each description as written. `approve.py` reads them and pays nothing
