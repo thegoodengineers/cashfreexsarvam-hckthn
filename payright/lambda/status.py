@@ -218,6 +218,54 @@ nav .links a.hide{display:none}section{padding:60px 0}.wrap{padding:0 16px}.big{
 @media (prefers-reduced-motion:no-preference){.art circle,.art path{stroke-dasharray:1600;animation:draw 2.4s ease-out both}
 @keyframes draw{from{stroke-dashoffset:1600}to{stroke-dashoffset:0}}
 .step.live .st{animation:blink 1.2s ease-in-out infinite}@keyframes blink{50%{opacity:.35}}}
+
+/* ---- effects: all of it is switched off under prefers-reduced-motion ---- */
+.mega.mid{font-size:clamp(56px,10.5vw,140px);line-height:.9}
+.stat,.card,.step,.bill,.trick{transition:transform .25s ease,box-shadow .25s ease}
+.bill:hover,.stat:hover,.trick:hover{transform:translateY(-3px);box-shadow:0 2px 2px rgba(15,15,13,.05),0 24px 46px rgba(15,15,13,.13)}
+.pill{transition:transform .15s ease,background .2s ease,color .2s ease}.pill:hover{transform:translateY(-1px)}
+.pill.ghost:hover{background:var(--ink);color:#fff}
+nav .links a.on{color:var(--ink);font-weight:600}
+section.ink{background:var(--ink);color:var(--paper)}section.ink .eyebrow{color:var(--paper)}section.ink .serif{color:#b9b9ad}
+section.ink .step,section.ink .trick{background:#1b1b18;box-shadow:none;border:1px solid #2c2c27}
+section.ink .step b,section.ink .trick b{color:var(--paper)}section.ink .step p,section.ink .trick p{color:#b9b9ad}
+section.ink .step.done p,section.ink .step.live p{color:var(--paper)}section.ink .n{color:#8a8a80}section.ink .st{color:#8a8a80}
+section.ink .step.done .st{color:#5fd39b}section.ink .step.no .st{color:#ff8f86}
+section.ink .step.live{box-shadow:0 0 0 2px var(--paper)}section.ink .step.live .st{color:var(--paper)}
+section.ink .pill{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+section.ink .pill.ghost{background:transparent;color:var(--paper)}section.ink .pill.ghost:hover{background:var(--paper);color:var(--ink)}
+.track{height:4px;background:#2c2c27;border-radius:4px;margin-top:26px;overflow:hidden}
+.track i{display:block;height:100%;width:var(--w,0%);background:#5fd39b;border-radius:4px;transition:width 1.4s cubic-bezier(.2,.7,.2,1)}
+.log{margin:34px 0 0;padding:0;list-style:none;display:grid;gap:8px;max-width:760px}
+.log li{display:grid;grid-template-columns:104px 1fr;gap:14px;font-size:15px;color:#b9b9ad;border-top:1px solid #2c2c27;padding-top:8px}
+.log li:first-child{color:var(--paper)}.log time{font:400 12.5px/1.7 'JetBrains Mono',ui-monospace,Consolas,monospace;color:#8a8a80}
+.band{background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap;padding:15px 0;
+font:600 13.5px/1 'JetBrains Mono',ui-monospace,Consolas,monospace;border-top:1px solid #2c2c27}
+.band div{display:inline-block;padding-left:100%}.band span{margin-right:14px}.band b{margin-right:46px;font-weight:400;color:#b9b9ad}
+.band .r{color:#ff8f86}.band .g{color:#5fd39b}.band .w{color:#e9c46a}
+.chip.STOP{background:transparent;color:var(--bad);border:2px solid var(--bad);border-radius:7px;text-transform:uppercase;
+letter-spacing:.13em;font-weight:800;font-size:12px;padding:5px 9px;transform:rotate(-4deg)}
+.chip.PAID{text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+.trick{background:var(--paper);border-radius:20px;padding:26px;box-shadow:0 1px 1px rgba(15,15,13,.04),0 12px 28px rgba(15,15,13,.05)}
+.trick b{display:block;font:800 26px/1.05 'Inter Tight',Inter,sans-serif;letter-spacing:-.02em;margin:8px 0 8px}
+.trick p{margin:0;color:var(--mute);font-size:15px}section.alt .trick{background:var(--bg)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:36px}
+.tablewrap{overflow-x:auto;margin-top:28px}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line)}th{color:var(--mute);font-weight:500}
+td.mono{font:400 12.5px/1.5 'JetBrains Mono',ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+td.ok{color:var(--ok);font-weight:600}td.wait{color:var(--mute)}td.no{color:var(--bad);font-weight:600}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}.log li{grid-template-columns:1fr;gap:0}}
+@media (prefers-reduced-motion:no-preference){
+[data-r]{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);
+transition-delay:calc(var(--i,0)*70ms)}[data-r].in{opacity:1;transform:none}
+.mega{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}@keyframes rise{from{transform:translateY(38%);opacity:0}}
+.lede{animation:rise .9s .12s cubic-bezier(.2,.7,.2,1) both}
+svg.art{animation:drift 20s ease-in-out infinite alternate;transform-origin:72% 47%}@keyframes drift{to{transform:scale(1.07) rotate(2deg)}}
+.band div{animation:slide 42s linear infinite}@keyframes slide{to{transform:translateX(-100%)}}
+[data-r].in .chip.STOP{animation:stamp .45s .25s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stamp{from{transform:scale(2.4) rotate(-16deg);opacity:0}to{transform:rotate(-4deg);opacity:1}}
+section.ink .step.live{animation:ring 1.6s ease-in-out infinite}
+@keyframes ring{50%{box-shadow:0 0 0 2px var(--paper),0 0 0 9px rgba(244,244,238,.12)}}}
 """
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -229,13 +277,28 @@ ART = ('<svg class="art" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid sl
        '<path d="M560 30 Q860 330 1160 30"/><path d="M560 630 Q860 330 1160 630"/><path d="M0 700 Q600 120 1200 700"/></svg>')
 STATE_WORD = {"done": "done", "live": "now", "wait": "waiting", "no": "no"}
 
-JS = """<script>(function(){var v=document.body.getAttribute('data-v');
-setTimeout(function(){document.body.className+=' s'},900);setInterval(function(){
-fetch(location.href,{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
-var d=new DOMParser().parseFromString(t,'text/html');var n=d.body&&d.body.getAttribute('data-v');
-if(!n||n===v)return;var open=[].map.call(document.querySelectorAll('details[open]'),function(e){return e.id});
+JS = """<script>(function(){
+var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function inr(n){var s=String(Math.round(n)),h=s.slice(0,-3),t=s.slice(-3),p=[];while(h.length>2){p.unshift(h.slice(-2));h=h.slice(0,-2)}
+if(h)p.unshift(h);return '\\u20b9'+p.concat([t]).join(',')}
+function put(el,x){if(el.firstChild&&el.firstChild.nodeType===3)el.firstChild.nodeValue=x;else el.insertBefore(document.createTextNode(x),el.firstChild)}
+function count(el,now){if(el.__c)return;el.__c=1;var to=parseFloat(el.getAttribute('data-count'));if(isNaN(to))return;
+var f=el.hasAttribute('data-rupee')?inr:function(v){return String(Math.round(v))};if(now||rm){put(el,f(to));return}
+var t0=0;function step(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/900);k=1-Math.pow(1-k,3);put(el,f(to*k));if(k<1)requestAnimationFrame(step)}
+requestAnimationFrame(step)}
+function arm(now){var els=document.querySelectorAll('[data-r]');
+if(now||rm||!('IntersectionObserver' in window)){[].forEach.call(els,function(e){e.classList.add('in')});
+[].forEach.call(document.querySelectorAll('[data-count]'),function(e){count(e,true)});return}
+var io=new IntersectionObserver(function(en){en.forEach(function(x){if(!x.isIntersecting)return;x.target.classList.add('in');
+if(x.target.hasAttribute('data-count'))count(x.target);[].forEach.call(x.target.querySelectorAll('[data-count]'),function(e){count(e)});
+io.unobserve(x.target)})},{threshold:0,rootMargin:'0px 0px -4% 0px'});[].forEach.call(els,function(e){io.observe(e)})}
+arm(false);setTimeout(function(){arm(true)},6000);
+var v=document.body.getAttribute('data-v');if(!v)return;
+setInterval(function(){fetch(location.href,{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
+var d=new DOMParser().parseFromString(t,'text/html');var n=d.body&&d.body.getAttribute('data-v');if(!n||n===v)return;
+var open=[].map.call(document.querySelectorAll('details[open]'),function(e){return e.id}),y=window.scrollY;
 document.querySelector('main').innerHTML=d.querySelector('main').innerHTML;v=n;
-open.forEach(function(i){var e=document.getElementById(i);if(e)e.open=true})}).catch(function(){})},4000)})();</script>"""
+open.forEach(function(i){var e=document.getElementById(i);if(e)e.open=true});arm(true);window.scrollTo(0,y)}).catch(function(){})},4000)})();</script>"""
 
 
 def _digits(x):
@@ -329,19 +392,60 @@ def _card(r):
                                    f"UTR {e(str(r['utr']))}" if r["utr"] else "") if x)
     inside = (f'<ul class="why">{why}</ul>' if why else "") + ev + (f'<p class="meta" style="margin:12px 0 0">{extra}</p>' if extra else "")
     hint = '<span class="hint">see the evidence</span>' if r["evidence"] else ""
-    return (f'<details class="bill card-{e(r["state"])}" id="{r["id"]}"><summary><div class="top">'
+    return (f'<details class="bill card-{e(r["state"])}" id="{r["id"]}" data-r><summary><div class="top">'
             f'<span class="vendor">{e(str(r["vendor"] or "Unknown vendor"))}</span><span class="amt">{_money(r["amount"])}</span></div>'
             f'<div class="meta">{meta}</div><span class="chip {e(r["state"])}">{e(LABEL.get(r["state"], r["state"]))}</span>{hint}</summary>'
             f'{"<div class=body>" + inside + "</div>" if inside else ""}</details>')
 
 
-def page(data):
+HAS_TRY = False   # serve.py turns this on: the "Try to fool it" page needs the checker next to it
+NAV = (("home", "./", "Live board"), ("evidence", "./?page=evidence", "Evidence"), ("how", "./?page=how", "How it works"))
+HOW_STEPS = (
+    ("Read", "Sarvam Vision reads each bill in its own language and script. It only reads. A field it is not sure of is flagged, never guessed."),
+    ("Check", "Plain code compares the bill with itself, with the vendor file and with every bill already seen. A refusal carries the two values that were compared."),
+    ("Owner's call", "A Sarvam voice agent phones the owner, gives the reason for every stopped bill, and asks him to say the total himself."),
+    ("Pay", "Approved bills go to Cashfree through Relay, to the account on file, with a transfer ID made from the invoice itself."),
+    ("Cashfree confirms", "A bill counts as paid only when Cashfree says so. Until then the board says sent."))
+TRICKS = (
+    ("The same bill, sent twice", "A new number, a new date format, a slightly different spelling. The invoice number is normalised and compared for the same vendor."),
+    ("Sums that do not add up", "Line items, subtotal, tax, total and the amount in words are checked against each other."),
+    ("A familiar vendor, a new account", "Money only ever goes to the account on file. A different account on the invoice stops the bill."),
+    ("Someone else's account", "A bill that asks to be paid into another vendor's account is stopped, even when the account itself is real."))
+NOT_DONE = (
+    ("No model decides about money", "The model reads. Whether to pay, ask or stop is plain code that anyone can read line by line."),
+    ("No bank details from the invoice", "The account comes from the vendor file, never from the page in front of us."),
+    ("No second transfer ID", "One invoice, one ID, for life. A retry reuses it, so a retry cannot become a second payment."))
+
+
+def shell(title, body, active="home", version="", updated=""):
+    """One complete page: nav, body, footer, fonts, styles and the script. serve.py uses it for /try."""
     e = html.escape
-    rs = rows(data)
-    version = hashlib.sha1(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()[:12]
-    steps = "".join(f'<div class="step {s}"><span class="n">{n}</span><span class="st">{STATE_WORD.get(s, s)}</span>'
-                    f'<b>{t}</b><p>{e(v)}</p></div>' for n, t, s, v in _steps(data, rs))
-    facts = "".join(f'<div class="stat"><span class="big">{e(a)}</span><span class="k">{e(b)}</span></div>' for a, b in _facts(data))
+    links = NAV + ((("try", "./try", "Try to fool it"),) if HAS_TRY or active == "try" else ())
+    nav = "".join(f'<a class="hide{" on" if k == active else ""}" href="{h}">{t}</a>' for k, h, t in links)
+    pill = f'<span class="pill">Updated {e(updated)}</span>' if updated else ""
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{e(title)}</title>{FONTS}<style>{CSS}</style></head><body data-v="{version}"><main>
+<nav><div class="wrap"><a class="logo" href="./"><b>PayRight</b><span>Cashfree × Sarvam buildathon</span></a>
+<div class="links">{nav}{pill}</div></div></nav>
+{body}
+<footer><div class="wrap"><p>[1] Sandbox only, synthetic data. [2] Paid means Cashfree confirmed the transfer.
+[3] No full account number is shown.</p><p>{"Updated " + e(updated) + " · updates by itself" if updated else "The Good Engineers · 21 Nov 2026"}</p></div></footer>
+</main>{JS}</body></html>"""
+
+
+def _band(rs):
+    """The moving strip under the hero: what the agent has just refused, sent and paid."""
+    e, out = html.escape, []
+    for r in rs:
+        what = (r["evidence"][0]["check"] if r["evidence"] else "") or (r["reasons"][0][:48] if r["reasons"] else "")
+        word, cls = {"STOP": ("REFUSED", "r"), "PAID": ("PAID", "g"), "ASK": ("ASK", "w")}.get(r["state"], (r["state"].replace("_", " "), ""))
+        out.append(f'<span class="{cls}">{e(word)}</span><b>{e(str(r["invoice_no"] or "?"))} · {e(str(r["vendor"] or ""))} · '
+                   f'{_money(r["amount"])}{" · " + e(what) if what and r["lane"] != "PAY" else ""}</b>')
+    return f'<div class="band" aria-hidden="true"><div>{"".join(out) or "<b>Waiting for the first batch</b>"}</div></div>'
+
+
+def _lanes(rs):
     lanes = []
     for key, name, what in LANES:
         mine = [r for r in rs if r["lane"] == key]
@@ -349,47 +453,133 @@ def page(data):
         paid = sum(r["amount"] or 0 for r in mine if r["state"] == "PAID")
         tail = f" {_money(paid)} confirmed paid by Cashfree." if key == "PAY" and paid else ""
         cards = "".join(_card(r) for r in mine) or '<p class="none">Nothing here.</p>'
-        lanes.append(f'<div class="lane {key}"><span class="pill">{name} · {len(mine)}</span><div class="big">{_money(total)}</div>'
+        lanes.append(f'<div class="lane {key}"><span class="pill">{name} · {len(mine)}</span>'
+                     f'<div class="big" data-r data-count="{total:.0f}" data-rupee>{_money(total)}</div>'
                      f'<p class="sub">{what}{tail}</p>{cards}</div>')
+    return "".join(lanes)
+
+
+def _home(data, rs):
+    e = html.escape
+    st = _steps(data, rs)
+    steps = "".join(f'<div class="step {s}" data-r style="--i:{i}"><span class="n">{n}</span><span class="st">{STATE_WORD.get(s, s)}</span>'
+                    f'<b>{t}</b><p>{e(v)}</p></div>' for i, (n, t, s, v) in enumerate(st))
+    done = sum(s == "done" for _, _, s, _ in st) + 0.5 * sum(s == "live" for _, _, s, _ in st)
+    log = "".join(f'<li><time>{e(str(x.get("t") or ""))}</time><span>{e(str(x.get("text") or ""))}</span></li>'
+                  for x in reversed(data.get("events") or []))
+    facts = ""
+    for i, (a, b) in enumerate(_facts(data)):
+        num = f' data-count="{a}"' if a.strip().isdigit() else ""
+        facts += f'<div class="stat" data-r style="--i:{i}"><span class="big"{num}>{e(a)}</span><span class="k">{e(b)}</span></div>'
     n, stopped = len(rs), sum(r["lane"] == "STOP" for r in rs)
     to_pay = sum(r["amount"] or 0 for r in rs if r["state"] in ("PAY", "NOT_SENT"))
     sent = sum(r["state"] in ("SENT", "PAID", "FAILED", "REVERSED") for r in rs)
     paid_n = sum(r["state"] == "PAID" for r in rs)
-    updated = str(data.get("updated") or "")
     tag = str(data.get("round") or "")
     if n:
         live = (f'<span class="k">Live{" · round " + e(tag) if tag else ""}</span>'
-                f'<span class="big">{stopped}<em> of {n} bills refused</em></span>'
+                f'<span class="big" data-count="{stopped}">{stopped}<em> of {n} bills refused</em></span>'
                 f'<span class="sub">{_money(to_pay)} waiting to be paid · {sent} sent · {paid_n} confirmed paid by Cashfree</span>'
                 f'<a class="link" href="#board">see every bill →</a>')
     else:
         live = ('<span class="k">Live</span><span class="big">0<em> bills</em></span>'
                 '<span class="sub">No batch has been run yet.</span>')
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PayRight: the agent that says no</title>{FONTS}<style>{CSS}</style></head><body data-v="{version}"><main>
-<nav><div class="wrap"><a class="logo" href="#"><b>PayRight</b><span>Cashfree × Sarvam buildathon</span></a>
-<div class="links"><a class="hide" href="#run">The run</a><a class="hide" href="#board">The board</a>
-<a class="hide" href="#numbers">Numbers</a><span class="pill">{"Updated " + e(updated) if updated else "Waiting for the first batch"}</span></div></div></nav>
-<header>{ART}<div class="wrap">
+    call = _call(data).replace('<section id="call">', '<section id="call" class="alt">')
+    more = '<a class="pill ghost" href="./try">Try to fool it</a>' if HAS_TRY else ""
+    return f"""<header>{ART}<div class="wrap">
 <p class="eyebrow">The Good Engineers · built at the Cashfree × Sarvam buildathon, 21 Nov 2026</p>
 <h1 class="mega">PayRight</h1>
 <p class="lede"><span class="cap">T</span>he agent that says no.</p>
 <div class="hero-grid"><div><p class="intro">Reads every supplier bill. Pays the real ones. Refuses the fake ones, and says why.</p>
-<div class="cta"><a class="pill" href="#board">See the live board</a><a class="pill ghost" href="#run">Follow the run</a></div></div>
+<div class="cta"><a class="pill" href="#board">See the live board</a><a class="pill ghost" href="./?page=evidence">Why we said no</a>{more}</div></div>
 <div class="stat">{live}</div></div></div></header>
-<section id="run" class="alt"><div class="wrap"><p class="eyebrow">The run, live</p><h2>Five steps, one screen.</h2>
+{_band(rs)}
+<section id="run" class="ink"><div class="wrap"><p class="eyebrow">The run, live</p><h2 data-r>Five steps, one screen.</h2>
 <p class="serif">A model reads. Plain code decides. The owner approves by phone. Cashfree pays.</p>
-<div class="steps">{steps}</div></div></section>
-<section id="board"><div class="wrap"><p class="eyebrow">The board</p><h2>Every bill, and why.</h2>
+<div class="steps">{steps}</div><div class="track"><i style="--w:{done * 20:.0f}%"></i></div>
+{"<ul class=log>" + log + "</ul>" if log else ""}</div></section>
+<section id="board"><div class="wrap"><p class="eyebrow">The board</p><h2 data-r>Every bill, and why.</h2>
 <p class="serif">{"Tap a refused bill to see the two values that were compared." if n else "No batch has been run yet."}</p>
-<div class="lanes">{"".join(lanes)}</div></div></section>
-{_call(data).replace('<section id="call">', '<section id="call" class="alt">')}
-<section id="numbers"{"" if _call(data) else ' class="alt"'}><div class="wrap"><p class="eyebrow">Numbers</p><h2>Measured, not hoped.</h2>
+<div class="lanes">{_lanes(rs)}</div></div></section>
+{call}
+<section id="numbers"{"" if call else ' class="alt"'}><div class="wrap"><p class="eyebrow">Numbers</p><h2 data-r>Measured, not hoped.</h2>
 <p class="serif">{e(FACTS_SOURCE)}.</p><div class="tools">{facts}</div></div></section>
-<footer><div class="wrap"><p>[1] Sandbox only, synthetic data. [2] Paid means Cashfree confirmed the transfer.
-[3] No full account number is shown.</p><p>Updated {e(updated or "never")} · updates by itself</p></div></footer>
-</main>{JS}</body></html>"""
+<section class="ink"><div class="wrap"><p class="eyebrow">Look closer</p><h2 data-r>Do not take our word for it.</h2>
+<p class="serif">Every refusal has its proof, every payment its trail.</p>
+<div class="cta"><a class="pill" href="./?page=evidence">See the evidence</a><a class="pill ghost" href="./?page=how">How it works</a>{more}</div></div></section>"""
+
+
+def _evidence(data, rs):
+    e = html.escape
+    held = [r for r in rs if r["lane"] != "PAY"]
+    cards = "".join(_card(r).replace('<details class="bill', '<details open class="bill') for r in held)
+    trail = ""
+    for r in (x for x in rs if x["lane"] == "PAY"):
+        cls = "ok" if r["state"] == "PAID" else "wait"
+        trail += (f'<tr><td>{e(str(r["invoice_no"] or ""))}</td><td>{e(str(r["vendor"] or ""))}</td><td>{_money(r["amount"])}</td>'
+                  f'<td class="{cls}">{e(LABEL.get(r["state"], r["state"]))}</td><td class="mono">{e(str(r["account"] or ""))}</td>'
+                  f'<td class="mono">{e(str(r["transfer_id"] or "not sent yet"))}</td><td class="mono">{e(str(r["utr"] or ""))}</td></tr>')
+    ap = data.get("approval") or {}
+    who = (f'Approved on the owner\'s call{" (" + e(str(ap["language"])) + ")" if ap.get("language") else ""}: {e(str(ap.get("reason") or ""))}'
+           if ap else "No owner approval on this batch yet, so nothing has been sent.")
+    return f"""<header>{ART}<div class="wrap"><p class="eyebrow">Evidence · {len(held)} refused or held, {len(rs) - len(held)} cleared</p>
+<h1 class="mega mid">Why we said no.</h1>
+<p class="lede"><span class="cap">E</span>very refusal shows the two values that were compared.</p></div></header>
+<section class="alt"><div class="wrap"><p class="eyebrow">Refused and held</p><h2 data-r>The proof, bill by bill.</h2>
+<p class="serif">{"The wrong value is in red. Account numbers show the last four digits only." if held else "Nothing has been refused in this batch."}</p>
+<div class="grid2">{cards}</div></div></section>
+<section><div class="wrap"><p class="eyebrow">Paid and to pay</p><h2 data-r>Every payment, traced.</h2>
+<p class="serif">{who}</p>
+<div class="tablewrap"><table><tr><th>Invoice</th><th>Vendor</th><th>Amount</th><th>State</th><th>Account on file</th><th>Transfer ID</th><th>UTR</th></tr>
+{trail or '<tr><td colspan="7">No batch has been run yet.</td></tr>'}</table></div></div></section>"""
+
+
+def _how(data, rs):
+    steps = "".join(f'<div class="step" data-r style="--i:{i}"><span class="n">0{i + 1}</span><b>{t}</b><p>{p}</p></div>'
+                    for i, (t, p) in enumerate(HOW_STEPS))
+    tricks = "".join(f'<div class="trick" data-r style="--i:{i}"><span class="n">0{i + 1}</span><b>{t}</b><p>{p}</p></div>'
+                     for i, (t, p) in enumerate(TRICKS))
+    nots = "".join(f'<div class="trick" data-r style="--i:{i}"><b>{t}</b><p>{p}</p></div>' for i, (t, p) in enumerate(NOT_DONE))
+    return f"""<header>{ART}<div class="wrap"><p class="eyebrow">How it works</p>
+<h1 class="mega mid">A model reads. Code decides.</h1>
+<p class="lede"><span class="cap">S</span>ixty bills a week, three scripts, one tired accountant.</p></div></header>
+<section class="alt"><div class="wrap"><p class="eyebrow">The loop</p><h2 data-r>From a photo to a payment.</h2>
+<div class="steps">{steps}</div></div></section>
+<section><div class="wrap"><p class="eyebrow">What it catches</p><h2 data-r>Four old tricks, four hard stops.</h2>
+<p class="serif">Each one is a comparison a person could do by hand, done every time.</p><div class="grid2">{tricks}</div></div></section>
+<section class="ink"><div class="wrap"><p class="eyebrow">What we chose not to do</p><h2 data-r>Three things we refused to build.</h2>
+<div class="tools">{nots}</div></div></section>
+<section class="alt"><div class="wrap two"><div><p class="eyebrow">Honest status</p><h2 data-r>Working today, and not yet.</h2></div>
+<div class="card"><p><b>Working today:</b> reading in 23 languages, the checks, the owner's call, payouts through Relay to Cashfree, no double payment.</p>
+<p style="margin-top:10px"><b>Not yet:</b> Cashfree's own bank-account verification. Secure ID was not enabled on our test account today, so the account on file is trusted.</p></div></div></section>"""
+
+
+VIEWS = {"home": ("PayRight: the agent that says no", _home), "evidence": ("PayRight: why we said no", _evidence),
+         "how": ("PayRight: how it works", _how)}
+
+
+def page(data, view="home"):
+    rs = rows(data)
+    view = view if view in VIEWS else "home"
+    version = hashlib.sha1(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()[:12]
+    title, render = VIEWS[view]
+    return shell(title, render(data, rs), view, version, str(data.get("updated") or ""))
+
+
+def _event(body, rs):
+    """One plain line for the activity log, from what this update says."""
+    stage, ap = str(body.get("stage") or ""), body.get("approval") or {}
+    sent = sum(r["state"] in ("SENT", "PAID", "FAILED", "REVERSED") for r in rs)
+    paid = sum(r["state"] == "PAID" for r in rs)
+    if stage == "calling":
+        return "Calling the owner"
+    if paid:
+        return f"Cashfree confirmed {paid} of {sent} payment(s)"
+    if sent:
+        return f"Sent {sent} payment(s) to Cashfree through Relay"
+    if ap:
+        return "Owner's call: " + str(ap.get("reason") or "no answer")
+    return f"Read and checked {len(rs)} bill(s): {sum(r['lane'] == 'STOP' for r in rs)} refused"
 
 
 def handler(event, context=None):
@@ -401,18 +591,25 @@ def handler(event, context=None):
             return _reply(403, {"error": "wrong token"})
         if not isinstance(body, dict) or not isinstance(body.get("decisions"), list):
             return _reply(400, {"error": "expected {decisions: [...], ledger: [...]}"})
+        now = datetime.now(IST)
+        same_round = str(body.get("round") or "") == str(MEM.get("round") or "")
+        events = list(MEM.get("events") or []) if same_round else []
         MEM.clear()
-        MEM.update({"decisions": body["decisions"], "ledger": body.get("ledger") or [],
-                    "approval": body.get("approval"), "stage": body.get("stage"), "facts": body.get("facts"),
-                    "updated": datetime.now(IST).strftime("%I:%M:%S %p IST")})
+        MEM.update({"decisions": body["decisions"], "ledger": body.get("ledger") or [], "approval": body.get("approval"),
+                    "stage": body.get("stage"), "facts": body.get("facts"), "round": body.get("round"),
+                    "updated": now.strftime("%I:%M:%S %p IST")})
+        text = _event(body, rows(MEM))
+        if not events or events[-1].get("text") != text:
+            events.append({"t": now.strftime("%I:%M:%S %p"), "text": text})
+        MEM["events"] = events[-10:]
         try:
             json.dump(MEM, open(STORE, "w", encoding="utf-8"))
         except OSError:
             pass
         return _reply(200, {"ok": True, "invoices": len(MEM["decisions"])})
     if query.get("format") == "json":
-        return _reply(200, {"rows": rows(data), "updated": data.get("updated")})
-    return _reply(200, page(data), "text/html")
+        return _reply(200, {"rows": rows(data), "updated": data.get("updated"), "events": data.get("events") or []})
+    return _reply(200, page(data, str(query.get("page") or "home")), "text/html")
 
 
 def selftest():
