@@ -1,0 +1,147 @@
+[
+  {
+    "vendor_name": "SAMSUDDIN SIDDIQUI",
+    "vendor_name_latin": "SAMSUDDIN SIDDIQUI",
+    "gstin": null,
+    "invoice_no": "287",
+    "invoice_date": "28/10/2024",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Flush Tank Push Button",
+        "qty": 1,
+        "rate": 240,
+        "amount": 240
+      },
+      {
+        "description": "Zed. Exp. Brush",
+        "qty": 1,
+        "rate": 550,
+        "amount": 550
+      },
+      {
+        "description": "Bathroom comet English New fitting",
+        "qty": 2,
+        "rate": 230,
+        "amount": 460
+      },
+      {
+        "description": "Preshar Net. unirar Monos",
+        "qty": 2,
+        "rate": 450,
+        "amount": 900
+      },
+      {
+        "description": "Pipe Zed. Exp. and Preshar Pipe",
+        "qty": 2,
+        "rate": 195,
+        "amount": 390
+      },
+      {
+        "description": "Plomber charge",
+        "qty": null,
+        "rate": 2300,
+        "amount": 2300
+      },
+      {
+        "description": "Pata Bolt. New",
+        "qty": 1,
+        "rate": 836,
+        "amount": 836
+      },
+      {
+        "description": "Hydroltics oas",
+        "qty": 1,
+        "rate": 750,
+        "amount": 750
+      },
+      {
+        "description": "Lubur charge",
+        "qty": null,
+        "rate": 800,
+        "amount": 800
+      }
+    ],
+    "subtotal": null,
+    "tax": null,
+    "total": 7226,
+    "total_in_words_text": "Seven thousand Two hundred Twenty six.",
+    "total_in_words_value": 7226,
+    "bank_account": null,
+    "ifsc": null,
+    "account_holder": null,
+    "file": "real01_samsuddin.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0,
+      "tax": 0,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.5,
+      "bank_account": 0,
+      "ifsc": 0,
+      "account_holder": 0
+    },
+    "unsure_fields": [
+      "bank_account",
+      "ifsc"
+    ]
+  },
+  {
+    "vendor_name": "CLICKTECH RETAIL PRIVATE LIMITED",
+    "vendor_name_latin": "CLICKTECH RETAIL PRIVATE LIMITED",
+    "gstin": "27AAJCC9783E1Z7",
+    "invoice_no": "BOM5-540667",
+    "invoice_date": "08.05.2025",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "AMD Ryzen 5 9600X Desktop Processor with Integrated Radeon Graphics, 6 cores 12 Threads 32 MB Cache Base Clock 3.9GHz Up to 5.4GHz AM5 Socket Memory DDR5 Up to 5000 MT/s, 65W TDP - 100-100001403WOF BoB16N61M7 (BoB16N6TM7) HSN:85235100",
+        "qty": 1,
+        "rate": 18880.5,
+        "amount": 18880.5
+      },
+      {
+        "description": "Shipping Charges",
+        "qty": null,
+        "rate": 33.9,
+        "amount": 0.0
+      }
+    ],
+    "subtotal": 18880.5,
+    "tax": 3398.5,
+    "total": 22279.0,
+    "total_in_words_text": "Twenty-two Thousand Two Hundred Seventy-nine only",
+    "total_in_words_value": 22279.0,
+    "bank_account": null,
+    "ifsc": null,
+    "account_holder": null,
+    "file": "real02_amazon.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 1,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 0.1327,
+      "total_in_words_text": 0.1328,
+      "total_in_words_value": 0.1327,
+      "bank_account": 0,
+      "ifsc": 0,
+      "account_holder": 0
+    },
+    "unsure_fields": [
+      "total",
+      "bank_account",
+      "ifsc"
+    ]
+  }
+]

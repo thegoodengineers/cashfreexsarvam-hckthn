@@ -27,7 +27,7 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 | inv06_doe.png | dh/101 | English, different layout | duplicate in disguise (number and date format changed) | STOP | **STOP** | Invoice number DH-0101 from Doe Hardware Supplies has already been queued. |
 | inv07_jane.png | JDT-21 | English | mismatched name: John Doe's account on Jane D Traders' bill | STOP | **STOP** | The bank account on this invoice belongs to John Doe (Doe Hardware Supplies), but the bill is from Jane D Traders. Do not pay until both vendors confirm. |
 | inv08_wells.jpg | 512 | generated handwritten-style bill book, made to look like a phone photo | clean | PAY | **PAY** | |
-| inv09_hope.png | HE-312 | English | account one digit off (388108022659) | STOP | *not read yet* | Added at 2 PM; Sarvam credits ran out. On its true values the checker STOPs it. Chirag to run the reader. |
+| inv09_hope.png | HE-312 | English | account one digit off (388108022659) | STOP | **STOP** | The bank account on this invoice is not the account we have on file for Hope Electricals. Call the vendor on the number we already have before paying. |
 
 ## What the numbers say
 - The reader got every amount, account number and IFSC right, including Tamil and Hindi amounts in words and the handwritten photo.
@@ -39,7 +39,7 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 - inv08 is a generated handwritten-style page made to look like a phone photo, not a real pen-and-paper photo. A real photographed handwritten bill is still to be added (NOW.md task 9).
 - LATER on inv02 depends on the `--cash 100000` limit and today's date (MSME 45-day rule for Wells). With more cash it is PAY.
 
-## Beyond the demo set: 41 invoices in 23 languages, scored field by field
+## Beyond the demo set: 44 invoices in 23 languages, scored field by field
 
 Counting rule: a *trap* is a bill planted to be refused. Every other bill is *genuine*, however bad its photo,
 and counts as not paid if it is asked about or stopped.
@@ -47,13 +47,13 @@ and counts as not paid if it is asked about or stopped.
 `python payright/evidence.py all` re-scores the saved reads; full report with every image:
 `docs/evidence/PayRight_Evidence.pdf`.
 
-| | Demo (8) | Stress (8) | Fail-safe ladder (5) | 20 languages (20) | All 41 |
-|---|---|---|---|---|---|
-| Planted traps caught | 4/4 | 3/3 | none planted | none planted | **7/7** |
-| Genuine bills cleared to pay | 4/4 | 5/5 | 4/5 (1 stopped) | 19/20 (1 stopped) | **32/34** (2 stopped) |
-| Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
-| Critical fields read right | 78/80 | 77/80 | 45/50 | 193/200 | **393/410 (96%)** |
-| Money fields (total, account, IFSC) read right | | | | 60/60 | **121/123 (98%)** |
+| | Demo (9) | Stress (8) | Fail-safe ladder (5) | 20 languages (20) | Real bills (2) | All 44 |
+|---|---|---|---|---|---|---|
+| Planted traps caught | 5/5 | 3/3 | none planted | none planted | none planted | **8/8** |
+| Genuine bills cleared to pay | 4/4 | 5/5 | 4/5 (1 stopped) | 19/20 (1 stopped) | both ASK (unknown vendors) | **32/34** (2 stopped) |
+| Wrong payments approved | 0 | 0 | 0 | 0 | 0 | **0** |
+| Critical fields read right | 87/90 | 77/80 | 45/50 | 193/200 | 20/20 | **422/440 (96%)** |
+| Money fields (total, account, IFSC) read right | | | | 60/60 | 6/6 | **130/132 (98%)** |
 
 - `st03` (Devanagari digits): read right with Sarvam's confidence at 0.5; arithmetic and words confirm it, so it is paid.
 - The two money-field misses are both on `lad4`, the barely readable photo. Sarvam invented the account and IFSC there; the checker refused the bill.

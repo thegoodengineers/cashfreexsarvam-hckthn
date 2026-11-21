@@ -3,7 +3,7 @@
 Cashfree x Sarvam Buildathon, 21 Nov 2026, Problem Statement 3: *Pay the right bill, to the right person.*
 Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/PayRight_Problem_and_Solution.pdf`.
 
-**In one line:** across 41 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, read by the live Sarvam reader, **7 of 7 planted traps were caught and 0 wrong payments were approved.** 32 of 34 genuine bills were cleared to pay; the other 2 were stopped safely (a photo nobody could read, and an Assamese bill whose vendor could not be identified). 96% of 410 critical fields and 98% of 123 money fields were read exactly right.
+**In one line:** across 44 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, two of them real bills, read by the live Sarvam reader, **8 of 8 planted traps were caught and 0 wrong payments were approved.** 32 of 34 genuine bills were cleared to pay; the other 2 were stopped safely (a photo nobody could read, and an Assamese bill whose vendor could not be identified). 96% of 440 critical fields and 98% of 132 money fields were read exactly right.
 
 **Status at 2 PM, honestly:** reading and checking are working and measured. Bank verification is blocked, because Cashfree says the Verification Suite is not enabled on our test account. No payout has completed yet. The owner's approval call is built and tested in chat, with no recorded call yet. Below, anything not yet run is marked *(planned)* or *(not yet tested)*.
 
@@ -14,7 +14,7 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
 **Our rule: a model reads, code decides, a person approves, and money only goes to the account we already have on file.**
 
 **What we chose**
-- **Sarvam Document AI reads; it never decides.** It turns each invoice (printed in any of 23 languages; handwriting tested so far only on generated pages, with one real handwritten bill and one real printed bill waiting to be read) into fixed fields with a confidence for each. If a critical field (vendor, invoice number, total, account, IFSC) is low-confidence, it is marked *unsure*. The bill then goes to a person instead of being silently fixed.
+- **Sarvam Document AI reads; it never decides.** It turns each invoice (printed in any of 23 languages, handwritten, or a crumpled phone photo; tested on generated pages and on two real bills) into fixed fields with a confidence for each. If a critical field (vendor, invoice number, total, account, IFSC) is low-confidence, it is marked *unsure*. The bill then goes to a person instead of being silently fixed.
 - **Plain, tested code decides PAY / ASK / STOP** (`payright/check.py`). Every decision carries a reason a shop owner can read aloud. The checks are:
   - Does the arithmetic hold, including the amount in words against the figures?
   - Who is the vendor? Matched by GSTIN, or by name across scripts.
@@ -40,7 +40,7 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
 Both cases come from a real run on 21 Nov 2026: our demo invoices went through the live Sarvam reader (advanced mode) and our checker. Results: `payright/scoresheet.md`.
 
 ### Success: a handwritten-style bill, as a phone photo, read and cleared
-`payright/invoices/inv08_wells.jpg` is a red-ruled bill-book page from Wells Paints and Chemicals. **It is generated, not a real handwritten bill:** the entries are in a handwriting font with every letter slightly tilted, and the page is then made to look like a phone photo, at an angle and in uneven light. Two real bills photographed by the team are now in `payright/test_sets/real/`, with private details blacked out: one handwritten bill and one crumpled printed Amazon tax invoice. Both are waiting to be read, because our Sarvam credits ran out. Neither vendor is on our list, so the right result for both is ASK. The date is in short form (`18/11/26`).
+`payright/invoices/inv08_wells.jpg` is a red-ruled bill-book page from Wells Paints and Chemicals. **It is generated, not a real handwritten bill:** the entries are in a handwriting font with every letter slightly tilted, and the page is then made to look like a phone photo, at an angle and in uneven light. The date is in short form (`18/11/26`).
 - Sarvam read every field the checker needs correctly:
   - invoice no `512`
   - two line items
@@ -66,22 +66,24 @@ Two other traps were stopped with their own reasons:
 - **A duplicate in disguise:** `DH-0101` came back as `dh/101`, with a new date format and layout.
 - **A borrowed account:** Jane D Traders asked to be paid into John Doe's account.
 
-A fifth trap was added at 2 PM: `inv09_hope.png`, Hope Electricals with account `388108022659`, one digit off the account on file, with no warning note. On its true values the checker STOPs it. It has not been read by Sarvam yet, because the account ran out of credits.
+A fifth trap: `inv09_hope.png`, Hope Electricals with account `388108022659`, **one digit off** the account on file, with no warning note. Sarvam read the account exactly, digit for digit, and the checker **STOPs** it: *"The bank account on this invoice is not the account we have on file for Hope Electricals."*
 
-**Score on the demo set (read so far):** traps caught **4 / 4**, genuine bills cleared to pay **4 / 4**.
+**Real bills, not generated:** two bills photographed by the team (private details blacked out), in `payright/test_sets/real/`. One is a real handwritten bill at only 400 × 541 pixels. The other is a crumpled printed Amazon tax invoice photographed on cloth. Sarvam read **20 of 20** checked fields exactly right across the two. Neither vendor is on our list, so both are held as **ASK**, never paid.
+
+**Score on the demo set:** traps caught **5 / 5**, genuine bills cleared to pay **4 / 4**.
 
 ---
 
-## 3. Evidence: 41 invoices in 23 languages, scored field by field
+## 3. Evidence: 44 invoices in 23 languages, scored field by field
 
-We did not stop at the demo set. We built 42 invoices ourselves, so we know every value truly printed on each one. 41 have gone through the live Sarvam reader and our real checker; `inv09` waits for credits. A *trap* is a bill planted to be refused. Every other bill is *genuine*, however bad its photo, and counts as "not paid" if it is asked about or stopped. Full report, with every invoice image beside what was read: `docs/evidence/PayRight_Evidence.pdf`.
+We did not stop at the demo set. We built 42 invoices ourselves and added 2 real bills, so we know every value truly printed on each one. All 44 went through the live Sarvam reader and our real checker. A *trap* is a bill planted to be refused. Every other bill is *genuine*, however bad its photo, and counts as "not paid" if it is asked about or stopped. Full report, with every invoice image beside what was read: `docs/evidence/PayRight_Evidence.pdf`.
 
-| | Demo set (8) | Stress set (8) | Fail-safe ladder (5) | 20 languages (20) | **All 41** |
-|---|---|---|---|---|---|
-| Planted traps caught before money moved | 4 / 4 | 3 / 3 | none planted | none planted | **7 / 7** |
-| Genuine bills cleared to pay | 4 / 4 | 5 / 5 | 4 / 5 (1 stopped) | 19 / 20 (1 stopped) | **32 / 34** (2 stopped) |
-| Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
-| Critical fields read exactly right | 78 / 80 | 77 / 80 | 45 / 50 | 193 / 200 | **393 / 410 (96%)** |
+| | Demo set (9) | Stress set (8) | Fail-safe ladder (5) | 20 languages (20) | Real bills (2) | **All 44** |
+|---|---|---|---|---|---|---|
+| Planted traps caught before money moved | 5 / 5 | 3 / 3 | none planted | none planted | none planted | **8 / 8** |
+| Genuine bills cleared to pay | 4 / 4 | 5 / 5 | 4 / 5 (1 stopped) | 19 / 20 (1 stopped) | unknown vendors: both ASK | **32 / 34** (2 stopped) |
+| Wrong payments approved | 0 | 0 | 0 | 0 | 0 | **0** |
+| Critical fields read exactly right | 87 / 90 | 77 / 80 | 45 / 50 | 193 / 200 | 20 / 20 | **422 / 440 (96%)** |
 
 - **Stress set:** each invoice targets a check the demo set does not:
   - the amount in words disagrees with the figures
@@ -123,7 +125,7 @@ We did not stop at the demo set. We built 42 invoices ourselves, so we know ever
 | 2:40 to 4:00 | Ayush | phone on speaker, the call live | *(Not yet tested: no recorded call yet.)* **The owner approves by phone.** The agent says how many bills are clean and the total, which were stopped and why, in Hindi. Raghu must say the total aloud. The terminal prints `APPROVED`. |
 | 4:00 to 4:50 | Chirag | Relay Runs tab, then the Payouts test dashboard | *(Not yet tested: no payout has completed.)* **The payouts show as successful.** Open one transfer and show its transfer ID. "That ID comes from the invoice itself, not from this attempt." |
 | 4:50 to 5:20 | Chirag | run the same command again | **Nothing is paid twice.** Every row comes back as already sent. Nothing new appears in Relay. *(Proven in `send.py`'s self-test; not yet with real payouts.)* |
-| 5:20 to 6:00 | Bhumika | the `SCORE` line, then the top of `docs/evidence/PayRight_Evidence.pdf` | **Our numbers.** "Forty-one invoices in twenty-three languages, every Indian language in the Constitution, scored field by field against what is truly printed: seven of seven planted traps caught, zero wrong payments. On a photo nobody could read, the AI invented a bank account. Our code refused it." Then the judges' fresh batch numbers, if we got one. Close: "A model reads, code decides, a person approves, and money only goes to the account on file." |
+| 5:20 to 6:00 | Bhumika | the `SCORE` line, then the top of `docs/evidence/PayRight_Evidence.pdf` | **Our numbers.** "Forty-four invoices in twenty-three languages, every Indian language in the Constitution, plus two real bills, scored field by field against what is truly printed: eight of eight planted traps caught, zero wrong payments. One trap changed a single digit of the account. It was caught. On a photo nobody could read, the AI invented a bank account. Our code refused it." Then the judges' fresh batch numbers, if we got one. Close: "A model reads, code decides, a person approves, and money only goes to the account on file." |
 
 **Fallbacks**
 - **Reading is slow** (more than about 60 s): stop it and run `python payright/run.py payright/invoices.json --cash 100000`. That uses the invoices already read this afternoon. Say so honestly.

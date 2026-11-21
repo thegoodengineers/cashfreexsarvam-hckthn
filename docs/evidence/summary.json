@@ -3,21 +3,19 @@
     "set": "demo",
     "title": "Demo set",
     "blurb": "The 8 invoices we demo: 4 clean, 4 traps.",
-    "invoices": 8,
-    "unread": [
-      "inv09_hope.png"
-    ],
-    "decisions_ok": 8,
-    "traps": 4,
-    "traps_caught": 4,
+    "invoices": 9,
+    "unread": [],
+    "decisions_ok": 9,
+    "traps": 5,
+    "traps_caught": 5,
     "good": 4,
     "good_paid": 4,
     "good_asked": 0,
     "good_stopped": 0,
-    "fields": 80,
-    "fields_ok": 78,
-    "money_fields": 24,
-    "money_fields_ok": 24,
+    "fields": 90,
+    "fields_ok": 87,
+    "money_fields": 27,
+    "money_fields_ok": 27,
     "unsafe_payments": 0,
     "languages": [
       "en-IN",
@@ -110,6 +108,28 @@
       "sd-IN",
       "te-IN",
       "ur-IN"
+    ]
+  },
+  {
+    "set": "real",
+    "title": "Real bills",
+    "blurb": "Real bills photographed by the team, not generated: one handwritten, one printed Amazon tax invoice. Private details (PAN, phones, addresses, order and payment IDs, signatures) are blacked out. The truth was transcribed by hand.",
+    "invoices": 2,
+    "unread": [],
+    "decisions_ok": 2,
+    "traps": 0,
+    "traps_caught": 0,
+    "good": 0,
+    "good_paid": 0,
+    "good_asked": 0,
+    "good_stopped": 0,
+    "fields": 20,
+    "fields_ok": 20,
+    "money_fields": 6,
+    "money_fields_ok": 6,
+    "unsafe_payments": 0,
+    "languages": [
+      "en-IN"
     ]
   }
 ]

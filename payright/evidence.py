@@ -294,9 +294,9 @@ def report(results):
 <title>PayRight Evidence</title><style>{CSS}</style></head><body><div class=wrap>
 <h1>PayRight — evidence</h1>
 <p class=lede>Every invoice below went through the live Sarvam Document AI reader (advanced mode) and our real
-<span class=mono>check.py</span>. We generated each invoice ourselves, so we know what is truly printed on it and can
+<span class=mono>check.py</span>. We generated the invoices ourselves (apart from the real bills), so we know what is truly printed on it and can
 score the reader field by field. Nothing here is typed in by hand. The "handwritten" bills are generated pages in a
-handwriting font made to look like phone photos. Two real bills (one handwritten, one printed; team photos, private details blacked out) are in <span class=mono>payright/test_sets/real/</span>, waiting to be read.</p>
+handwriting font made to look like phone photos. The two real bills at the end (one handwritten, one printed; team photos, private details blacked out) are not generated: their truth was transcribed by hand.</p>
 <div class=kpis>{head}</div>{pending}
 {LEARNED if {'demo', 'stress', 'ladder', 'languages'} <= {s['set'] for s, _ in results} else ''}
 {''.join(sections)}

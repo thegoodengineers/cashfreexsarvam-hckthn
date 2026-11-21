@@ -74,8 +74,8 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
 ## Done at 2 PM (NOW.md tasks 10 and 11)
 - [x] Task 10: `payright/invoices/inv09_hope.png`, Hope Electricals with account 388108022659
       (one digit off), in the answer key as STOP. On its true values the checker STOPs it.
-      NOT READ YET: my Sarvam account is out of credits (402). Chirag, please run
-      `python payright/evidence.py demo --read` (or the reader) on your account.
+      READ (2:40 PM, key payright-bhumika in Chirag's workspace): account read exactly as
+      388108022659 and the checker STOPs it.
 - [x] Task 11: judges' pack corrected. Generated handwriting is called generated. Counts are honest:
       7/7 planted traps caught, 32/34 genuine bills cleared to pay (2 stopped; was 22/34 before the
       checker's 2:20 PM change), 0 wrong
@@ -84,10 +84,11 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
 - [x] Task 9: real handwritten bill pushed: `payright/test_sets/real/real01_samsuddin.jpg`
       (PAN, phones, customer details and signatures blacked out; the repo is public). Truth transcribed
       in `invoice_answer_key.json`: bill 287, 28/10/2024, 9 lines, total 7,226; unknown vendor, no bank
-      details, so the right result is ASK. NOT READ YET (no credits). Chirag: run
-      `python payright/evidence.py real --read en-IN`. The photo is only 400x541; a full-size original
-      would be a fairer test.
+      details, so the right result is ASK. READ: all 10 fields right, ASK. The photo is only
+      400x541; a full-size original would be a fairer test.
       Also added `payright/test_sets/real/real02_amazon.jpg`: a real printed Amazon tax invoice (my own;
       addresses, order number and payment IDs blacked out). Truth: BOM5-540667, 08.05.2025,
-      18,880.50 + 3,398.50 GST = 22,279.00. Seller not on our list: right result ASK. Not read yet.
+      18,880.50 + 3,398.50 GST = 22,279.00. Seller not on our list: right result ASK. READ: all 10
+      fields right, ASK.
+      All 44 invoices: traps 8/8, genuine bills paid 32/34 (2 stopped), wrong payments 0, fields 422/440.
 - [ ] Task 14: run the timer at the three rehearsals.
