@@ -19,6 +19,10 @@ language being spoken". It was not replaced. Added on 21 Nov:
 2. **Held bills:** a bill can have several problems ("…, and also …"): say
    each. Give the reasons first even if he says yes or leaves a vendor out early.
 3. **Kannada sample lines** (a bullet under Guardrails, where the editor put it).
+5. **No-data guard** (last guardrail): with empty pay_total / pay_list /
+   held_list it must not invent bills; it ends the call, CALL_LATER. Added after
+   a test call with empty Setup made up vendors and a 15,800 total.
+6. Temperature set to Compliant (was Balanced).
 4. **`decision` output:** a mismatched total (e.g. the old total after leaving
    vendors out) is REJECT, never APPROVE_ALL / APPROVE_SOME. Before this it
    returned APPROVE_SOME for a refused call; our code still paid nothing.
