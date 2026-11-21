@@ -43,6 +43,8 @@ def _load(name):
 
 status, callback = _load("status"), _load("callback")
 status.HAS_TRY = True  # show the "Try to fool it" link: this server has the checker beside it
+status.NEWS_BASE = "./news/"  # the problem page's screenshots: served from docs/news/ by this server
+NEWS = HERE.parent / "docs" / "news"
 
 # ------------------------------------------------------------ /try: try to fool it
 
@@ -199,6 +201,8 @@ function run(){
   preset=b.getAttribute('data-preset');
   [].forEach.call(buttons,function(o){o.setAttribute('aria-pressed',o===b?'true':'false')});run()})});
 document.getElementById('try-form').addEventListener('submit',function(e){e.preventDefault();run()});
+var want=location.hash.slice(1);   // the problem page links here as /try#digit: replay that trick straight away
+[].forEach.call(buttons,function(b){if(want&&b.getAttribute('data-preset')===want)b.click()});
 })();</script>"""
 
 
@@ -262,6 +266,20 @@ class Handler(BaseHTTPRequestHandler):
         route = url.path.rstrip("/")
         if route == "/try" and length > 4096:  # a tampering request is a few short fields
             self.send_error(413)
+            return
+        shot = re.fullmatch(r"/news/([a-z0-9_]+\.jpg)", route)   # a fixed name pattern: nothing outside docs/news
+        if shot and method == "GET":
+            f = NEWS / shot.group(1)
+            if not f.is_file():
+                self.send_error(404)
+                return
+            data = f.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Cache-Control", "public, max-age=3600")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
             return
         event = {"httpMethod": method, "queryStringParameters": dict(parse_qsl(url.query)),
                  "headers": dict(self.headers.items()),

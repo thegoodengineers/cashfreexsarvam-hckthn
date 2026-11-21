@@ -254,7 +254,24 @@ letter-spacing:.13em;font-weight:800;font-size:12px;padding:5px 9px;transform:ro
 th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line)}th{color:var(--mute);font-weight:500}
 td.mono{font:400 12.5px/1.5 'JetBrains Mono',ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
 td.ok{color:var(--ok);font-weight:600}td.wait{color:var(--mute)}td.no{color:var(--bad);font-weight:600}
-@media (max-width:820px){.grid2{grid-template-columns:1fr}.log li{grid-template-columns:1fr;gap:0}}
+.cases{display:grid;gap:26px;margin-top:40px}
+.case{background:var(--paper);border-radius:22px;overflow:hidden;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+box-shadow:0 1px 1px rgba(15,15,13,.04),0 18px 40px rgba(15,15,13,.07)}
+.case .shot{display:block;align-self:start;margin:22px 0 22px 22px;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+background:#fff;text-decoration:none;transform:rotate(-1.2deg);box-shadow:0 10px 26px rgba(15,15,13,.14);transition:transform .25s ease}
+.case:nth-child(even) .shot{transform:rotate(1.1deg)}.case .shot:hover{transform:none}
+.case .shot img{display:block;width:100%;height:auto;aspect-ratio:1200/760;object-fit:cover;object-position:top}
+.case .shot span{display:block;padding:8px 12px;font:600 12.5px/1.3 'JetBrains Mono',ui-monospace,Consolas,monospace;color:var(--mute);border-top:1px solid var(--line)}
+.case .shot.gone img{display:none}
+.case .in{padding:26px 28px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.case .loss{font:800 clamp(40px,5vw,60px)/1 'Inter Tight',Inter,sans-serif;letter-spacing:-.04em;color:var(--bad);font-variant-numeric:tabular-nums}
+.case h3{font:800 24px/1.1 'Inter Tight',Inter,sans-serif;letter-spacing:-.02em;margin:0 0 6px}
+.case dl{margin:0;display:grid;gap:2px}.case dt{font:600 13px/1.3 Inter,sans-serif;margin-top:10px}.case dd{margin:0;color:var(--mute);font-size:15px}
+.case .fix{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.case .fix p{margin:10px 0 0;font-size:15px}
+.case .fix .cta{margin-top:14px}.case .fix .pill{padding:7px 14px;font-size:13px}
+.trick .src{margin-top:10px;font-size:13px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}.log li{grid-template-columns:1fr;gap:0}
+.case{grid-template-columns:1fr}.case .shot{margin:16px 16px 0}.case .in{padding:20px}section.ink .steps{grid-template-columns:1fr!important}}
 @media (prefers-reduced-motion:no-preference){
 [data-r]{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);
 transition-delay:calc(var(--i,0)*70ms)}[data-r].in{opacity:1;transform:none}
@@ -399,7 +416,8 @@ def _card(r):
 
 
 HAS_TRY = False   # serve.py turns this on: the "Try to fool it" page needs the checker next to it
-NAV = (("home", "./", "Live board"), ("evidence", "./?page=evidence", "Evidence"), ("how", "./?page=how", "How it works"))
+NAV = (("home", "./", "Live board"), ("problem", "./?page=problem", "The problem"), ("evidence", "./?page=evidence", "Evidence"),
+       ("how", "./?page=how", "How it works"))
 HOW_STEPS = (
     ("Read", "Sarvam Vision reads each bill in its own language and script. It only reads. A field it is not sure of is flagged, never guessed."),
     ("Check", "Plain code compares the bill with itself, with the vendor file and with every bill already seen. A refusal carries the two values that were compared."),
@@ -491,7 +509,7 @@ def _home(data, rs):
 <h1 class="mega">PayRight</h1>
 <p class="lede"><span class="cap">T</span>he agent that says no.</p>
 <div class="hero-grid"><div><p class="intro">Reads every supplier bill. Pays the real ones. Refuses the fake ones, and says why.</p>
-<div class="cta"><a class="pill" href="#board">See the live board</a><a class="pill ghost" href="./?page=evidence">Why we said no</a>{more}</div></div>
+<div class="cta"><a class="pill" href="#board">See the live board</a><a class="pill ghost" href="./?page=problem">It already happened</a><a class="pill ghost" href="./?page=evidence">Why we said no</a>{more}</div></div>
 <div class="stat">{live}</div></div></div></header>
 {_band(rs)}
 <section id="run" class="ink"><div class="wrap"><p class="eyebrow">The run, live</p><h2 data-r>Five steps, one screen.</h2>
@@ -554,8 +572,148 @@ def _how(data, rs):
 <p style="margin-top:10px"><b>Not yet:</b> Cashfree's own bank-account verification. Secure ID was not enabled on our test account today, so the account on file is trusted.</p></div></div></section>"""
 
 
+# ------------------------------------------------------------ the problem page: real, reported cases
+# Screenshots live in docs/news/. serve.py serves them from ./news/; the Lambda copy reads them from the public repo.
+NEWS_BASE = "https://raw.githubusercontent.com/thegoodengineers/cashfreexsarvam-hckthn/main/docs/news/"
+# Every fact below was read on the linked page on 21 Nov 2026. Do not add a case that has not been read.
+# (image, loss, who, source and date, link, what happened, how they found out, what they did, what PayRight does, /try preset)
+CASES = (
+    ("manipal_1cr", "₹1.04 crore", "Manipal Technologies, Udupi", "Deccan Herald",
+     "https://www.deccanherald.com/india/karnataka/manipal-technologies-limited-lured-into-sending-rs-104-crore-to-the-account-of-cyber-fraudsters-3787920",
+     "The company was paying a quarterly lease to a business partner and had already paid four instalments into the partner's account. "
+     "Two days after the real reminder for the fifth, a second email arrived from a lookalike address: please pay into a new account. They did.",
+     "Two weeks later, when the real partner said it had not been paid.",
+     "Complaint at the Udupi Cyber Crime police station. Police again asked companies to verify every bank account change through official channels.",
+     "Four payments had gone to one account, so that is the account on file. The fifth bill names another one: STOP, with both accounts shown side by side.", "digit"),
+    ("hyderabad_1_5cr", "₹1.5 crore", "A semiconductor firm, Hyderabad", "The Siasat Daily, 19 Nov 2026",
+     "https://www.siasat.com/hyderabad-semiconductor-firm-loses-rs-1-5-crore-in-email-spoofing-3581019/",
+     "Fraudsters read the mail between the firm and its sensor supplier and registered a domain with one letter doubled. "
+     "They offered a 2 per cent discount and sent a revised invoice with a different bank account.",
+     "When the components never arrived and the firm called its real supplier.",
+     "Complaint to the Cyberabad cybercrime unit. A cheating case was registered on 16 Nov 2026.",
+     "A revised invoice with a different account is exactly the bill we stop. The discount does not matter: the account is not the one on file.", "digit"),
+    ("mumbai_89l", "₹89.34 lakh", "A furniture importer, Mumbai", "The Free Press Journal, 2 Apr 2026",
+     "https://www.freepressjournal.in/mumbai/mumbai-crime-furniture-firm-duped-of-89-lakh-in-email-spoofing-scam-cyber-police-probe-cross-border-fraud",
+     "The first half of the order was paid to the supplier's real account and acknowledged. Before the second half, an email from an address "
+     "with two letters swapped said an audit had blocked the old account, and asked for the balance in a new one.",
+     "The next day, when the real supplier began sending reminders that it had not been paid.",
+     "Reported to the 1930 cyber helpline. A case was registered against the unknown sender and the holder of the receiving account.",
+     "The first payment proves which account is real. The second bill asks for another: STOP, and the owner is told to call the supplier on the number he already has.", "digit"),
+    ("pune_2_3cr", "₹2.3 crore", "An engineering firm, Pune", "Punekar News, 10 Jul 2025",
+     "https://www.punekarnews.in/pune-firm-loses-rs-2-3-crore-in-international-email-fraud-involving-fake-bank-account/",
+     "An email that looked like the Italian machine-maker's carried bank details different from earlier correspondence. "
+     "Police said the accounts department paid without cross-checking with the supplier.",
+     "When the firm asked the supplier to confirm receipt and the supplier said no money had come.",
+     "Case with the Pune cyber police, who asked businesses to verify any change in payment instructions on a separate channel, such as a phone call to a known contact.",
+     "That cross-check is not left to a busy accounts desk. Code does it on every bill, and nothing is paid until the owner has heard the reason on the phone.", "other_account"),
+    ("drreddys_2cr", "₹2.16 crore", "Dr Reddy's and Group Pharmaceuticals, Bengaluru", "The Tribune (PTI), 10 Nov 2025",
+     "https://www.tribuneindia.com/news/business/dr-reddys-group-pharmaceuticals-duped-of-rs-2-crore-in-email-spoofing-fraud",
+     "Hackers allegedly got into the official email exchange between the two companies and diverted a payment to a fraudulent bank account.",
+     "Not given in the report.",
+     "Reported to the cyber crime police in Bengaluru.",
+     "Size does not protect anyone: this is a listed company. The rule is the same for a shop and for a listed firm. Money goes to the account on file.", "other_account"),
+    ("chennai_2cr", "₹2 crore", "A trading company, Chennai", "Business Today, 8 Oct 2024",
+     "https://www.businesstoday.in/tech-today/news/story/rs-2-crore-gone-in-a-click-chennai-businessman-falls-prey-to-email-scam-449190-2024-10-08",
+     "A fake email continued a real thread with the supplier and attached a pro-forma invoice with bank details. The general manager paid it.",
+     "The next day, on following up with the real supplier.",
+     "Complaint on the national cyber crime portal the same week. The police, the banks and I4C traced the transfer and the full amount came back. This is the lucky one.",
+     "The bill would have stopped before the transfer, so nobody would have needed to be lucky.", "digit"),
+    ("fb_google_120m", "$120 million", "Facebook and Google", "US Department of Justice, 19 Dec 2019",
+     "https://www.justice.gov/usao-sdny/pr/lithuanian-man-sentenced-5-years-prison-theft-over-120-million-fraudulent-business",
+     "From 2013 to 2015 one man billed two of the world's largest technology companies in the name of a real hardware maker they bought from, "
+     "and had them wire the money to bank accounts he controlled.",
+     "Not given in the court statement.",
+     "He was arrested, pleaded guilty to wire fraud and was sentenced to five years in prison.",
+     "A real supplier's name on the bill is not enough for us. The account has to be the one on file for that supplier.", "other_account"),
+    ("toyota_37m", "$37 million", "Toyota Boshoku, a European subsidiary", "BleepingComputer, Sep 2019",
+     "https://www.bleepingcomputer.com/news/security/over-37-million-lost-by-toyota-boshoku-subsidiary-in-bec-scam/",
+     "The company said it had followed fraudulent payment directions from a third party and paid about 4 billion yen on 14 Aug 2019.",
+     "Shortly after the money had left, the company said.",
+     "It formed a team with lawyers to recover the money and reported it to the authorities.",
+     "New payment directions never change where our money goes. Only the vendor file does, and a bill that disagrees with it is stopped.", "digit"),
+)
+PROBLEM_FACTS = (
+    ("$2.8 bn", "lost to business email compromise in one year, as reported to the FBI in 2024",
+     "FBI IC3 2024 report, as summarised by Nacha", "https://www.nacha.org/news/fbis-ic3-finds-almost-85-billion-lost-business-email-compromise-last-three-years"),
+    ("1.29%", "of the invoices small and mid-sized firms receive are duplicates: about six a month for a typical firm",
+     "SAP Concur, study of 2.8 million invoices", "https://www.concur.com/blog/article/how-much-money-your-business-throwing-away-duplicate-invoice-payments"),
+    ("₹8.1 lakh cr", "estimated to be stuck in delayed payments to India's small suppliers",
+     "White paper reported by Business Today, Feb 2026",
+     "https://www.businesstoday.in/industry/story/rs-81-lakh-crore-stuck-in-dues-msme-growth-hinges-on-dispute-reform-warns-white-paper-518307-2026-02-27"))
+RULES = (
+    ("The account on file, or nothing", "Bank details for a payment come from the vendor file, never from the bill or the email in front of us. "
+     "A bill that names another account is stopped, even when it is one digit off."),
+    ("The phone call is built in", "Police advise a call to a known contact. Our refusal says exactly that, and a Sarvam voice agent reads it to the owner in his own language."),
+    ("A yes is not enough", "The owner has to say the total himself, and it has to match. A hurried yes on a bad line pays nothing."),
+    ("One bill, one payment", "The transfer ID is made from the invoice itself, so the same bill sent again, renumbered or reformatted, cannot be paid twice."))
+NOT_STOPPED = (
+    ("Bills for goods that never came", "A Mumbai firm paid ₹1.73 crore and ISKCON Kolkata ₹2 crore against bills for goods that were not delivered, by police accounts. "
+     "We check the bill against itself and the vendor file, not against the godown. A new vendor is held as ASK; a known vendor billing for missing goods is not caught.",
+     (("Lokmat Times, 11 Jul 2025", "https://www.lokmattimes.com/mumbai/mumbai-private-firm-in-borivali-duped-of-nearly-rs2-crore-using-fake-bills-two-arrested-a522"),
+      ("Telangana Today, 10 Nov 2025", "https://telanganatoday.com/kolkata-man-held-for-cheating-iskcon-of-rs-2-crore-through-fake-bills"))),
+    ("A vendor file that is itself wrong", "If a fraudster's account is typed into the vendor file, we would pay it. Cashfree's bank-account verification is the lock for that, "
+     "and it was not enabled on our test account today.", ()),
+    ("None of these companies used PayRight", "What we say we would have done is our rule applied to the facts as reported. Do not take our word for it: replay the trick on the real checker.", ()))
+OTHERS = (
+    ("Bank-account verification services", "Trustpair, Eftsure", "Verify who owns an account, using bank data or call-back teams.",
+     "Built for finance teams with an ERP. We do the same comparison for a shop owner with a phone, and call him in his language."),
+    ("Accounts-payable suites in India", "RazorpayX, Zoho, Open", "Read invoices, match them to purchase orders, approve with a click or an OTP.",
+     "Our approval cannot be a tap. The owner hears every refusal and says the total aloud, and a model never decides."))
+
+
+def _problem(data, rs):
+    e = html.escape
+    facts = "".join(f'<div class="stat" data-r style="--i:{i}"><span class="big">{e(a)}</span><span class="k">{e(b)}</span>'
+                    f'<a class="link" href="{e(u)}" target="_blank" rel="noopener">{e(s)} ↗</a></div>'
+                    for i, (a, b, s, u) in enumerate(PROBLEM_FACTS))
+    cases = ""
+    for i, (img, loss, who, src, url, what, found, after, ours, preset) in enumerate(CASES):
+        replay = (f'<a class="pill" href="./try#{preset}">Replay this trick on our checker</a>' if HAS_TRY else "")
+        cases += (f'<article class="case" data-r><a class="shot" href="{e(url)}" target="_blank" rel="noopener">'
+                  f'<img src="{e(NEWS_BASE)}{img}.jpg" alt="Screenshot of the report: {e(who)}, {e(src)}" '
+                  f'onerror="this.parentNode.classList.add(\'gone\')"><span>{e(src)} ↗</span></a>'
+                  f'<div class="in"><span class="n">{i + 1:02d}</span><span class="loss">{e(loss)}</span><h3>{e(who)}</h3>'
+                  f'<dl><dt>What happened</dt><dd>{e(what)}</dd><dt>How they found out</dt><dd>{e(found)}</dd>'
+                  f'<dt>What they did</dt><dd>{e(after)}</dd></dl>'
+                  f'<div class="fix"><span class="chip STOP">Stopped</span><p><b>With PayRight:</b> {e(ours)}</p>'
+                  f'<div class="cta">{replay}<a class="pill ghost" href="{e(url)}" target="_blank" rel="noopener">Read the report</a></div></div>'
+                  f'</div></article>')
+    rules = "".join(f'<div class="step" data-r style="--i:{i}"><span class="n">0{i + 1}</span><b>{e(t)}</b><p>{e(p)}</p></div>'
+                    for i, (t, p) in enumerate(RULES))
+    nots = ""
+    for i, (t, p, links) in enumerate(NOT_STOPPED):
+        ls = " · ".join(f'<a href="{e(u)}" target="_blank" rel="noopener">{e(s)} ↗</a>' for s, u in links)
+        nots += f'<div class="trick" data-r style="--i:{i}"><b>{e(t)}</b><p>{e(p)}</p>{"<p class=src>" + ls + "</p>" if ls else ""}</div>'
+    others = "".join(f'<tr><td><b>{e(a)}</b><br><span class="sub">{e(b)}</span></td><td>{e(c)}</td><td>{e(d)}</td></tr>' for a, b, c, d in OTHERS)
+    more = '<a class="pill ghost" href="./try">Try to fool it</a>' if HAS_TRY else ""
+    return f"""<header>{ART}<div class="wrap"><p class="eyebrow">The problem · {len(CASES)} reported cases, every one linked to its source</p>
+<h1 class="mega mid">It already happened.</h1>
+<p class="lede"><span class="cap">O</span>ne email, one new bank account, crores gone.</p>
+<p class="intro">These are not our examples. They are police complaints and court records. In each one, a real supplier's bill
+was paid into somebody else's account.</p></div></header>
+<section class="alt"><div class="wrap"><p class="eyebrow">How big</p><h2 data-r>Not rare. Routine.</h2>
+<p class="serif">Three numbers from other people's reports, not ours.</p><div class="tools">{facts}</div></div></section>
+<section><div class="wrap"><p class="eyebrow">The cases</p><h2 data-r>Real companies, real money.</h2>
+<p class="serif">What happened, how they found out, what they did, and what our checker does with the same bill.</p>
+<div class="cases">{cases}</div></div></section>
+<section class="ink"><div class="wrap"><p class="eyebrow">The pattern</p><h2 data-r>Nobody noticed until the supplier asked.</h2>
+<p class="serif">In five of the six Indian cases the fraud came out only when the real supplier was asked, or asked, about the money.
+By then it had left. So the check has to happen before the payment, every time, without anyone remembering to do it.</p>
+<div class="steps" style="grid-template-columns:repeat(4,minmax(0,1fr))">{rules}</div></div></section>
+<section><div class="wrap"><p class="eyebrow">What already exists</p><h2 data-r>Others check. We also ask.</h2>
+<p class="serif">As their own pages describe them, read on 21 Nov 2026.</p>
+<div class="tablewrap"><table><tr><th>Kind of tool</th><th>What it does</th><th>What we do differently</th></tr>{others}</table></div>
+</div></section>
+<section class="alt"><div class="wrap"><p class="eyebrow">Honest limits</p><h2 data-r>What we would not have stopped.</h2>
+<p class="serif">A tool that claims to stop everything is the one to distrust.</p><div class="tools">{nots}</div>
+<div class="cta" style="margin-top:36px"><a class="pill" href="./?page=evidence">See our own evidence</a>
+<a class="pill ghost" href="./?page=how">How it works</a>{more}</div>
+<p class="sub" style="margin-top:28px;max-width:760px">Screenshots are of the publishers' own pages, taken on 21 Nov 2026, and each one links to
+the original. Amounts and facts are as reported there. Several cases are still under police investigation.</p></div></section>"""
+
+
 VIEWS = {"home": ("PayRight: the agent that says no", _home), "evidence": ("PayRight: why we said no", _evidence),
-         "how": ("PayRight: how it works", _how)}
+         "how": ("PayRight: how it works", _how), "problem": ("PayRight: it already happened", _problem)}
 
 
 def page(data, view="home"):
@@ -679,6 +837,10 @@ def selftest():
     handler({"decisions": D, "ledger": [], "stage": "calling", "token": "s3"})
     p = handler({"httpMethod": "GET"})["body"]
     assert "Calling the owner now" in p and "8 / 8" in p and "says no" in p
+    # the problem page: every case has a screenshot, a source link and what the checker does with it
+    q = handler({"httpMethod": "GET", "queryStringParameters": {"page": "problem"}})["body"]
+    assert "It already happened" in q and q.count('<article class="case"') == len(CASES) and "manipal_1cr.jpg" in q
+    assert all(c[4].startswith("https://") and c[9] in ("digit", "other_account") for c in CASES)
     del os.environ["PAYRIGHT_TOKEN"]
     print("selftest ok")
 
