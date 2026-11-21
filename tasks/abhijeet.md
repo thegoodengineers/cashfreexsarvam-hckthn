@@ -179,8 +179,18 @@ agent now pays through an HTTP step to Payouts v2; `send.py`'s event is unchange
       `run.py ... --latest`, call from the Test panel. Fix whatever breaks; this is the demo path.
 - [ ] **PAID on the board (task 3).** `run.py --refresh` once Chirag adds the Payouts keys and
       whitelists the laptop IP. If Cashfree says "IP not whitelisted", print the IP it names.
-- [ ] **`docs/RUNBOOK.md` (task 4).** One page: commands in order, what is on each screen,
+- [x] **`docs/RUNBOOK.md` (task 4).** One page: commands in order, what is on each screen,
       fallback per step (call fails -> `--fake` file, said aloud as simulated; board down -> terminal table).
-- [ ] `new_round.py` and `check.demo_round()` are new (Claude): a rehearsal tag in the transfer ID.
+- [x] `new_round.py` and `check.demo_round()` are new (Claude): a rehearsal tag in the transfer ID.
       Make `run.py` print the round tag so it is visible on screen, and say so in the runbook.
 - [ ] Record one clean run of the screen as the backup video.
+
+## Status 2:40 PM (Abhijeet)
+- `docs/RUNBOOK.md` is written: 7 steps, what each screen shows, the fallback for each. Note for the judges pack:
+  the demo command needs `--latest` (without it `run.py` tries to place the call from code, which has no number).
+- `run.py` prints `ROUND <tag>` above the table and sends the board the live stage (checked, calling, answered,
+  sent, confirmed). `run.py --refresh` names the IP when Cashfree says it is not whitelisted.
+- Still open, need people: the end-to-end run with a real call (task 2), PAID on the board (task 3, waiting for the
+  Payouts keys and IP on Chirag's laptop), the screen-recorded backup run.
+- A new look for the board is being built beside the live one; the live board is not touched until it passes its tests.
+
