@@ -28,16 +28,34 @@ PRICE_RISE = 0.10  # price memory: a rate more than this far above the last paid
 PRICE_BOOK = Path(__file__).parent / "pricebook.json"  # written by pricebook.py; absent -> price memory is silent
 
 
+UNIT_RE = "|".join(sorted(map(re.escape, UNITS), key=len, reverse=True))
+NUM_UNIT = re.compile(r"(\d+(?:\.\d+)?)\s*(" + UNIT_RE + r")?")
+
+
 def amount(x):
-    """'1,20,000' / '१,२०,०००' / '1.2 lakh' / 120000 -> 120000.0, None if unreadable."""
+    """'1,20,000' / '१,२०,०००' / '1.2 lakh' / '1 lakh 20 thousand' / 120000 -> 120000.0, None if unreadable.
+    A unit counts only right after its number, so '11800 (eleven thousand eight hundred)' stays 11800.
+    A minus sign right before the number ('-5000', 'Rs -5,000') makes it negative; ':-' is punctuation."""
     if isinstance(x, (int, float)):
         return float(x)
     s = str(x or "").translate(DIGITS).lower().replace(",", "")
-    m = re.search(r"\d+(?:\.\d+)?", s)
-    if not m:
+    parts = list(NUM_UNIT.finditer(s))
+    if not parts:
         return None
-    n = float(m.group())
-    return next((n * mult for word, mult in UNITS.items() if word in s), n)
+    first = parts[0]
+    n = float(first.group(1)) * (UNITS[first.group(2)] if first.group(2) else 1)
+    if first.group(2):  # '1 lakh 20 thousand 500': add the numbers that follow straight on
+        end = first.end()
+        for p in parts[1:]:
+            if s[end:p.start()].strip(" and"):
+                break
+            n += float(p.group(1)) * (UNITS[p.group(2)] if p.group(2) else 1)
+            end = p.end()
+            if not p.group(2):
+                break
+    if re.search(r"(?:^|[\s(])[-−]$", s[:first.start()]):
+        n = -n
+    return n
 
 
 def parse_date(s):
@@ -141,7 +159,9 @@ def check(inv, vendors, seen, today, prices=None):
     lines = inv.get("lines") or []
     if total is None:
         ask.append("I could not read the total amount.")
-    else:
+    elif total <= 0:  # a credit note or a misread minus: never a payment, a person looks at it
+        ask.append(f"The total is {total:.0f}, zero or below. It may be a credit note, not a bill to pay.")
+    if total is not None:
         for l in lines:
             q, r, a = amount(l.get("qty")), amount(l.get("rate")), amount(l.get("amount"))
             if None not in (q, r, a) and abs(q * r - a) > TOL:
@@ -320,6 +340,15 @@ def selftest():
     borrowed = plan([{**base, "vendor_name": "Jane D Traders", "invoice_no": "JDT-1"}], V, [], 1e9)[0]
     assert borrowed["status"] == "STOP" and "belongs to" in borrowed["reasons"][0]  # known account, other name
     assert amount("1.2 lakh") == 120000 and amount("௧௨௦") == 120 and parse_date("10.11.2026") == date(2026, 11, 10)
+    # a unit counts only right after its number: the words in brackets must not multiply the figure
+    assert amount("11800 (Eleven thousand eight hundred only)") == 11800 and amount("1 lakh 20 thousand 500") == 120500
+    assert amount("-5000") == -5000 and amount("Rs -5,000") == -5000 and amount("Total :-5000") == 5000
+    worded = check({**base, "invoice_no": "INV-16", "subtotal": None, "tax": None, "lines": [],
+                    "total": "11800 (Eleven thousand eight hundred only)"}, V, [], date(2026, 11, 21))
+    assert worded["amount"] == 11800 and worded["status"] == "PAY", worded   # not 11,800,000
+    credit = check({**base, "invoice_no": "CN-1", "subtotal": None, "tax": None, "lines": [],
+                    "total": "-5000", "total_in_words_value": None}, V, [], date(2026, 11, 21))
+    assert credit["status"] == "ASK" and "zero or below" in credit["reasons"][0], credit  # a credit note is never paid
     jane = check({**base, "invoice_no": "INV-9", "account_holder": "Jane Doe"}, V, [], date(2026, 11, 21))
     assert jane["status"] == "STOP" and "account holder" in jane["reasons"][0]  # right account, wrong holder name
     own = check({**base, "vendor_name": "John Doe", "invoice_no": "INV-10", "account_holder": "John Doe"},
