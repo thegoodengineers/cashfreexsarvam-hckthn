@@ -5,8 +5,14 @@
 
   --dry-run      read and check, show the call and the events, place no call, send nothing
   --no-pay       read and check only (table and score line)
-  --fake '{"decision":"APPROVE_ALL","spoken_total":"70800"}'
-                 use this as the owner's answer instead of placing the call
+  --latest       place no call: wait for a call started by hand from Sarvam's Test panel
+                 (after this run began) and read the owner's answer from it
+  --fake fake_answer.json
+                 stage fallback: use the answer in that file instead of a call. Run it on
+                 invoices.json so the invoices are not read again:
+                   python run.py invoices.json --cash 100000 --fake fake_answer.json
+  python run.py --refresh
+                 ask Cashfree what happened to each transfer and update the board
 
 Score line: with invoice_answer_key.json (or expected.json = {"file.png": "PAY" | "STOP"} in the
 folder) the run prints traps caught and good invoices wrongly blocked. Files that are not in the
@@ -15,7 +21,7 @@ key, such as the judges' fresh batch, only get the counts.
 import json
 import os
 import sys
-import uuid
+import uuid  # noqa: F401  (used by the call path)
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -60,6 +66,25 @@ def publish(decisions, ledger_path, approval=None):
         print(f"(status page not updated: {type(e).__name__})")
 
 
+def settle(decisions, ledger_path, approval=None, tries=6, wait_s=5):
+    """Ask Cashfree about each transfer a few times and update the board. Paid means Cashfree said so."""
+    cid, sec = send.payout_keys()
+    if not (cid and sec):
+        return print("(no Cashfree Payouts keys in .env: the board shows 'sent, waiting for Cashfree'. "
+                     "Check the Payouts test dashboard.)")
+    import time
+    for i in range(tries):
+        waiting = send.confirm(ledger_path, cid, sec, out=print if i == tries - 1 else (lambda *a: None))
+        publish(decisions, ledger_path, approval)
+        if not waiting:
+            break
+        time.sleep(wait_s)
+    rows = send.load(ledger_path, [])
+    print("Cashfree: " + ", ".join(f"{sum(r.get('payout') == s for r in rows)} {s.lower().replace('_', ' ')}"
+                                    for s in ("PAID", "PENDING", "FAILED", "REVERSED", "NOT_FOUND") if any(r.get("payout") == s for r in rows))
+          or "Cashfree: nothing to report")
+
+
 def table(decisions):
     for d in decisions:
         amt = "?" if d["amount"] is None else f"{d['amount']:.0f}"
@@ -88,9 +113,13 @@ def main(argv):
     for flag in ("--cash", "--fake"):  # their values are not positional arguments
         if flag in argv:
             args.remove(argv[argv.index(flag) + 1])
+    send.load_env()
+    if "--refresh" in argv:
+        decisions = send.load(HERE / "decisions.json", [])
+        approvals = send.load(HERE / "approvals.json", [])
+        return settle(decisions, HERE / "ledger.json", approvals[-1] if approvals else None, tries=1)
     if not args:
         sys.exit(__doc__)
-    send.load_env()
     src = Path(args[0])
     language = args[1] if len(args) > 1 else "en-IN"
     cash = float(argv[argv.index("--cash") + 1]) if "--cash" in argv else float("inf")
@@ -130,17 +159,28 @@ def main(argv):
         send.send(decisions, vendors, ledger_path, "", dry_run=True)
         return print("--dry-run: no call placed, nothing sent.")
     if "--fake" in argv:
-        fake = json.loads(argv[argv.index("--fake") + 1])
-        attempt, result = "fake-" + uuid.uuid4().hex[:8], {"status": fake.pop("status", "connected"), "variables": fake}
+        attempt, result = approve.fake_answer(argv[argv.index("--fake") + 1])
+        print("(--fake: using the answer from the file instead of a call)")
+    elif "--latest" in argv:
+        short = [k for k in approve.LATEST_NEEDS if not c[k]]
+        if short:
+            sys.exit("Missing in payright/.env: " + ", ".join(short))
+        since = datetime.now(approve.IST)
+        print("Paste these into the agent's variables in Sarvam's Test panel, then start the call:")
+        print(json.dumps(variables, ensure_ascii=False, indent=2))
+        print(f"Waiting for a call that begins after {since:%H:%M:%S}...")
+        attempt, result = approve.latest_call(c, since, approve.used_attempts(HERE / "approvals.json"))
+        attempt = attempt or "none"
     else:
         if missing:
             sys.exit("Missing in payright/.env: " + ", ".join(missing))
         started, nonce = datetime.now(approve.IST), uuid.uuid4().hex
         attempt = approve.place_call(c, variables, bid, nonce)
-        print(f"calling the owner (attempt {attempt}). Waiting for the call to end...")
+        print(f"calling the owner (attempt {attempt})")
         result = approve.read_result(c, attempt, started, nonce)
     approved, reason = approve.decide(result, decisions)
     a = approve.record(HERE / "approvals.json", bid, attempt, approved, reason, result)
+    a["language"] = "Hindi"
     print(("APPROVED  " if approved else "NOT APPROVED  ") + reason)
     publish(decisions, ledger_path, a)
     if not approved:
@@ -158,6 +198,7 @@ def main(argv):
     print()
     sent = send.send(to_send, vendors, ledger_path, url, approval=a["approval_id"])
     publish(decisions, ledger_path, a)
+    settle(decisions, ledger_path, a)
     print(f"sent {len(sent)} payment(s) to Relay, total {sum(e['data']['amount'] for e in sent):.0f}. "
           f"Run the same command again: nothing will be paid twice.")
 

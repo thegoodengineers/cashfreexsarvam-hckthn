@@ -2,8 +2,11 @@
 
   python approve.py --dry-run          print the call variables and request, place no call
   python approve.py                    place the call, wait for the result, write approval.json
-  python approve.py --fake '{"decision":"APPROVE_ALL","spoken_total":"70800"}'
-                                       skip the call and use this as the agent's result (testing)
+  python approve.py --latest           place no call: wait for a call started by hand from Sarvam's
+                                       Test panel (after decisions.json was written) and read its result
+  python approve.py --fake fake_answer.json
+                                       skip the call and use the answer in that file (stage fallback).
+                                       Use a file: PowerShell strips the quotes from inline JSON.
   python approve.py --selftest
 
 Approval cannot be spoofed, replayed or given by accident:
@@ -158,38 +161,150 @@ def call_request(c, variables, bid, nonce=""):
 
 def place_call(c, variables, bid, nonce="", post=requests.post):
     url, body = call_request(c, variables, bid, nonce)
-    r = post(url, json=body, headers={"X-API-Key": c["SARVAM_AGENT_API_KEY"]}, timeout=30)
+    try:
+        r = post(url, json=body, headers={"X-API-Key": c["SARVAM_AGENT_API_KEY"]}, timeout=30)
+    except requests.RequestException as e:
+        sys.exit(f"Could not reach Sarvam to place the call: {type(e).__name__}. Nothing is paid.")
     if r.status_code >= 300:
-        sys.exit(f"Sarvam refused the call ({r.status_code}): {r.text[:300]}")
-    return r.json()["attempt_id"]
+        sys.exit(f"Sarvam refused the call ({r.status_code}): {r.text[:300]}. Nothing is paid.")
+    try:
+        return r.json()["attempt_id"]
+    except (ValueError, KeyError, TypeError):
+        sys.exit(f"Sarvam answered without an attempt id: {r.text[:200]}. Nothing is paid.")
 
 
-def read_result(c, attempt_id, started, nonce="", get=requests.get, wait_s=420, every_s=8, sleep=time.sleep):
-    """Wait for the call to finish. Reads the Lambda callback if there is one, else polls Analytics.
-    The callback is an unsigned webhook, so its result counts only if it carries our nonce."""
-    h = {"X-API-Key": c["SARVAM_AGENT_API_KEY"]}
-    deadline = time.time() + wait_s
-    while time.time() < deadline:
-        if os.environ.get("SARVAM_RESULT_URL"):
-            r = get(os.environ["SARVAM_RESULT_URL"], params={"attempt_id": attempt_id}, timeout=20)
-            p = r.json() if r.status_code == 200 else {}
-            echoed = ((p.get("webhook_config") or {}).get("metadata") or {}).get("nonce")
-            if p.get("attempt_id") == attempt_id and nonce and echoed == nonce:
-                return {"status": p.get("status"), "variables": p.get("final_agent_variables") or {},
-                        "transcript": p.get("interaction_transcript"), "source": "callback"}
+def fake_answer(arg):
+    """The owner's answer for the stage fallback. -> (attempt id, result).
+    Takes a file path (the reliable way), real JSON, or the form PowerShell leaves behind when it
+    strips the quotes: {decision:APPROVE_ALL,spoken_total:70800}."""
+    text = arg
+    for p in (Path(arg), HERE / arg):
+        try:
+            if p.is_file():
+                text = p.read_text(encoding="utf-8-sig")
+                break
+        except (OSError, ValueError):
+            pass
+    try:
+        v = json.loads(text)
+    except ValueError:
+        v = {}
+        for part in re.split(r",\s*(?=[A-Za-z_]+\s*:)", text.strip().strip("{}")):
+            k, colon, val = part.partition(":")
+            if colon:
+                v[k.strip().strip("\"'")] = val.strip().strip("\"'")
+    if not isinstance(v, dict) or "decision" not in v:
+        sys.exit(f"Could not read the fake answer from '{arg}'. Put it in a file, e.g. fake_answer.json: "
+                 '{"decision": "APPROVE_ALL", "spoken_total": "70800"}')
+    v = {k: "" if x is None else str(x) for k, x in v.items()}
+    return "fake-" + uuid.uuid4().hex[:8], {"status": v.pop("status", "connected"), "variables": v, "source": "fake"}
+
+
+def _attempts(c, since, get):
+    return get(ATTEMPTS.format(org=c["SARVAM_ORG_ID"], ws=c["SARVAM_WORKSPACE_ID"], app=c["SARVAM_APP_ID"]),
+               headers={"X-API-Key": c["SARVAM_AGENT_API_KEY"]}, timeout=20, params={
+                   "start_datetime": (since - timedelta(minutes=5)).isoformat(timespec="seconds"),
+                   "end_datetime": (datetime.now(IST) + timedelta(minutes=5)).isoformat(timespec="seconds"),
+                   "limit": 100, "sort_by": "attempted_at", "sort_order": "desc"})
+
+
+def _ended(a):
+    return bool(a.get("end_datetime")) or str(a.get("connectivity_status") or "").lower() not in ("", "connected")
+
+
+def _when(s):
+    """Sarvam's timestamps -> aware datetime. No offset means UTC."""
+    try:
+        d = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+
+
+def latest_call(c, since, used=(), get=requests.get, wait_s=420, every_s=6, sleep=time.sleep, out=print):
+    """For a call started by hand from Sarvam's Test panel (calls from code have no caller number yet).
+    Waits for the newest call of our agent that began after `since` and reads its result once it ends.
+    `since` ties the call to this batch; `used` are attempt ids already spent on an approval, which are
+    never taken again. -> (attempt id or None, result). Whether Test-panel calls show up in Analytics
+    is not yet confirmed by a real run."""
+    t0, bad = time.time(), 0
+    while time.time() - t0 < wait_s:
+        problem, code = None, None
+        try:
+            r = _attempts(c, since, get)
+            code = r.status_code
+            if code == 200:
+                mine = [a for a in r.json().get("items") or [] if a.get("attempt_id") not in used
+                        and (_when(a.get("attempted_at") or a.get("start_datetime")) or since) >= since - timedelta(seconds=90)
+                        and (a.get("attempted_at") or a.get("start_datetime"))]
+                mine.sort(key=lambda a: _when(a.get("attempted_at") or a.get("start_datetime")), reverse=True)
+                if mine and _ended(mine[0]):
+                    a = mine[0]
+                    return a["attempt_id"], {"status": a.get("connectivity_status"), "source": "test panel call",
+                                             "variables": a.get("agent_variables") or a.get("final_agent_variables") or {}}
+                out(f"  {'call in progress' if mine else 'no call started yet'}... {int(time.time() - t0)}s")
+            else:
+                problem = f"Sarvam Analytics answered {code}: {(r.text or '')[:120]}"
+        except (requests.RequestException, ValueError) as e:
+            problem = f"Sarvam Analytics unreachable ({type(e).__name__})"
+        if problem:
+            bad += 1
+            out(f"  {problem}  [{bad}/3]")
+            if bad >= 3 or code in (401, 403):
+                return None, {"status": f"could not read the call result: {problem}", "variables": {}}
         else:
-            r = get(ATTEMPTS.format(org=c["SARVAM_ORG_ID"], ws=c["SARVAM_WORKSPACE_ID"], app=c["SARVAM_APP_ID"]),
-                    headers=h, timeout=20, params={
-                        "start_datetime": (started - timedelta(minutes=5)).isoformat(timespec="seconds"),
-                        "end_datetime": (datetime.now(IST) + timedelta(minutes=5)).isoformat(timespec="seconds"),
-                        "limit": 100, "sort_by": "attempted_at", "sort_order": "desc"})
-            for a in (r.json().get("items") or []) if r.status_code == 200 else []:
-                done = a.get("end_datetime") or str(a.get("connectivity_status") or "").lower() not in ("", "connected")
-                if a.get("attempt_id") == attempt_id and done:
-                    return {"status": a.get("connectivity_status"), "source": "analytics",
-                            "variables": a.get("agent_variables") or a.get("final_agent_variables") or {}}
+            bad = 0
         sleep(every_s)
-    return {"status": "no result in time", "variables": {}}
+    return None, {"status": f"no finished call found after {wait_s} seconds", "variables": {}}
+
+
+def read_result(c, attempt_id, started, nonce="", get=requests.get, wait_s=300, every_s=6, sleep=time.sleep, out=print):
+    """Wait for the call to finish, saying what is happening every few seconds.
+    Reads the callback link if there is one, else polls Sarvam Analytics. The callback is an
+    unsigned webhook, so its result counts only if it carries our nonce.
+    Fails fast: three bad answers in a row (or one 401/403) and it stops and says why."""
+    via_callback = bool(os.environ.get("SARVAM_RESULT_URL"))
+    t0, bad = time.time(), 0
+    while time.time() - t0 < wait_s:
+        problem, code = None, None
+        try:
+            if via_callback:
+                r = get(os.environ["SARVAM_RESULT_URL"], params={"attempt_id": attempt_id}, timeout=20)
+                code = r.status_code
+                if code == 200:
+                    p = r.json()
+                    echoed = ((p.get("webhook_config") or {}).get("metadata") or {}).get("nonce")
+                    if p.get("attempt_id") == attempt_id and nonce and echoed == nonce:
+                        return {"status": p.get("status"), "variables": p.get("final_agent_variables") or {},
+                                "transcript": p.get("interaction_transcript"), "source": "callback"}
+                elif code != 404:  # 404 only means the call has not ended yet
+                    problem = f"the callback link answered {code}"
+            else:
+                r = _attempts(c, started, get)
+                code = r.status_code
+                if code == 200:
+                    for a in r.json().get("items") or []:
+                        if a.get("attempt_id") == attempt_id and _ended(a):
+                            return {"status": a.get("connectivity_status"), "source": "analytics",
+                                    "variables": a.get("agent_variables") or a.get("final_agent_variables") or {}}
+                else:
+                    problem = f"Sarvam Analytics answered {code}: {(r.text or '')[:120]}"
+        except (requests.RequestException, ValueError) as e:
+            problem = f"{'callback link' if via_callback else 'Sarvam Analytics'} unreachable ({type(e).__name__})"
+        if problem:
+            bad += 1
+            out(f"  {problem}  [{bad}/3]")
+            if bad >= 3 or code in (401, 403):
+                if via_callback:  # the callback is a convenience; Sarvam itself still has the answer
+                    out("  giving up on the callback link, asking Sarvam Analytics instead")
+                    via_callback, bad = False, 0
+                    continue
+                return {"status": f"could not read the call result: {problem}", "variables": {}}
+        else:
+            bad = 0
+            out(f"  waiting for the call to end... {int(time.time() - t0)}s")
+        sleep(every_s)
+    return {"status": f"no result after {wait_s} seconds", "variables": {}}
 
 
 # ------------------------------------------------------------- one-time use
@@ -224,6 +339,23 @@ def consume(path, approval_id, decisions):
     return a["approved_transfer_ids"], None
 
 
+def use_latest(decisions, here=HERE):
+    """For send.py: use up the approval approve.py last wrote, for exactly this batch.
+    -> (approved transfer ids, approval id), or (None, why nothing may be sent)."""
+    a = load(here / "approval.json", None)
+    if not a:
+        return None, "There is no owner approval on file. Run approve.py first."
+    ids, why = consume(here / "approvals.json", a["approval_id"], decisions)
+    return (None, why) if why else (ids, a["approval_id"])
+
+
+def used_attempts(path):
+    return {a.get("attempt_id") for a in load(path, [])}
+
+
+LATEST_NEEDS = ("SARVAM_AGENT_API_KEY", "SARVAM_ORG_ID", "SARVAM_WORKSPACE_ID", "SARVAM_APP_ID")
+
+
 def main(argv):
     if "--selftest" in argv:
         return selftest()
@@ -242,14 +374,20 @@ def main(argv):
         print(json.dumps(body, ensure_ascii=False, indent=2))
         return print("missing in .env: " + ", ".join(missing) if missing else "settings complete")
     if "--fake" in argv:
-        fake = json.loads(argv[argv.index("--fake") + 1])
-        attempt_id, result = "fake-" + uuid.uuid4().hex[:8], {"status": fake.pop("status", "connected"), "variables": fake}
+        attempt_id, result = fake_answer(argv[argv.index("--fake") + 1])
+    elif "--latest" in argv:
+        if [k for k in LATEST_NEEDS if not c[k]]:
+            sys.exit("Missing in payright/.env: " + ", ".join(k for k in LATEST_NEEDS if not c[k]))
+        since = datetime.fromtimestamp((HERE / "decisions.json").stat().st_mtime, IST)
+        print(f"Start the call from Sarvam's Test panel now. Waiting for a call that began after {since:%H:%M:%S}...")
+        attempt_id, result = latest_call(c, since, used_attempts(HERE / "approvals.json"))
+        attempt_id = attempt_id or "none"
     else:
         if missing:
             sys.exit("Missing in payright/.env: " + ", ".join(missing))
         started, nonce = datetime.now(IST), uuid.uuid4().hex
         attempt_id = place_call(c, variables, bid, nonce)
-        print(f"calling {c['OWNER_PHONE'][:3]}*****{c['OWNER_PHONE'][-2:]}, attempt {attempt_id}. Waiting for the call to end...")
+        print(f"calling {c['OWNER_PHONE'][:3]}*****{c['OWNER_PHONE'][-2:]}, attempt {attempt_id}")
         result = read_result(c, attempt_id, started, nonce)
     approved, reason = decide(result, decisions)
     a = record(HERE / "approvals.json", bid, attempt_id, approved, reason, result)
@@ -327,19 +465,61 @@ def selftest():
         def __init__(self, j): self._j = j
         def json(self): return self._j
     os.environ.pop("SARVAM_RESULT_URL", None)
+    R.text = ""
     pages = [R({"items": []}), R({"items": [{"attempt_id": "att-9", "connectivity_status": "connected",
                                            "end_datetime": "2026-11-21T08:00:00",
                                            "agent_variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}}]})]
-    got = read_result(c, "att-9", datetime.now(IST), get=lambda *a, **k: pages.pop(0), sleep=lambda s: None)
+    got = read_result(c, "att-9", datetime.now(IST), get=lambda *a, **k: pages.pop(0), sleep=lambda s: None, out=lambda *a: None)
     assert got["status"] == "connected" and decide(got, D)[0] == [doe, wells]
     # callback route: a forged result without our nonce is ignored, the real one is accepted
     os.environ["SARVAM_RESULT_URL"] = "http://lambda.test"
     hook = {"attempt_id": "att-9", "status": "connected", "final_agent_variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}}
     forged = R({**hook, "webhook_config": {"metadata": {"nonce": "guess"}}})
     real = R({**hook, "webhook_config": {"metadata": {"nonce": "n-123"}}})
-    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: forged, wait_s=0.2, every_s=0, sleep=lambda s: time.sleep(0.05))["status"] == "no result in time"
-    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: real, sleep=lambda s: None)["source"] == "callback"
+    q = lambda *a: None
+    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: forged, wait_s=0.2, every_s=0,
+                       sleep=lambda s: time.sleep(0.05), out=q)["status"].startswith("no result")
+    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: real, sleep=lambda s: None, out=q)["source"] == "callback"
+    # a broken callback link is dropped after three bad answers and Sarvam is asked directly
+    done = {"attempt_id": "att-9", "connectivity_status": "connected", "end_datetime": "2026-11-21T08:00:00",
+            "attempted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "agent_variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}}
+    answers = [R({}), R({}), R({}), R({"items": [done]})]
+    for a in answers[:3]:
+        a.status_code, a.text = 502, "bad gateway"
+    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: answers.pop(0), sleep=lambda s: None, out=q)["source"] == "analytics"
     del os.environ["SARVAM_RESULT_URL"]
+    # fail fast: a 401 from Sarvam stops at once and says why; so does an unreachable network
+    denied = R({})
+    denied.status_code, denied.text = 401, "bad key"
+    got = read_result(c, "att-9", datetime.now(IST), get=lambda *a, **k: denied, sleep=lambda s: None, out=q)
+    assert "401" in got["status"] and decide(got, D)[0] == []
+
+    def offline(*a, **k):
+        raise requests.ConnectionError("down")
+    tries = []
+    got = read_result(c, "att-9", datetime.now(IST), get=offline, sleep=tries.append, out=q)
+    assert "unreachable" in got["status"] and len(tries) == 2 and decide(got, D)[0] == []
+    # the stage fallback: a file, real JSON, and what PowerShell leaves of inline JSON all work
+    import tempfile as _t
+    with _t.TemporaryDirectory() as d:
+        f = Path(d) / "answer.json"
+        f.write_text('{"decision": "APPROVE_SOME", "excluded_vendors": "Wells Paints", "spoken_total": 11800}', encoding="utf-8")
+        assert decide(fake_answer(str(f))[1], D)[0] == [doe]
+    assert decide(fake_answer('{"decision":"APPROVE_ALL","spoken_total":"70800"}')[1], D)[0] == [doe, wells]
+    assert decide(fake_answer("{decision:APPROVE_ALL,spoken_total:70800}")[1], D)[0] == [doe, wells]
+    assert decide(fake_answer("{decision:APPROVE_SOME,excluded_vendors:Wells Paints,spoken_total:11800}")[1], D)[0] == [doe]
+    # a call started by hand from the Test panel: taken only if it began after the batch was made,
+    # has ended, and was not already used for an approval
+    now = datetime.now(IST)
+    old = {**done, "attempt_id": "old", "attempted_at": (now - timedelta(minutes=30)).astimezone(timezone.utc).isoformat(timespec="seconds")}
+    live = {**done, "attempt_id": "live", "end_datetime": None, "attempted_at": now.astimezone(timezone.utc).isoformat(timespec="seconds")}
+    pages = [R({"items": [old]}), R({"items": [live, old]}), R({"items": [{**live, "end_datetime": "x"}, old]})]
+    att, got = latest_call(c, now, get=lambda *a, **k: pages.pop(0), sleep=lambda s: None, out=q)
+    assert att == "live" and decide(got, D)[0] == [doe, wells] and pages == []
+    att, got = latest_call(c, now, used={"live"}, get=lambda *a, **k: R({"items": [{**live, "end_datetime": "x"}, old]}),
+                           wait_s=0.2, every_s=0, sleep=lambda s: time.sleep(0.05), out=q)
+    assert att is None and decide(got, D)[0] == []                       # the same call cannot approve twice
     print("selftest ok: only a connected call, an approving decision and the spoken total approve; "
           "replays, changed batches and stopped bills are refused")
 
