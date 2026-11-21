@@ -13,6 +13,8 @@ an empty Setup, and an empty Setup is what lost the 2:50 PM attempt.
 
 The deployed site has the same buttons on its "Run it live" page. They are carried out here: once a second
 this laptop sends the site what the console printed and collects the presses queued there (see remote()).
+There is no key to type: those presses count only while the switch here is on (/arm, /disarm, or the link
+at the top of this page). It is on for an hour after this page starts, and it lives on this laptop only.
 """
 import json
 import os
@@ -41,6 +43,12 @@ STEPS = {  # the same commands as docs/RUNBOOK.md
     "again": [SAVED],
 }
 log, lock, busy, proc = [], threading.Lock(), threading.Event(), [None]
+ARM_S = 3600  # how long the deployed site's buttons stay switched on after the presenter switches them on
+armed_until = [0.0]
+
+
+def armed():
+    return time.time() < armed_until[0]
 
 
 def setting(name):
@@ -127,12 +135,13 @@ def remote(every_s=1.0, rounds=None):
         with lock:
             new = log[sent:sent + 400]
         try:
-            req = urllib.request.Request(url, data=json.dumps({"console": new, "busy": busy.is_set()}).encode(),
-                                         headers={"Content-Type": "application/json", "x-payright-token": token})
+            req = urllib.request.Request(url, headers={"Content-Type": "application/json", "x-payright-token": token},
+                                         data=json.dumps({"console": new, "busy": busy.is_set(), "armed": armed()}).encode())
             steps = json.load(urllib.request.urlopen(req, timeout=8)).get("commands") or []
             sent += len(new)
             for step in steps:
-                start(step)
+                if armed():  # this laptop decides, whatever the site says
+                    start(step)
         except Exception:  # the site is down or slow: the buttons on this page still work; try again
             pass
         time.sleep(every_s)
@@ -159,7 +168,13 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/log"):
             n = int(self.path.partition("from=")[2] or 0)
             with lock:
-                return self.reply(json.dumps({"lines": log[n:], "busy": busy.is_set()}))
+                return self.reply(json.dumps({"lines": log[n:], "busy": busy.is_set(), "armed": armed()}))
+        if self.path.startswith(("/arm", "/disarm")):  # the switch for the deployed site's buttons
+            armed_until[0] = time.time() + ARM_S if self.path.startswith("/arm") else 0.0
+            self.send_response(302)
+            self.send_header("Location", "/" if "to=local" in self.path or not board_url() else board_url() + "?page=run")
+            self.send_header("Content-Length", "0")
+            return self.end_headers()
         self.reply(PAGE.replace("{{TOKEN}}", TOKEN).replace("{{BOARD}}", board_url()), "text/html")
 
     def do_POST(self):
@@ -193,6 +208,7 @@ iframe{border:0;width:100%;height:100%;background:#fff}
 <button data-step=refresh>5 Ask Cashfree</button>
 <button class=g data-step=again>6 Run again: no double pay</button>
 <button class=g data-step=stop>Stop</button>
+<a class=n id=arm href="/arm?to=local" style="color:inherit;text-decoration:none">Website buttons</a>
 </header>
 <main><pre id=out></pre><iframe id=board src="{{BOARD}}"></iframe></main>
 <script>
@@ -206,7 +222,9 @@ w=null;const s=document.createElement("span");s.textContent=l+"\\n";
 s.className=/^(PAY\\b|PAID|ACCEPTED|APPROVED)|selftest ok/.test(l)?"ok":/^(STOP|NOT APPROVED|NOT_SENT|FAILED|REVERSED|UNKNOWN)/.test(l)?"no":
 /^(ASK|LATER|waiting|Waiting|no call|call )/.test(l)?"wait":/^(\\$|ROUND|SCORE)/.test(l)?"hd":"";out.append(s);out.scrollTop=out.scrollHeight}
 async function poll(){try{const r=await(await fetch("/log?from="+n)).json();r.lines.forEach(add);n+=r.lines.length;
-document.querySelectorAll("button").forEach(b=>b.disabled=r.busy&&b.dataset.step!="stop")}catch(e){}setTimeout(poll,400)}
+document.querySelectorAll("button").forEach(b=>b.disabled=r.busy&&b.dataset.step!="stop");
+const a=document.getElementById("arm");a.textContent="Website buttons: "+(r.armed?"ON (click to switch off)":"OFF (click to switch on)");
+a.href=(r.armed?"/disarm":"/arm")+"?to=local"}catch(e){}setTimeout(poll,400)}
 poll()
 </script>"""
 
@@ -234,7 +252,7 @@ def selftest():
     seen = "\n".join(log)
     assert seen.count("selftest ok") == 3 and not busy.is_set(), seen
     # the deployed site's run page: this laptop reports its output and carries out the press queued there
-    got = []
+    got, give = [], [True]
 
     class Site(BaseHTTPRequestHandler):
         def log_message(self, *a):
@@ -242,7 +260,8 @@ def selftest():
 
         def do_POST(self):
             got.append((self.headers.get("x-payright-token"), json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
-            out = json.dumps({"commands": ["selftest", "nonsense"] if len(got) == 1 else []}).encode()
+            out = json.dumps({"commands": ["selftest", "nonsense"] if give[0] else []}).encode()
+            give[0] = False
             self.send_response(200)
             self.send_header("Content-Length", str(len(out)))
             self.end_headers()
@@ -251,6 +270,11 @@ def selftest():
     threading.Thread(target=site.serve_forever, daemon=True).start()
     os.environ["STATUS_URL"], os.environ["STATUS_TOKEN"] = f"http://127.0.0.1:{site.server_port}/status", "tok"
     del log[:]
+    assert not armed()
+    remote(every_s=0.05, rounds=4)  # switched off: the press the site hands over is not carried out
+    assert not log and not busy.is_set() and got and not got[0][1]["armed"], "a press ran while the switch was off"
+    assert "PayRight" in urllib.request.urlopen(base + "/arm?to=local").read().decode() and armed()
+    give[0] = True
     threading.Thread(target=remote, kwargs={"every_s": 0.2, "rounds": 300}, daemon=True).start()
     told = ""
     for _ in range(300):
@@ -258,11 +282,13 @@ def selftest():
         if told.count("selftest ok") == 3:
             break
         time.sleep(0.2)
-    assert told.count("selftest ok") == 3 and all(t == "tok" for t, _ in got), told
+    assert told.count("selftest ok") == 3 and all(t == "tok" for t, _ in got) and got[-1][1]["armed"], told
+    urllib.request.urlopen(base + "/disarm?to=local").read()
+    assert not armed()
     assert scrub("x /relay/inbound/webhook/abcdef0123 y", ["/relay/inbound/webhook/abcdef0123"]) == "x [hidden] y"
     assert all(secret not in scrub("error near " + secret) for secret in secrets_here())
-    print("selftest ok: buttons need the page's token; the three safety self-tests ran and showed their output; "
-          "the deployed run page's press was carried out here and its output sent back; secrets are hidden")
+    print("selftest ok: buttons need the page's token; the three safety self-tests ran and showed their output; the deployed "
+          "run page's press is carried out only while the switch here is on, and its output is sent back; secrets are hidden")
 
 
 if __name__ == "__main__":
@@ -270,5 +296,6 @@ if __name__ == "__main__":
         selftest()
     else:
         print(f"PayRight demo page: http://127.0.0.1:{PORT}   (this laptop only; Ctrl+C to stop)")
+        armed_until[0] = time.time() + ARM_S  # starting this page is the presenter being here: on for an hour
         threading.Thread(target=remote, daemon=True).start()  # carries out presses from the deployed site's run page
         ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()

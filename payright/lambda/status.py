@@ -736,10 +736,12 @@ the original. Amounts and facts are as reported there. Several cases are still u
 # ------------------------------------------------------------ the run page: the live demo is started here
 # The buttons do nothing on this server. A press is queued, and payright/demo.py on the presenter's laptop
 # collects it, runs the step there (the keys never leave that laptop) and sends back what it printed.
-# A press needs this server's token, typed once into the page. Pressing Run still pays nothing by itself:
-# money moves only after the owner says the total on the phone.
+# There is no key to type. A press counts only while the presenter has switched the buttons on, and that
+# switch is a page on the presenter's own laptop (CONSOLE/arm): on any other device it opens nothing.
+# Pressing Run still pays nothing by itself: money moves only after the owner says the total on the phone.
+CONSOLE = "http://localhost:8765"
 RUN_COMMANDS = ("selftest", "round", "live", "saved", "refresh", "again", "stop")
-CON = {"lines": [], "base": 0, "busy": False, "seen": 0.0, "queue": []}
+CON = {"lines": [], "base": 0, "busy": False, "seen": 0.0, "queue": [], "armed": False}
 RUN_BUTTONS = (("selftest", "0 Safety self-tests", 1), ("round", "1 New round", 1), ("saved", "2 Read and check", 0),
                ("refresh", "5 Ask Cashfree", 0), ("again", "6 Run again: no double pay", 1), ("stop", "Stop", 1))
 RUN_CSS = """<style>
@@ -748,10 +750,10 @@ RUN_CSS = """<style>
 #rcout{margin:14px 0 0;padding:16px;height:52vh;overflow:auto;background:var(--ink);color:#d6d6d6;border-radius:16px;
 font:14px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap}
 #rcout .ok{color:#7ee787}#rcout .no{color:#ff7b72}#rcout .wait{color:#e3b341}#rcout .hd{color:#79c0ff}
-#rcstate{font-weight:600;margin:0 0 14px}#rckey{font:inherit;padding:9px 14px;border:1px solid var(--ink);border-radius:999px;width:260px;margin-right:8px}
+#rcstate{font-weight:600;margin:0 0 14px}#rcoff{margin-left:10px;font-size:14px;color:var(--mute)}
 </style>"""
 RUN_JS = """<script>
-(function(){var n=0,w=null,key="";try{key=sessionStorage.getItem("prkey")||""}catch(e){}
+(function(){var n=0,w=null;
 function $(i){return document.getElementById(i)}
 function say(t){var s=$("rcmsg");if(s)s.textContent=t}
 function add(o,l){var m=l.match(/^\\s*(no call started yet|call in progress)\\.\\.\\. (\\d+s)/);
@@ -760,14 +762,14 @@ w.textContent="waiting for the owner's answer on the phone... "+m[2]+"\\n";retur
 w=null;var s=document.createElement("span");s.textContent=l+"\\n";
 s.className=/^(PAY\\b|PAID|ACCEPTED|APPROVED)|selftest ok/.test(l)?"ok":/^(STOP|NOT APPROVED|NOT_SENT|FAILED|REVERSED|UNKNOWN)/.test(l)?"no":
 /^(ASK|LATER|waiting|Waiting)/.test(l)?"wait":/^(\\$|ROUND|SCORE)/.test(l)?"hd":"";o.appendChild(s)}
-function paint(d){var st=$("rcstate");if(st)st.textContent=d.online?(d.busy?"The presenter's laptop is running a step.":"The presenter's laptop is connected and idle."):"The presenter's laptop is not connected.";
-var lock=$("rclock");if(lock)lock.style.display=key?"none":"block";
-document.querySelectorAll("#rc [data-step]").forEach(function(b){b.disabled=!key||!d.online||(d.busy&&b.dataset.step!="stop")})}
-document.addEventListener("click",function(ev){var b=ev.target.closest&&ev.target.closest("#rc [data-step],#rcunlock");if(!b)return;
-if(b.id=="rcunlock"){key=($("rckey").value||"").trim();$("rckey").value="";try{sessionStorage.setItem("prkey",key)}catch(e){}say("");return}
-fetch("./",{method:"POST",headers:{"Content-Type":"application/json","x-payright-token":key},body:JSON.stringify({command:b.dataset.step})})
-.then(function(r){if(r.status==403){key="";try{sessionStorage.removeItem("prkey")}catch(e){}say("That key is wrong.")}
-else if(r.status==409)say("The presenter's laptop is not connected.");else say("")})});
+function paint(d){var st=$("rcstate");if(st)st.textContent=!d.online?"The presenter's laptop is not connected.":
+!d.armed?"The buttons are switched off.":d.busy?"The presenter's laptop is running a step.":"Ready. The presenter's laptop is connected.";
+var a=$("rcarm");if(a)a.style.display=d.online&&!d.armed?"block":"none";
+var f=$("rcoff");if(f)f.style.display=d.online&&d.armed?"inline":"none";
+document.querySelectorAll("#rc [data-step]").forEach(function(b){b.disabled=!d.online||!d.armed||(d.busy&&b.dataset.step!="stop")})}
+document.addEventListener("click",function(ev){var b=ev.target.closest&&ev.target.closest("#rc [data-step]");if(!b)return;
+fetch("./",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({command:b.dataset.step})})
+.then(function(r){return r.status==200?{}:r.json()}).then(function(j){say(j.error||"")}).catch(function(){say("Could not reach the site.")})});
 function poll(){var o=$("rcout");if(!o){setTimeout(poll,1000);return}
 if(!o.dataset.live){o.dataset.live="1";n=0;w=null}   // the board swaps the page in place: draw the console again
 fetch("./?format=console&from="+n,{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
@@ -783,32 +785,41 @@ def _run(data, rs):
 <h1 class="mega mid">Six buttons. One phone call.</h1>
 <p class="lede"><span class="cap">E</span>very button here is carried out on the presenter's laptop. The keys never leave it.</p></div></header>
 <section class="alt"><div class="wrap">{RUN_CSS}<div id="rc"><p id="rcstate">Looking for the presenter's laptop.</p>
-<div>{buttons}</div>
+<p id="rcarm" style="display:none;margin:0 0 14px"><a class="pill" href="{CONSOLE}/arm">Switch the buttons on</a>
+<span class="serif" style="margin-left:10px">This works on the presenter's laptop only.</span></p>
+<div>{buttons}<a id="rcoff" style="display:none" href="{CONSOLE}/disarm">switch the buttons off</a></div>
 <div><span class="note">3 Call the owner: Sarvam's Test panel, 7/7 set, Call 1 number</span><span class="note">4 Pays by itself after APPROVED</span></div>
-<div id="rclock" style="display:none;margin-top:8px"><input id="rckey" type="password" placeholder="presenter's key" autocomplete="off"><button class="pill" id="rcunlock">Unlock the buttons</button></div>
 <p id="rcmsg" class="serif" style="margin:8px 0 0"></p>
 <pre id="rcout"></pre></div></div></section>
-<section class="ink"><div class="wrap"><p class="eyebrow">Why anyone can watch but only we can press</p><h2 data-r>A public pay button would defeat the point.</h2>
-<p class="serif">The output above is public. The buttons need a key that only the presenter has, and the steps run on the presenter's
-laptop, not on this server. Even then, pressing Run pays nothing: money moves only after the owner says the total on the phone.</p></div></section>
+<section class="ink"><div class="wrap"><p class="eyebrow">Why anyone can watch but only we can switch it on</p><h2 data-r>A public pay button would defeat the point.</h2>
+<p class="serif">The output above is public. The buttons work only while the presenter has switched them on, and that switch
+lives on the presenter's laptop, where the steps are carried out. Even then, pressing Run pays nothing: money moves only
+after the owner says the total on the phone.</p></div></section>
 {RUN_JS}"""
 
 
-def _console(body, token):
-    """The run page and the presenter's laptop talk through here. A server without a token refuses."""
+def _press(body):
+    """A button on the run page. No key: a press counts only while the presenter's laptop is connected and
+    the presenter has switched the buttons on there. The laptop checks its own switch again before it acts."""
+    if body["command"] not in RUN_COMMANDS:
+        return _reply(400, {"error": "unknown step"})
+    if time.time() - CON["seen"] > 10:
+        return _reply(409, {"error": "The presenter's laptop is not connected."})
+    if not CON["armed"]:
+        return _reply(409, {"error": "The buttons are switched off on the presenter's laptop."})
+    CON["queue"] = (CON["queue"] + [body["command"]])[-5:]
+    return _reply(200, {"ok": True})
+
+
+def _laptop(body, token):
+    """The presenter's laptop reports what its console printed and takes the presses queued for it. This needs
+    the server's token, and a server without one refuses: nobody else can pose as the laptop."""
     if not token:
         return _reply(403, {"error": "this server has no token, so the run page is switched off"})
-    if "command" in body:  # the run page: a button was pressed
-        if body["command"] not in RUN_COMMANDS:
-            return _reply(400, {"error": "unknown step"})
-        if time.time() - CON["seen"] > 10:
-            return _reply(409, {"error": "the presenter's laptop is not connected"})
-        CON["queue"] = (CON["queue"] + [body["command"]])[-5:]
-        return _reply(200, {"ok": True})
-    CON["lines"] += [str(x)[:500] for x in (body.get("console") or [])][:500]  # the laptop: what its console printed
+    CON["lines"] += [str(x)[:500] for x in (body.get("console") or [])][:500]
     drop = max(0, len(CON["lines"]) - 600)
     CON["lines"], CON["base"] = CON["lines"][drop:], CON["base"] + drop
-    CON["busy"], CON["seen"] = bool(body.get("busy")), time.time()
+    CON["busy"], CON["armed"], CON["seen"] = bool(body.get("busy")), bool(body.get("armed")), time.time()
     steps, CON["queue"] = CON["queue"], []
     return _reply(200, {"commands": steps})
 
@@ -847,10 +858,12 @@ def handler(event, context=None):
     data = _load()
     if method == "POST":
         token = os.environ.get("PAYRIGHT_TOKEN", "")
+        if isinstance(body, dict) and "command" in body:  # a button on the run page: no key, see _press
+            return _press(body)
         if token and headers.get("x-payright-token") != token:
             return _reply(403, {"error": "wrong token"})
-        if isinstance(body, dict) and ("command" in body or "console" in body):
-            return _console(body, token)
+        if isinstance(body, dict) and "console" in body:
+            return _laptop(body, token)
         if not isinstance(body, dict) or not isinstance(body.get("decisions"), list):
             return _reply(400, {"error": "expected {decisions: [...], ledger: [...]}"})
         now = datetime.now(IST)
@@ -873,7 +886,8 @@ def handler(event, context=None):
         frm = str(query.get("from") or "0")
         frm = max(int(frm) if frm.isdigit() else 0, CON["base"])
         return _reply(200, {"lines": CON["lines"][frm - CON["base"]:], "next": CON["base"] + len(CON["lines"]),
-                            "busy": CON["busy"], "online": time.time() - CON["seen"] < 10})
+                            "busy": CON["busy"], "online": time.time() - CON["seen"] < 10,
+                            "armed": CON["armed"] and time.time() - CON["seen"] < 10})
     if query.get("format") == "json":
         return _reply(200, {"rows": rows(data), "updated": data.get("updated"), "events": data.get("events") or []})
     return _reply(200, page(data, str(query.get("page") or "home")), "text/html")
@@ -952,18 +966,20 @@ def selftest():
     assert "It already happened" in q and q.count('<article class="case"') == len(CASES) and "manipal_1cr.jpg" in q
     assert all(c[4].startswith("https://") and c[9] in ("digit", "other_account") for c in CASES)
     r = handler({"httpMethod": "GET", "queryStringParameters": {"page": "run"}})["body"]
-    assert 'data-step="saved"' in r and "?page=run" in q and os.environ["PAYRIGHT_TOKEN"] not in r
-    post = lambda b, t: handler({"httpMethod": "POST", "headers": {"x-payright-token": t}, "body": json.dumps(b)})  # noqa: E731
+    assert 'data-step="saved"' in r and "?page=run" in q and os.environ["PAYRIGHT_TOKEN"] not in r and "rckey" not in r
+    post = lambda b, t="": handler({"httpMethod": "POST", "headers": {"x-payright-token": t}, "body": json.dumps(b)})  # noqa: E731
     con = lambda n=0: json.loads(handler({"httpMethod": "GET", "queryStringParameters": {"format": "console", "from": str(n)}})["body"])  # noqa: E731
     tok = os.environ["PAYRIGHT_TOKEN"]
-    assert post({"command": "saved"}, "wrong")["statusCode"] == 403, "a press without the key was accepted"
-    assert post({"command": "saved"}, tok)["statusCode"] == 409, "a press was queued with no laptop connected"
-    assert json.loads(post({"console": ["hello"], "busy": False}, tok)["body"]) == {"commands": []}
-    assert post({"console": ["x"]}, "wrong")["statusCode"] == 403 and con()["lines"] == ["hello"] and con()["online"]
-    assert post({"command": "rm -rf"}, tok)["statusCode"] == 400 and post({"command": "saved"}, tok)["statusCode"] == 200
-    assert json.loads(post({"console": ["two"], "busy": True}, tok)["body"]) == {"commands": ["saved"]}
-    assert json.loads(post({"console": []}, tok)["body"]) == {"commands": []}, "a press was handed out twice"
-    assert con(1) == {"lines": ["two"], "next": 2, "busy": False, "online": True}
+    assert post({"command": "saved"})["statusCode"] == 409, "a press was queued with no laptop connected"
+    assert post({"console": ["x"], "armed": True}, "wrong")["statusCode"] == 403, "someone posed as the laptop"
+    assert json.loads(post({"console": ["hello"], "armed": False}, tok)["body"]) == {"commands": []}
+    assert con()["lines"] == ["hello"] and con()["online"] and not con()["armed"]
+    assert post({"command": "saved"})["statusCode"] == 409, "a press was queued while the buttons were switched off"
+    assert json.loads(post({"console": [], "armed": True}, tok)["body"]) == {"commands": []} and con()["armed"]
+    assert post({"command": "rm -rf"})["statusCode"] == 400 and post({"command": "saved"})["statusCode"] == 200
+    assert json.loads(post({"console": ["two"], "busy": True, "armed": True}, tok)["body"]) == {"commands": ["saved"]}
+    assert json.loads(post({"console": [], "armed": True}, tok)["body"]) == {"commands": []}, "a press was handed out twice"
+    assert con(1) == {"lines": ["two"], "next": 2, "busy": False, "online": True, "armed": True}
     del os.environ["PAYRIGHT_TOKEN"]
     print("selftest ok")
 
