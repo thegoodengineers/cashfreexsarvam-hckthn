@@ -17,6 +17,9 @@ What happens
      It must equal the total to be paid. "yes", "ok" or a thumbs-up approve nothing.
   4. The approved bills go to Cashfree through Relay, and the bot reports each transfer and what Cashfree confirmed.
   5. /new starts a fresh batch.
+  7. /call hands the batch to the Sarvam voice agent: the bot posts the agent's 7 inputs, waits for the call that is
+     started from Sarvam's Test panel (calls cannot be placed from code yet: no caller number), reads the owner's
+     answer from Sarvam, and pays only if he said the total himself. Same rule and same code as run.py --latest.
   6. /sample makes the bot send a generated supplier bill into the chat (picked at random from the team's
      generated sets) and deal with it like any other. /sample trap picks a tampered one, /sample clean a genuine one.
 
@@ -57,7 +60,7 @@ class Bot:
     """Everything the bot touches is a field here, so the selftest can swap each one for a fake."""
 
     def __init__(self, token, owner, folder=None, post=requests.post, get=requests.get, reader=None, relay_post=requests.post,
-                 hear=None, publish=None, confirm=None, env=None):
+                 hear=None, publish=None, confirm=None, env=None, listen=None):
         env = os.environ if env is None else env
         self.token, self.owner, self.post, self.get = token, str(owner or ""), post, get
         self.folder = Path(folder) if folder else HERE
@@ -68,6 +71,8 @@ class Bot:
         self.cash = float(env.get("CASH") or "inf")
         self.sarvam_key = env.get("SARVAM_API_KEY", "")
         self.reader, self.hear, self.publish, self.confirm = reader or self._read, hear or self._hear, publish, confirm
+        self.listen, self.background, self.calling = listen or self._listen, listen is None, False
+        self.owner_name = env.get("OWNER_NAME") or None
         self.vendors = send.load(HERE / "vendors.json", [])
 
     # ------------------------------------------------------------ Telegram
@@ -188,8 +193,12 @@ class Bot:
         result = {"status": "connected", "source": "telegram",
                   "variables": {"decision": "APPROVE_ALL" if said is not None else "", "excluded_vendors": "",
                                 "spoken_total": "" if said is None else f"{said:.0f}"}}
+        self.finish(chat, decisions, result, f"tg-{chat}-{msg_id}")
+
+    def finish(self, chat, decisions, result, attempt):
+        """One answer from the owner, however it came: decide, record, and pay only what he approved."""
         approved, reason = approve.decide(result, decisions)
-        a = approve.record(self.approvals, send.batch_id(decisions), f"tg-{chat}-{msg_id}", approved, reason, result)
+        a = approve.record(self.approvals, send.batch_id(decisions), attempt, approved, reason, result)
         if not approved:
             return self.say(chat, "NOT APPROVED. " + reason)
         if not self.relay_url:
@@ -207,6 +216,53 @@ class Bot:
             self.publish(decisions, self.ledger, a, "sent")
         if self.confirm:
             self.say(chat, self.confirm(decisions, self.ledger, a), raw=True)
+
+    def _listen(self, since, used, out):
+        c, _ = approve.cfg()
+        short = [k for k in approve.LATEST_NEEDS if not c[k]]
+        if short:
+            return None, {"status": "missing in .env: " + ", ".join(short), "variables": {}}
+        return approve.latest_call(c, since, used, out=out)
+
+    def on_call(self, chat, msg_id):
+        """Hand the batch to the Sarvam voice agent and wait for the owner's answer on the phone."""
+        from datetime import datetime
+        decisions = self.decisions()
+        if not [d for d in decisions if d["status"] == "PAY"]:
+            return self.say(chat, "There is nothing waiting to be paid, so there is nothing to call about.")
+        if not self.owner or str(chat) != self.owner:
+            return self.say(chat, "Only the owner can start the approval call.")
+        if self.calling:
+            return self.say(chat, "I am already waiting for a call.")
+        variables = approve.call_variables(decisions, self.owner_name)
+        self.say(chat, "For the Sarvam voice agent. Put these 7 values into its Setup in the Test panel, check it shows "
+                       "\"7/7 set\", then press Call. I am waiting for a call that starts from now.\n\n"
+                       + "\n".join(f"{k}: {v}" for k, v in variables.items()))
+        since, used = datetime.now(approve.IST), approve.used_attempts(self.approvals)
+        seen = []
+
+        def progress(line):   # one message per change of state, not one every six seconds
+            word = line.split("...")[0].strip()
+            if word and word not in seen:
+                seen.append(word)
+                self.say(chat, word[:1].upper() + word[1:] + ".")
+
+        def wait():
+            try:
+                cid, result = self.listen(since, used, progress)
+                v = result.get("variables") or {}
+                if v.get("decision") or v.get("spoken_total"):
+                    self.say(chat, f"On the call the owner decided: {v.get('decision') or 'nothing'}; "
+                                   f"total he said: {v.get('spoken_total') or 'none'}.")
+                self.finish(chat, decisions, result, cid or "none")
+            finally:
+                self.calling = False
+        self.calling = True
+        if self.background:
+            import threading
+            threading.Thread(target=wait, daemon=True).start()
+        else:
+            wait()
 
     def handle(self, update):
         m = update.get("message") or {}
@@ -228,10 +284,12 @@ class Bot:
             return self.say(chat, f"This chat's id is {chat}")
         if text in ("/start", "/help"):
             return self.say(chat, "Send me a photo or PDF of a supplier bill. I read it, check it and tell you PAY, ASK or STOP "
-                                  "with the reason. The owner approves by sending the total. /sample sends a generated bill for me "
+                                  "with the reason. The owner approves by sending the total, or /call for the phone call. /sample sends a generated bill for me "
                                   "to deal with. /batch shows the bills so far, /new starts a fresh batch.")
         if text.split(" ")[0] == "/sample":
             return self.on_sample(chat, msg_id, text.partition(" ")[2].strip().lower())
+        if text == "/call":
+            return self.on_call(chat, msg_id)
         if text == "/batch":
             return self.say(chat, self.summary(self.decisions()) if self.invoices() else "No bills yet. Send a photo.")
         if text == "/new":
@@ -368,6 +426,31 @@ def selftest():
         assert any(s.startswith("I heard") for s in said) and len(relay) == 3
         bot2.handle(text(42, 22, "/new"))
         assert bot2.invoices() == []
+
+        # 7. /call: the batch goes to the voice agent; the owner's answer on the phone decides, by the same rule
+        heard = {}
+
+        def phone(since, used, out):
+            out("  call in progress... 6s")
+            out("  call in progress... 12s")
+            return "20261121/call-1", {"status": "connected", "variables": dict(heard)}
+        bot3 = Bot("T", "42", folder=Path(d) / "third", post=post, get=lambda url, timeout=0: Reply(), reader=lambda p: dict(clean[1]),
+                   relay_post=relay_post, hear=lambda audio, name: "", env={"RELAY_WEBHOOK_URL": "http://relay.test"}, listen=phone)
+        (Path(d) / "third").mkdir()
+        bot3.handle(photo(42, 40))
+        t3 = sum(x["amount"] for x in bot3.decisions() if x["status"] == "PAY")
+        bot3.handle(text(7, 41, "/call"))
+        assert "Only the owner" in said[-1]
+        heard.update(decision="APPROVE_ALL", excluded_vendors="-", spoken_total=f"{t3 + 100:.0f}")   # he said the wrong total
+        n, mark = len(relay), len(said)
+        bot3.handle(text(42, 42, "/call"))
+        assert len(relay) == n and said[-1].startswith("NOT APPROVED") and any("pay_total" in s for s in said[mark:])
+        assert sum(s == "Call in progress." for s in said[mark:]) == 1                                # one line, not two
+        heard.update(spoken_total=f"{t3:.0f}")
+        bot3.handle(text(42, 43, "/call"))
+        assert len(relay) == n + 1 and any(s.startswith("APPROVED") for s in said[mark:])
+        bot3.handle(text(42, 44, "/call"))
+        assert len(relay) == n + 1 and "nothing waiting" in said[-1]                                  # paid once
 
         # 6. /sample: the bot sends a generated bill into the chat and deals with it like any other
         before = len(said)
