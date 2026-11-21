@@ -1,0 +1,326 @@
+"""Telegram front door: send a bill photo to the bot and the agent takes it from there.
+
+  python payright/telegram_bot.py              run the bot (long polling: no public address needed)
+  python payright/telegram_bot.py --selftest   fake Telegram, fake reader, fake Relay
+
+In payright/.env:
+  TELEGRAM_BOT_TOKEN        from @BotFather
+  TELEGRAM_OWNER_CHAT_ID    the only chat that may approve payments. Send /id to the bot to see yours.
+  and what run.py already needs: SARVAM_API_KEY, RELAY_WEBHOOK_URL; optional BILL_LANGUAGE (default ta-IN),
+  CASH (default: no limit), STATUS_URL / STATUS_TOKEN (the board), CASHFREE_PAYOUT_CLIENT_ID / _SECRET.
+
+What happens
+  1. Anyone in the chat sends a photo or PDF of a bill. It is saved in payright/inbox/, read by Sarvam Vision and
+     checked by check.py, and the bot answers PAY / ASK / STOP with the reason. Nothing is paid by this.
+  2. /batch shows the bills so far and the total that would be paid.
+  3. The OWNER approves by sending the total: typed ("51507") or as a voice note saying it (Sarvam speech-to-text).
+     It must equal the total to be paid. "yes", "ok" or a thumbs-up approve nothing.
+  4. The approved bills go to Cashfree through Relay, and the bot reports each transfer and what Cashfree confirmed.
+  5. /new starts a fresh batch.
+
+Same guards as run.py, because it calls the same code: plain code decides (check.py), money goes only to the account
+on file, one transfer ID per invoice, a write-ahead ledger, an approval is bound to its batch and used once.
+Extra here: only TELEGRAM_OWNER_CHAT_ID can approve, so a stranger who finds the bot cannot move money.
+
+Written at 4 PM on demo day. The selftest passes; it has NOT been run against real Telegram, Sarvam or Relay.
+"""
+import json
+import os
+import re
+import sys
+import time
+from pathlib import Path
+
+import requests
+
+import approve
+import check
+import send
+
+HERE = Path(__file__).parent
+API = "https://api.telegram.org"
+STT = "https://api.sarvam.ai/speech-to-text"
+
+
+def mask(text):
+    """Account numbers never go into a chat: last four digits only."""
+    return re.sub(r"\d{9,}", lambda m: "····" + m.group()[-4:], str(text))
+
+
+def rupees(x):
+    return "?" if x is None else f"Rs {x:,.0f}"
+
+
+class Bot:
+    """Everything the bot touches is a field here, so the selftest can swap each one for a fake."""
+
+    def __init__(self, token, owner, folder=None, post=requests.post, get=requests.get, reader=None, relay_post=requests.post,
+                 hear=None, publish=None, confirm=None, env=None):
+        env = os.environ if env is None else env
+        self.token, self.owner, self.post, self.get = token, str(owner or ""), post, get
+        self.folder = Path(folder) if folder else HERE
+        self.inbox = self.folder / "inbox"
+        self.ledger, self.approvals = self.folder / "ledger.json", self.folder / "approvals.json"
+        self.relay_url, self.relay_post = env.get("RELAY_WEBHOOK_URL", ""), relay_post
+        self.language = env.get("BILL_LANGUAGE", "ta-IN")
+        self.cash = float(env.get("CASH") or "inf")
+        self.sarvam_key = env.get("SARVAM_API_KEY", "")
+        self.reader, self.hear, self.publish, self.confirm = reader or self._read, hear or self._hear, publish, confirm
+        self.vendors = send.load(HERE / "vendors.json", [])
+
+    # ------------------------------------------------------------ Telegram
+    def tg(self, method, **params):
+        r = self.post(f"{API}/bot{self.token}/{method}", json=params, timeout=40)
+        return (r.json() or {}).get("result")
+
+    def say(self, chat, text, raw=False):
+        """`raw` is only for Cashfree's own reference numbers (UTRs), which are not account numbers."""
+        self.tg("sendMessage", chat_id=chat, text=(text if raw else mask(text))[:3900])
+
+    def fetch(self, file_id):
+        info = self.tg("getFile", file_id=file_id) or {}
+        r = self.get(f"{API}/file/bot{self.token}/{info.get('file_path', '')}", timeout=60)
+        return r.content, Path(info.get("file_path", "bill.jpg")).suffix or ".jpg"
+
+    # ------------------------------------------------------------- Sarvam
+    def _read(self, path):
+        import extract
+        return extract.read(path, self.sarvam_key, self.language)
+
+    def _hear(self, audio, name):
+        """A voice note -> English text, by Sarvam speech-to-text (mode translate)."""
+        r = requests.post(STT, headers={"api-subscription-key": self.sarvam_key}, timeout=60,
+                          files={"file": (name, audio)}, data={"mode": "translate"})
+        return (r.json() or {}).get("transcript", "") if r.status_code == 200 else ""
+
+    # ---------------------------------------------------------- the batch
+    def invoices(self):
+        return send.load(self.inbox / "inbox.json", [])
+
+    def decisions(self):
+        return check.plan(self.invoices(), self.vendors, send.load(self.ledger, []), self.cash, prices=check.load_prices())
+
+    def summary(self, decisions):
+        pay = [d for d in decisions if d["status"] == "PAY"]
+        held = [d for d in decisions if d["status"] in ("STOP", "ASK")]
+        lines = [f"{len(decisions)} bill(s): {len(pay)} to pay, {len(held)} stopped or held."]
+        lines += [f"  PAY   {d['vendor']}, {rupees(d['amount'])}" for d in pay]
+        lines += [f"  {d['status']:5} {d['vendor']}, {rupees(d['amount'])}: {(d['reasons'] or ['needs a check'])[0]}" for d in held]
+        if pay:
+            lines.append(f"\nTo approve, the owner sends the total: {sum(d['amount'] for d in pay):.0f} "
+                         "(typed, or said in a voice note). A yes alone approves nothing.")
+        return "\n".join(lines)
+
+    def on_bill(self, chat, file_id, msg_id):
+        self.inbox.mkdir(parents=True, exist_ok=True)
+        data, ext = self.fetch(file_id)
+        path = self.inbox / f"bill_{msg_id}{ext}"
+        path.write_bytes(data)
+        self.say(chat, "Got the bill. Reading it now...")
+        try:
+            inv = self.reader(path)
+        except Exception as e:  # an unreadable bill is held for a person, it never stops the bot
+            inv = {"file": path.name, "unsure_fields": [f"whole invoice (reader error: {type(e).__name__})"]}
+        inv["file"] = path.name
+        bills = self.invoices() + [inv]
+        (self.inbox / "inbox.json").write_text(json.dumps(bills, ensure_ascii=False, indent=2), encoding="utf-8")
+        decisions = self.decisions()
+        d = next(x for x in decisions if x.get("file") == path.name)
+        why = "\n".join("- " + r for r in d["reasons"]) or "- Nothing wrong found. It will be paid only after the owner approves."
+        self.say(chat, f"{d['status']}  {d['vendor'] or 'unknown vendor'}, invoice {d['invoice_no']}, {rupees(d['amount'])}\n{why}")
+        self.say(chat, self.summary(decisions))
+        if self.publish:
+            self.publish(decisions, self.ledger, None, "checked")
+
+    def on_amount(self, chat, text, msg_id):
+        """The owner's approval: the total, typed or spoken. Same rule as the phone call."""
+        decisions = self.decisions()
+        pay = [d for d in decisions if d["status"] == "PAY"]
+        if not pay:
+            return self.say(chat, "There is nothing waiting to be paid.")
+        if not self.owner or str(chat) != self.owner:
+            return self.say(chat, "Only the owner can approve payments. Nothing is paid.")
+        said = approve.spoken_amount(text)
+        result = {"status": "connected", "source": "telegram",
+                  "variables": {"decision": "APPROVE_ALL" if said is not None else "", "excluded_vendors": "",
+                                "spoken_total": "" if said is None else f"{said:.0f}"}}
+        approved, reason = approve.decide(result, decisions)
+        a = approve.record(self.approvals, send.batch_id(decisions), f"tg-{chat}-{msg_id}", approved, reason, result)
+        if not approved:
+            return self.say(chat, "NOT APPROVED. " + reason)
+        if not self.relay_url:
+            return self.say(chat, "Approved, but RELAY_WEBHOOK_URL is not set, so nothing was sent.")
+        ids, why = approve.consume(self.approvals, a["approval_id"], decisions)
+        if why:
+            return self.say(chat, "NOT PAID. " + why)
+        to_send = [d if d["transfer_id"] in ids else {**d, "status": "ASK"} for d in decisions]
+        lines = []
+        sent = send.send(to_send, self.vendors, self.ledger, self.relay_url, post=self.relay_post,
+                         approval=a["approval_id"], out=lines.append)
+        self.say(chat, f"APPROVED. {reason}\nSent {len(sent)} payment(s) to Cashfree through Relay, "
+                       f"total {rupees(sum(e['data']['amount'] for e in sent))}.\n" + "\n".join(lines))
+        if self.publish:
+            self.publish(decisions, self.ledger, a, "sent")
+        if self.confirm:
+            self.say(chat, self.confirm(decisions, self.ledger, a), raw=True)
+
+    def handle(self, update):
+        m = update.get("message") or {}
+        chat, msg_id, text = (m.get("chat") or {}).get("id"), m.get("message_id"), (m.get("text") or "").strip()
+        if chat is None:
+            return
+        doc = m.get("document") or {}
+        if m.get("photo"):
+            return self.on_bill(chat, m["photo"][-1]["file_id"], msg_id)          # the largest size
+        if doc and (str(doc.get("mime_type", "")).startswith("image/") or doc.get("mime_type") == "application/pdf"):
+            return self.on_bill(chat, doc["file_id"], msg_id)
+        voice = m.get("voice") or m.get("audio")
+        if voice:
+            audio, ext = self.fetch(voice["file_id"])
+            heard = self.hear(audio, "note" + (ext or ".ogg"))
+            self.say(chat, f'I heard: "{heard}"' if heard else "I could not make out the voice note. Type the total instead.")
+            return self.on_amount(chat, heard, msg_id) if heard else None
+        if text == "/id":
+            return self.say(chat, f"This chat's id is {chat}")
+        if text in ("/start", "/help"):
+            return self.say(chat, "Send me a photo or PDF of a supplier bill. I read it, check it and tell you PAY, ASK or STOP "
+                                  "with the reason. The owner approves by sending the total. /batch shows the bills so far, "
+                                  "/new starts a fresh batch.")
+        if text == "/batch":
+            return self.say(chat, self.summary(self.decisions()) if self.invoices() else "No bills yet. Send a photo.")
+        if text == "/new":
+            if self.inbox.exists():
+                self.inbox.rename(self.folder / f"inbox.{time.strftime('%H%M%S')}")
+            return self.say(chat, "Fresh batch. Send the first bill.")
+        if text:
+            return self.on_amount(chat, text, msg_id)
+
+    def run(self):
+        offset = None
+        for u in self.tg("getUpdates", offset=-1, timeout=0) or []:   # skip anything sent before we started
+            offset = u["update_id"] + 1
+        print("bot is listening. Send it a bill photo.")
+        while True:
+            try:
+                for u in self.tg("getUpdates", offset=offset, timeout=25) or []:
+                    offset = u["update_id"] + 1
+                    try:
+                        self.handle(u)
+                    except Exception as e:   # one bad message must not stop the bot
+                        print("could not handle a message:", type(e).__name__, e)
+            except requests.RequestException as e:
+                print("Telegram unreachable, trying again:", type(e).__name__)
+                time.sleep(3)
+
+
+def cashfree_line(decisions, ledger, approval):
+    """Ask Cashfree what happened, in the same words run.py uses. Paid means Cashfree said so."""
+    cid, sec = send.payout_keys()
+    if not (cid and sec):
+        return "Sent. No Cashfree Payouts keys here, so I cannot confirm: check the Payouts dashboard."
+    waiting = 1
+    for _ in range(6):
+        waiting = send.confirm(ledger, cid, sec, out=lambda *a: None)
+        if not waiting:
+            break
+        time.sleep(5)
+    rows = send.load(ledger, [])
+    paid = [r for r in rows if r.get("payout") == "PAID"]
+    return (f"Cashfree confirmed {len(paid)} of {sum(r['status'] != 'NOT_SENT' for r in rows)} payment(s)."
+            + "".join(f"\n  PAID {r['invoice_no']}  UTR {r.get('utr')}" for r in paid)
+            + ("" if not waiting else "\nThe rest are still waiting for Cashfree."))
+
+
+def main(argv):
+    if "--selftest" in argv:
+        return selftest()
+    send.load_env()
+    token = os.environ.get("TELEGRAM_BOT_TOKEN") or sys.exit("Set TELEGRAM_BOT_TOKEN in payright/.env (from @BotFather)")
+    owner = os.environ.get("TELEGRAM_OWNER_CHAT_ID", "")
+    if not owner:
+        print("TELEGRAM_OWNER_CHAT_ID is not set: bills are read and checked, but NOBODY can approve a payment. "
+              "Send /id to the bot and put that number in .env.")
+    import run
+    Bot(token, owner, publish=run.publish, confirm=cashfree_line).run()
+
+
+def selftest():
+    import tempfile
+    bills = send.load(HERE / "invoices" / "extracted.json", None) or send.load(HERE / "sample_invoices.json", [])
+    vendors = send.load(HERE / "vendors.json", [])
+    plan = check.plan(bills, vendors, [], float("inf"))
+    clean = [b for b, d in zip(bills, plan) if d["status"] == "PAY"][:2]
+    bad = next(b for b, d in zip(bills, plan) if d["status"] == "STOP")
+    assert len(clean) == 2
+
+    class Reply:
+        def __init__(self, body=None, content=b"img"):
+            self._b, self.content, self.status_code = body, content, 200
+
+        def json(self):
+            return self._b
+
+    with tempfile.TemporaryDirectory() as d:
+        said, relay, queue = [], [], []
+
+        def post(url, json=None, timeout=0):
+            method = url.rsplit("/", 1)[-1]
+            if method == "sendMessage":
+                said.append(json["text"])
+            return Reply({"result": {"file_path": "photos/bill.jpg"} if method == "getFile" else True})
+
+        def relay_post(url, json, timeout):
+            relay.append(json["data"])
+            r = Reply()
+            r.text = "ok"
+            return r
+        bot = Bot("T", "42", folder=d, post=post, get=lambda url, timeout=0: Reply(), reader=lambda p: dict(queue.pop(0)),
+                  relay_post=relay_post, hear=lambda audio, name: "", env={"RELAY_WEBHOOK_URL": "http://relay.test"})
+        photo = lambda chat, mid: {"message": {"chat": {"id": chat}, "message_id": mid, "photo": [{"file_id": "s"}, {"file_id": "L"}]}}
+        text = lambda chat, mid, t: {"message": {"chat": {"id": chat}, "message_id": mid, "text": t}}
+
+        # 1. a stranger can send bills: they are read and checked, and the bad one is stopped with its reason
+        queue.extend([clean[0], bad, clean[1]])
+        for i in (1, 2, 3):
+            bot.handle(photo(7, i))
+        assert any(s.startswith("PAY") for s in said) and any(s.startswith("STOP") for s in said)
+        total = sum(x["amount"] for x in bot.decisions() if x["status"] == "PAY")
+        assert f"{total:.0f}" in said[-1] and relay == []
+        assert not re.search(r"\d{9,}", " ".join(said))                       # no account number ever reaches the chat
+
+        # 2. approvals that must move nothing: a stranger with the right total, a yes, a wrong total
+        bot.handle(text(7, 10, f"{total:.0f}"))
+        assert "Only the owner" in said[-1]
+        bot.handle(text(42, 11, "yes pay them"))
+        assert said[-1].startswith("NOT APPROVED")
+        bot.handle(text(42, 12, f"{total + 500:.0f}"))
+        assert said[-1].startswith("NOT APPROVED") and relay == []
+
+        # 3. the owner sends the exact total: only the clean bills go, to the account on file, once
+        bot.handle(text(42, 13, f"{total:,.0f} rupees"))
+        assert any(s.startswith("APPROVED") for s in said) and len(relay) == 2
+        by_id = {v["id"]: v for v in vendors}
+        ledger = send.load(Path(d) / "ledger.json", [])
+        assert {r["bank_account"] for r in relay} == {by_id[x["vendor_id"]]["bank_account"] for x in ledger}
+
+        # 4. the same total again pays nothing more
+        bot.handle(text(42, 14, f"{total:.0f}"))
+        assert len(relay) == 2 and "nothing waiting" in said[-1]
+
+        # 5. a voice note: what Sarvam heard is treated exactly like a typed total
+        bot2 = Bot("T", "42", folder=Path(d) / "second", post=post, get=lambda url, timeout=0: Reply(), reader=lambda p: dict(clean[0]),
+                   relay_post=relay_post, hear=lambda audio, name: f"{clean_total:.0f} rupees", env={"RELAY_WEBHOOK_URL": "http://relay.test"})
+        (Path(d) / "second").mkdir()
+        clean_total = 0
+        bot2.handle(photo(42, 20))
+        clean_total = sum(x["amount"] for x in bot2.decisions() if x["status"] == "PAY")
+        bot2.handle({"message": {"chat": {"id": 42}, "message_id": 21, "voice": {"file_id": "v"}}})
+        assert any(s.startswith("I heard") for s in said) and len(relay) == 3
+        bot2.handle(text(42, 22, "/new"))
+        assert bot2.invoices() == []
+    print("selftest ok: bills are read and checked for anyone; only the owner's exact total pays, once, "
+          "to the account on file; no account number is sent to the chat")
+
+
+if __name__ == "__main__":
+    main(sys.argv)
