@@ -5,6 +5,20 @@ Team The Good Engineers: Chirag, Abhijeet, Bhumika, Ayush.
 
 **A model reads, code decides, a person approves, and money only goes to the account we already have on file.**
 
+## What is new here
+
+This is not a model with a payout button. The model only reads; everything below is plain code or a person.
+
+| What | Why it is different | Proof |
+|---|---|---|
+| **The owner says the total aloud** | A yes, a tap or an OTP is not approval. The voice agent names every stopped bill and its reason in the owner's language, and the spoken total has to match. | [payright/voice/test_calls.md](payright/voice/test_calls.md), [payright/approve.py](payright/approve.py) |
+| **It attacks itself** | 1,000 forged variants of real bills on a number you choose, decided by the same code that guards the money. | [Attack it at scale](https://giants-made-stamp-wines.trycloudflare.com/try#attack), `python payright/attack.py 1000 7` |
+| **It closed the gap its own attack found** | Price memory: what each vendor charged on bills that were really paid. A quiet raise of more than 10% goes to a person. | `python payright/pricebook.py --selftest`, numbers under Measured |
+| **It repairs the reader's slips by rule** | O read as 0 in a GSTIN no longer hides a vendor. An invented GSTIN fails its own check digit and the refusal says so. | `python payright/check.py --selftest` |
+| **Every refusal names its trick** | A stopped bill shows the two values compared, the known fraud it matches, and the real reported case. | [Live board](https://giants-made-stamp-wines.trycloudflare.com/), [It already happened](https://giants-made-stamp-wines.trycloudflare.com/?page=problem) |
+| **Deadline first when cash is short** | Bills to micro and small suppliers are ordered by their 15 or 45 day payment deadline; what cash cannot cover waits as LATER. | [payright/check.py](payright/check.py), `plan()` |
+| **One bill, one payment, for life** | The transfer ID comes from the invoice, a ledger row is written before the money moves, and a bill is PAID only when Cashfree confirms. | `python payright/send.py --selftest` |
+
 ## For judges, start here
 
 | Open this | What you see |
