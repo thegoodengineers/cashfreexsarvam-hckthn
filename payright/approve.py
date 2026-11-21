@@ -145,34 +145,36 @@ def cfg():
     return {k: os.environ.get(k, "") for k in need}, missing
 
 
-def call_request(c, variables, bid):
+def call_request(c, variables, bid, nonce=""):
     body = {"app_config": {"app_id": c["SARVAM_APP_ID"], "app_version": int(c["SARVAM_APP_VERSION"] or 1),
                            "connection_config": {"connection_id": c["SARVAM_CONNECTION_ID"],
                                                  "agent_phone_number": c["SARVAM_AGENT_PHONE"]},
                            "agent_variables": variables},
             "user_config": {"user_phone_number": c["OWNER_PHONE"]}}
     if os.environ.get("SARVAM_CALLBACK_URL"):
-        body["webhook_config"] = {"url": os.environ["SARVAM_CALLBACK_URL"], "metadata": {"batch_id": bid}}
+        body["webhook_config"] = {"url": os.environ["SARVAM_CALLBACK_URL"], "metadata": {"batch_id": bid, "nonce": nonce}}
     return OUTBOUND.format(org=c["SARVAM_ORG_ID"], ws=c["SARVAM_WORKSPACE_ID"]), body
 
 
-def place_call(c, variables, bid, post=requests.post):
-    url, body = call_request(c, variables, bid)
+def place_call(c, variables, bid, nonce="", post=requests.post):
+    url, body = call_request(c, variables, bid, nonce)
     r = post(url, json=body, headers={"X-API-Key": c["SARVAM_AGENT_API_KEY"]}, timeout=30)
     if r.status_code >= 300:
         sys.exit(f"Sarvam refused the call ({r.status_code}): {r.text[:300]}")
     return r.json()["attempt_id"]
 
 
-def read_result(c, attempt_id, started, get=requests.get, wait_s=420, every_s=8, sleep=time.sleep):
-    """Wait for the call to finish. Reads the Lambda callback if there is one, else polls Analytics."""
+def read_result(c, attempt_id, started, nonce="", get=requests.get, wait_s=420, every_s=8, sleep=time.sleep):
+    """Wait for the call to finish. Reads the Lambda callback if there is one, else polls Analytics.
+    The callback is an unsigned webhook, so its result counts only if it carries our nonce."""
     h = {"X-API-Key": c["SARVAM_AGENT_API_KEY"]}
     deadline = time.time() + wait_s
     while time.time() < deadline:
         if os.environ.get("SARVAM_RESULT_URL"):
             r = get(os.environ["SARVAM_RESULT_URL"], params={"attempt_id": attempt_id}, timeout=20)
             p = r.json() if r.status_code == 200 else {}
-            if p.get("attempt_id") == attempt_id:
+            echoed = ((p.get("webhook_config") or {}).get("metadata") or {}).get("nonce")
+            if p.get("attempt_id") == attempt_id and nonce and echoed == nonce:
                 return {"status": p.get("status"), "variables": p.get("final_agent_variables") or {},
                         "transcript": p.get("interaction_transcript"), "source": "callback"}
         else:
@@ -245,10 +247,10 @@ def main(argv):
     else:
         if missing:
             sys.exit("Missing in payright/.env: " + ", ".join(missing))
-        started = datetime.now(IST)
-        attempt_id = place_call(c, variables, bid)
+        started, nonce = datetime.now(IST), uuid.uuid4().hex
+        attempt_id = place_call(c, variables, bid, nonce)
         print(f"calling {c['OWNER_PHONE'][:3]}*****{c['OWNER_PHONE'][-2:]}, attempt {attempt_id}. Waiting for the call to end...")
-        result = read_result(c, attempt_id, started)
+        result = read_result(c, attempt_id, started, nonce)
     approved, reason = decide(result, decisions)
     a = record(HERE / "approvals.json", bid, attempt_id, approved, reason, result)
     (HERE / "approval.json").write_text(json.dumps(a, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -330,6 +332,14 @@ def selftest():
                                            "agent_variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}}]})]
     got = read_result(c, "att-9", datetime.now(IST), get=lambda *a, **k: pages.pop(0), sleep=lambda s: None)
     assert got["status"] == "connected" and decide(got, D)[0] == [doe, wells]
+    # callback route: a forged result without our nonce is ignored, the real one is accepted
+    os.environ["SARVAM_RESULT_URL"] = "http://lambda.test"
+    hook = {"attempt_id": "att-9", "status": "connected", "final_agent_variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}}
+    forged = R({**hook, "webhook_config": {"metadata": {"nonce": "guess"}}})
+    real = R({**hook, "webhook_config": {"metadata": {"nonce": "n-123"}}})
+    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: forged, wait_s=0.2, every_s=0, sleep=lambda s: time.sleep(0.05))["status"] == "no result in time"
+    assert read_result(c, "att-9", datetime.now(IST), "n-123", get=lambda *a, **k: real, sleep=lambda s: None)["source"] == "callback"
+    del os.environ["SARVAM_RESULT_URL"]
     print("selftest ok: only a connected call, an approving decision and the spoken total approve; "
           "replays, changed batches and stopped bills are refused")
 

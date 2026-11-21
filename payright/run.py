@@ -46,6 +46,19 @@ def read_folder(folder, language):
     return invoices
 
 
+def publish(decisions, ledger_path, approval=None):
+    """Update the judges' status page (Lambda). Never stops the run if the page is unreachable."""
+    url = os.environ.get("STATUS_URL")
+    if not url:
+        return
+    try:
+        import requests
+        requests.post(url, timeout=10, headers={"x-payright-token": os.environ.get("STATUS_TOKEN", "")},
+                      json={"decisions": decisions, "ledger": send.load(ledger_path, []), "approval": approval})
+    except Exception as e:
+        print(f"(status page not updated: {type(e).__name__})")
+
+
 def table(decisions):
     for d in decisions:
         amt = "?" if d["amount"] is None else f"{d['amount']:.0f}"
@@ -98,6 +111,7 @@ def main(argv):
     print()
     table(decisions)
     score(decisions, expected, {r["transfer_id"] for r in ledger})
+    publish(decisions, ledger_path)
     pay = [d for d in decisions if d["status"] == "PAY"]
     if "--no-pay" in argv or not pay:
         return print("\nnothing to pay." if not pay else "\n--no-pay: stopped before the approval call.")
@@ -117,13 +131,14 @@ def main(argv):
     else:
         if missing:
             sys.exit("Missing in payright/.env: " + ", ".join(missing))
-        started = datetime.now(approve.IST)
-        attempt = approve.place_call(c, variables, bid)
+        started, nonce = datetime.now(approve.IST), uuid.uuid4().hex
+        attempt = approve.place_call(c, variables, bid, nonce)
         print(f"calling the owner (attempt {attempt}). Waiting for the call to end...")
-        result = approve.read_result(c, attempt, started)
+        result = approve.read_result(c, attempt, started, nonce)
     approved, reason = approve.decide(result, decisions)
     a = approve.record(HERE / "approvals.json", bid, attempt, approved, reason, result)
     print(("APPROVED  " if approved else "NOT APPROVED  ") + reason)
+    publish(decisions, ledger_path, a)
     if not approved:
         return print("nothing is paid.")
 
@@ -138,6 +153,7 @@ def main(argv):
             d["approval"] = a["approval_id"]
     print()
     sent = send.send(to_send, vendors, ledger_path, url, approval=a["approval_id"])
+    publish(decisions, ledger_path, a)
     print(f"sent {len(sent)} payment(s) to Relay, total {sum(e['data']['amount'] for e in sent):.0f}. "
           f"Run the same command again: nothing will be paid twice.")
 

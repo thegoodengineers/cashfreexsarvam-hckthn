@@ -71,6 +71,18 @@ is the existing `<ID>-exec`; do not create a Function URL, use their call link.
       on their phones. Feed it by POSTing `decisions.json` to it; keep the
       last copy in memory or `/tmp` (good enough for a demo).
 
+Code is written and passes its selftests locally; NOT deployed yet (needs the organisers'
+Lambda guide and our ID).
+- `payright/lambda/callback.py`, handler `callback.handler`. After deploy, put its call link in
+  `payright/.env` as both `SARVAM_CALLBACK_URL` and `SARVAM_RESULT_URL`.
+- `payright/lambda/status.py`, handler `status.handler`. Put its call link in `.env` as
+  `STATUS_URL`; `run.py` then updates the page after the check, the call and the send.
+  Optional: set `PAYRIGHT_TOKEN` on the Lambda and the same value as `STATUS_TOKEN` in `.env`.
+- Both are one file, standard library only, runtime Python 3.12. No layers, no packages.
+- The post-call webhook is unsigned, so `approve.py` sends a random nonce with the call and
+  ignores any callback result that does not echo it. A forged "approved" post does nothing.
+- Both keep data in memory and `/tmp` only: fine for the demo, lost when the Lambda goes cold.
+
 ## 4. One command for demo day (by 2:45)
 - [x] `python payright/run.py <folder>` = extract -> check -> approve -> send,
       printing the table and the score line (traps caught, good ones blocked).
