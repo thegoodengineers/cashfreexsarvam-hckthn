@@ -84,6 +84,11 @@ def find_vendor(inv, vendors):
 def check(inv, vendors, seen, today):
     """One invoice -> decision dict. `seen` = invoices already paid or earlier in the batch."""
     stop, ask = [], []
+    evidence = []  # the two values each STOP compared, for the board; no decision reads it
+
+    def differ(what, a_label, a, b_label, b):
+        evidence.append({"check": what, "a_label": a_label, "a": str(a), "b_label": b_label, "b": str(b)})
+
     for f in inv.get("unsure_fields", []):
         ask.append(f"I could not read '{f}' clearly on the invoice.")
 
@@ -98,15 +103,19 @@ def check(inv, vendors, seen, today):
             q, r, a = amount(l.get("qty")), amount(l.get("rate")), amount(l.get("amount"))
             if None not in (q, r, a) and abs(q * r - a) > TOL:
                 stop.append(f"Line '{l.get('description', '?')}': {q:g} x {r:g} is {q * r:.0f}, but the invoice says {a:.0f}.")
+                differ("line item", "Invoice says", f"{a:.0f}", "Quantity x rate", f"{q * r:.0f}")
         line_sum = sum(amount(l.get("amount")) or 0.0 for l in lines)
         expect = sub if sub is not None else total - tax
         if lines and abs(line_sum - expect) > TOL:
             stop.append(f"The line items add up to {line_sum:.0f}, but the invoice says {expect:.0f}.")
+            differ("line items", "Invoice says", f"{expect:.0f}", "Lines add up to", f"{line_sum:.0f}")
         if sub is not None and abs(sub + tax - total) > TOL:
             stop.append(f"Subtotal {sub:.0f} plus tax {tax:.0f} is {sub + tax:.0f}, but the total says {total:.0f}.")
+            differ("total", "Total on the invoice", f"{total:.0f}", "Subtotal + tax", f"{sub + tax:.0f}")
         words = amount(inv.get("total_in_words_value"))
         if words is not None and abs(words - total) > TOL:
             stop.append(f"The amount in words is {words:.0f}, but the amount in figures is {total:.0f}.")
+            differ("amount in words", "In figures", f"{total:.0f}", "In words", f"{words:.0f}")
 
     # 2. Who is asking to be paid?
     v, how = find_vendor(inv, vendors)
@@ -122,6 +131,7 @@ def check(inv, vendors, seen, today):
         stop.append(f"The bank account on this invoice belongs to {owner.get('account_holder') or owner['name']} "
                     f"({owner['name']}), but the bill is from {inv.get('vendor_name') or 'another name'}. "
                     "Do not pay until both vendors confirm.")
+        differ("account owner", "Bill is from", inv.get("vendor_name") or "?", "Account belongs to", owner["name"])
 
     # 3b. A familiar vendor with new bank details is never paid on the invoice's word.
     if v and inv.get("bank_account"):
@@ -130,6 +140,7 @@ def check(inv, vendors, seen, today):
         if on_invoice[0] != on_file[0] or (on_invoice[1] and on_invoice[1] != on_file[1]):
             stop.append(f"The bank account on this invoice is not the account we have on file for {v['name']}. "
                         "Call the vendor on the number we already have before paying.")
+            differ("bank account", "On the invoice", " ".join(on_invoice).strip(), "On our file", " ".join(on_file))
 
     # 4. The same invoice coming back in disguise.
     key, d = invoice_key(inv.get("invoice_no")), parse_date(inv.get("invoice_date"))
@@ -140,6 +151,7 @@ def check(inv, vendors, seen, today):
         if key and key == s["invoice_key"]:
             stop.append(f"Invoice number {s['invoice_no']} from {v['name']} has already been {s['status'].lower()}"
                         + ("." if same_amount else f" for a different amount ({s['amount']:.0f})."))
+            differ("duplicate", "This invoice", inv.get("invoice_no"), "Already seen as", s["invoice_no"])
             break
         if same_amount and d and s.get("date") == d.isoformat():
             ask.append(f"Same vendor, same amount and same date as invoice {s['invoice_no']}. "
@@ -159,7 +171,7 @@ def check(inv, vendors, seen, today):
         "invoice_no": inv.get("invoice_no"), "file": inv.get("file"),
         "vendor_id": v["id"] if v else None, "vendor": v["name"] if v else inv.get("vendor_name"),
         "amount": total, "status": "STOP" if stop else "ASK" if ask else "PAY",
-        "reasons": stop + ask, "days_left": days_left, "transfer_id": transfer_id,
+        "reasons": stop + ask, "evidence": evidence, "days_left": days_left, "transfer_id": transfer_id,
         "invoice_key": key, "date": d.isoformat() if d else None,
         # money only ever goes to the account on file, never to one read off the invoice
         "bank_account": v["bank_account"] if v else None, "ifsc": v["ifsc"] if v else None,
