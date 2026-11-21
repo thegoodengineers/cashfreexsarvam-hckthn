@@ -5,6 +5,10 @@ Team The Good Engineers: Chirag, Abhijeet, Bhumika, Ayush.
 
 **A model reads, code decides, a person approves, and money only goes to the account we already have on file.**
 
+[![The 25-second story: nine bills, five lying, one phone call](docs/PayRight_story.jpg)](docs/PayRight_story.mp4)
+
+*25-second animated story of one real run. Click to play: [docs/PayRight_story.mp4](docs/PayRight_story.mp4).*
+
 ## What is new here
 
 This is not a model with a payout button. The model only reads; everything below is plain code or a person.
