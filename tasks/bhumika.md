@@ -51,3 +51,5 @@ expected results in `payright/invoice_answer_key.json`.
 - [x] `python payright/evidence.py all` scores the reader field by field and
       the checker's decisions: `docs/evidence/PayRight_Evidence.pdf`.
       21 invoices: traps 8/8, clean stopped 0/13, wrong payments 0, fields 95%.
+- [x] Invoices in all 22 Indian languages + English (`payright/test_sets/languages/`),
+      each read with its own language code. 41 invoices in total, 23 languages.

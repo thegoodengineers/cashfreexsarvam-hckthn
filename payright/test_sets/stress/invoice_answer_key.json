@@ -6,6 +6,7 @@
       "STOP"
     ],
     "trap": "amount in words (42,700) disagrees with the figures (47,200)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v3",
       "vendor_printed": "Hope Electricals",
@@ -28,6 +29,7 @@
       "STOP"
     ],
     "trap": "one line multiplied wrong: 12 x 450 printed as 5,600",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -50,6 +52,7 @@
       "PAY"
     ],
     "trap": "clean, Hindi invoice with every number in Devanagari digits",
+    "language": "hi-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "वेल्स पेंट्स",
@@ -72,6 +75,7 @@
       "PAY"
     ],
     "trap": "clean, vendor name misspelled on the letterhead ('Doe Hardwares Supply')",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardwares Supply",
@@ -94,6 +98,7 @@
       "PAY"
     ],
     "trap": "clean",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v3",
       "vendor_printed": "Hope Electricals",
@@ -117,6 +122,7 @@
       "STOP"
     ],
     "trap": "same bill as st05 sent again with a new number (HE-321)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v3",
       "vendor_printed": "Hope Electricals",
@@ -140,6 +146,7 @@
       "ASK"
     ],
     "trap": "clean, handwritten, photographed in poor light and slightly shaken",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "Wells Paints and Chemicals",
@@ -162,6 +169,7 @@
       "PAY"
     ],
     "trap": "clean, total above one lakh, amount in words in lakh notation, Tamil labels",
+    "language": "ta-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "வெல்ஸ் பெயிண்ட்ஸ்",

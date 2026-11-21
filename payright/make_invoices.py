@@ -3,6 +3,7 @@
   python make_invoices.py            demo set   -> payright/invoices/            (8: 4 clean, 4 traps)
   python make_invoices.py stress     stress set -> payright/test_sets/stress/    (8 harder cases)
   python make_invoices.py ladder     fail-safe  -> payright/test_sets/ladder/    (5 photos, perfect -> unreadable)
+  python make_invoices.py languages  languages  -> payright/test_sets/languages/ (the other 20 of India's 22 languages)
   python make_invoices.py all
 
 Every set gets an answer key (`invoice_answer_key.json`) that run.py and evidence.py read:
@@ -163,7 +164,7 @@ def printed(it):
     return f"""<!doctype html><html><head><meta charset=utf-8><style>{CSS}</style></head>
 <body class="{it.get('cls', '')}" style="--accent:{it.get('accent', '#1f5fa8')}"><div class=page>
  <div class=head>
-  <div><div class=brand>{it.get('brand') or v['name']}</div>
+  <div><div class=brand dir=auto>{it.get('brand') or v['name']}</div>
    <div class=sub>{v['addr']}<br>Ph: {v['phone']} &nbsp;·&nbsp; GSTIN: <span class=mono>{it.get('gstin') or v['gstin']}</span></div></div>
   <div class=doc><div class=t>{L['invoice']}</div>
    <div class=meta><div><b>{L['no']}</b> {it['no']}</div><div><b>{L['date']}</b> {num(it['date'])}</div>{due_html}</div></div>
@@ -385,9 +386,82 @@ LADDER = [  # the same kind of clean bill, photographed worse and worse
     for lv in range(5)
 ]
 
+# All 22 languages of the Eighth Schedule are read by Sarvam Document AI; Hindi and Tamil are in the
+# demo set, so here are the other 20. Labels: invoice, no, date, total, words, bank, holder, account.
+# `words` is the amount in words for 11,800 in that language; None = printed in English instead
+# (common on Indian invoices, and safer where our own spelling is not native-checked).
+# `review` = labels written best-effort; a native speaker should glance at them.
+LANGS = [
+    ("bn-IN", "Bengali", DOE, "ডো হার্ডওয়্যার সাপ্লাইজ",
+     ("ট্যাক্স ইনভয়েস", "চালান নং", "তারিখ", "মোট প্রদেয়", "কথায়", "ব্যাংকের বিবরণ", "অ্যাকাউন্টধারী", "অ্যাকাউন্ট নম্বর"),
+     "এগারো হাজার আটশো টাকা মাত্র", False),
+    ("te-IN", "Telugu", WELLS, "వెల్స్ పెయింట్స్",
+     ("పన్ను ఇన్వాయిస్", "బిల్లు సంఖ్య", "తేదీ", "చెల్లించవలసిన మొత్తం", "అక్షరాలలో", "బ్యాంక్ వివరాలు", "ఖాతాదారు", "ఖాతా సంఖ్య"),
+     "పదకొండు వేల ఎనిమిది వందల రూపాయలు మాత్రమే", False),
+    ("mr-IN", "Marathi", HOPE, "होप इलेक्ट्रिकल्स",
+     ("कर बीजक", "बीजक क्रमांक", "दिनांक", "एकूण देय रक्कम", "अक्षरी", "बँक तपशील", "खातेधारक", "खाते क्रमांक"),
+     "अकरा हजार आठशे रुपये फक्त", False),
+    ("gu-IN", "Gujarati", DOE, "ડો હાર્ડવેર સપ્લાયઝ",
+     ("ટેક્સ ઇન્વૉઇસ", "બિલ નંબર", "તારીખ", "કુલ ચૂકવવાપાત્ર રકમ", "શબ્દોમાં", "બેંક વિગતો", "ખાતાધારક", "ખાતા નંબર"),
+     "અગિયાર હજાર આઠસો રૂપિયા પૂરા", False),
+    ("kn-IN", "Kannada", WELLS, "ವೆಲ್ಸ್ ಪೇಂಟ್ಸ್",
+     ("ತೆರಿಗೆ ಸರಕುಪಟ್ಟಿ", "ಬಿಲ್ ಸಂಖ್ಯೆ", "ದಿನಾಂಕ", "ಪಾವತಿಸಬೇಕಾದ ಒಟ್ಟು ಮೊತ್ತ", "ಅಕ್ಷರಗಳಲ್ಲಿ", "ಬ್ಯಾಂಕ್ ವಿವರಗಳು", "ಖಾತೆದಾರರು", "ಖಾತೆ ಸಂಖ್ಯೆ"),
+     "ಹನ್ನೊಂದು ಸಾವಿರದ ಎಂಟು ನೂರು ರೂಪಾಯಿಗಳು ಮಾತ್ರ", False),
+    ("ml-IN", "Malayalam", HOPE, "ഹോപ്പ് ഇലക്ട്രിക്കൽസ്",
+     ("ടാക്സ് ഇൻവോയ്സ്", "ബിൽ നമ്പർ", "തീയതി", "ആകെ നൽകേണ്ട തുക", "അക്ഷരത്തിൽ", "ബാങ്ക് വിവരങ്ങൾ", "അക്കൗണ്ട് ഉടമ", "അക്കൗണ്ട് നമ്പർ"),
+     "പതിനൊന്നായിരത്തി എണ്ണൂറ് രൂപ മാത്രം", False),
+    ("od-IN", "Odia", DOE, "ଡୋ ହାର୍ଡୱେର ସପ୍ଲାଇଜ",
+     ("ଟିକସ ଇନଭଏସ", "ବିଲ ନମ୍ବର", "ତାରିଖ", "ମୋଟ ଦେୟ ରାଶି", "ଅକ୍ଷରରେ", "ବ୍ୟାଙ୍କ ବିବରଣୀ", "ଖାତାଧାରୀ", "ଖାତା ନମ୍ବର"),
+     "ଏଗାର ହଜାର ଆଠ ଶହ ଟଙ୍କା ମାତ୍ର", False),
+    ("pa-IN", "Punjabi", WELLS, "ਵੈੱਲਜ਼ ਪੇਂਟਸ",
+     ("ਟੈਕਸ ਇਨਵੌਇਸ", "ਬਿੱਲ ਨੰਬਰ", "ਮਿਤੀ", "ਕੁੱਲ ਭੁਗਤਾਨ ਯੋਗ ਰਕਮ", "ਸ਼ਬਦਾਂ ਵਿੱਚ", "ਬੈਂਕ ਵੇਰਵੇ", "ਖਾਤਾ ਧਾਰਕ", "ਖਾਤਾ ਨੰਬਰ"),
+     "ਗਿਆਰਾਂ ਹਜ਼ਾਰ ਅੱਠ ਸੌ ਰੁਪਏ ਮਾਤਰ", False),
+    ("as-IN", "Assamese", HOPE, "হ'প ইলেকট্ৰিকেলছ",
+     ("কৰ চালান", "চালান নং", "তাৰিখ", "মুঠ দেয় ধন", "আখৰত", "বেংকৰ বিৱৰণ", "একাউণ্টধাৰী", "একাউণ্ট নম্বৰ"),
+     "এঘাৰ হাজাৰ আঠশ টকা মাত্ৰ", False),
+    ("ur-IN", "Urdu", DOE, "ڈو ہارڈویئر سپلائیز",
+     ("ٹیکس انوائس", "بل نمبر", "تاریخ", "کل قابل ادا رقم", "الفاظ میں", "بینک کی تفصیلات", "کھاتہ دار", "کھاتہ نمبر"),
+     "گیارہ ہزار آٹھ سو روپے صرف", False),
+    ("ne-IN", "Nepali", WELLS, "वेल्स पेन्ट्स",
+     ("कर बीजक", "बिल नम्बर", "मिति", "जम्मा तिर्नुपर्ने रकम", "अक्षरमा", "बैंक विवरण", "खातावाला", "खाता नम्बर"),
+     "एघार हजार आठ सय रुपैयाँ मात्र", False),
+    ("kok-IN", "Konkani", HOPE, "होप इलॅक्ट्रिकल्स",
+     ("कर बिल", "बिल क्रमांक", "तारीख", "एकूण रक्कम", "उतरांनी", "बँके तपशील", "खातेदार", "खातो क्रमांक"), None, True),
+    ("mai-IN", "Maithili", DOE, "डो हार्डवेयर सप्लाइज",
+     ("कर बीजक", "बिल संख्या", "तिथि", "कुल देय राशि", "शब्दमे", "बैंक विवरण", "खाताधारी", "खाता संख्या"), None, True),
+    ("sa-IN", "Sanskrit", WELLS, "वेल्स्-पेण्ट्स्",
+     ("करपत्रम्", "पत्रसङ्ख्या", "दिनाङ्कः", "देयः सम्पूर्णराशिः", "अक्षरैः", "वित्तकोषविवरणम्", "लेखाधारकः", "लेखासङ्ख्या"), None, True),
+    ("doi-IN", "Dogri", HOPE, "होप इलैक्ट्रिकल्स",
+     ("टैक्स बिल", "बिल नंबर", "तरीक", "कुल देनी रकम", "अक्खरें च", "बैंक ब्यौरा", "खाता धारक", "खाता नंबर"), None, True),
+    ("brx-IN", "Bodo", DOE, "डो हार्डवेयार साप्लाइज",
+     ("ट्याक्स बिल", "बिल नम्बर", "तारिख", "गासै रां", "सोदोबआव", "बेंकनि बिबुं", "खाता गिरि", "खाता नम्बर"), None, True),
+    ("ks-IN", "Kashmiri", WELLS, "ویلز پینٹس",
+     ("ٹیکس بِل", "بِل نَمبَر", "تأریخ", "کُل رقم", "لفظن منٛز", "بینکُک تفصیل", "کھاتہٕ دار", "کھاتہٕ نَمبَر"), None, True),
+    ("sd-IN", "Sindhi", HOPE, "هوپ اليڪٽريڪلز",
+     ("ٽيڪس انوائس", "بل نمبر", "تاريخ", "ڪل ادا ڪرڻ واري رقم", "لفظن ۾", "بئنڪ جو تفصيل", "کاتي دار", "کاتي نمبر"), None, True),
+    ("mni-IN", "Manipuri (Meitei script)", DOE, "ꯗꯣ ꯍꯥꯔꯗꯋꯦꯌꯥꯔ ꯁꯄ꯭ꯂꯥꯏꯖ",
+     ("ꯇꯦꯛꯁ ꯏꯅꯚꯣꯏꯁ", "ꯕꯤꯜ ꯅꯝꯕꯔ", "ꯇꯥꯡ", "ꯄꯨꯟꯅꯥ ꯁꯦꯜ", "ꯋꯥꯍꯩꯗꯥ", "ꯕꯦꯉ꯭ꯛ ꯃꯔꯣꯜ", "ꯈꯥꯇꯥ ꯂꯩꯕꯥ", "ꯈꯥꯇꯥ ꯅꯝꯕꯔ"), None, True),
+    ("sat-IN", "Santali (Ol Chiki script)", WELLS, "ᱣᱮᱞᱥ ᱯᱮᱱᱴᱥ",
+     ("ᱴᱮᱠᱥ ᱤᱱᱣᱚᱭᱮᱥ", "ᱵᱤᱞ ᱱᱚᱢᱵᱚᱨ", "ᱛᱟᱨᱤᱠ", "ᱢᱩᱴ ᱴᱟᱠᱟ", "ᱟᱹᱲᱟᱹ ᱛᱮ", "ᱵᱮᱝᱠ ᱵᱤᱵᱨᱚᱬ", "ᱠᱷᱟᱛᱟ ᱫᱟᱨ", "ᱠᱷᱟᱛᱟ ᱱᱚᱢᱵᱚᱨ"), None, True),
+]
+LANG_LINES = {"v1": [("PVC pipe 1 inch, 6 m", "3917", 32, 250), ("Brass ball valve 1 inch", "8481", 5, 400)],
+              "v2": [("Enamel paint 20 L", "3208", 2, 4500), ("Paint brush 4 inch", "9603", 5, 200)],
+              "v3": [("LED panel 12 W", "9405", 20, 350), ("MCB 32 A single pole", "8536", 12, 250)]}
+LABEL_KEYS = ("invoice", "no", "date", "total", "words", "bank", "holder", "acct")
+PREFIX = {"v1": "DH-03", "v2": "WP/1", "v3": "HE-4"}
+MULTI = [
+    (f"ml{i + 1:02d}_{code.split('-')[0]}.png", "PAY", OK,
+     f"clean, {name}" + (" (labels best-effort: native speaker to review; amount in words in English)" if review else ""),
+     dict(vendor=v, no=f"{PREFIX[v['id']]}{i + 1:02d}", date=f"{i + 1:02d}/11/2026", brand=brand, lang=code,
+          labels=dict(zip(LABEL_KEYS, labels)), words_text=words, accent=["#1f5fa8", "#0e7a5a", "#b5541c"][i % 3],
+          lines=LANG_LINES[v["id"]], review=review))
+    for i, (code, name, v, brand, labels, words, review) in enumerate(LANGS)
+]
+
 SETS = {"demo": (HERE / "invoices", HERE / "invoice_answer_key.json", DEMO),
         "stress": (HERE / "test_sets" / "stress", None, STRESS),
-        "ladder": (HERE / "test_sets" / "ladder", None, LADDER)}
+        "ladder": (HERE / "test_sets" / "ladder", None, LADDER),
+        "languages": (HERE / "test_sets" / "languages", None, MULTI)}
 
 
 def make(name):
@@ -408,7 +482,9 @@ def make(name):
         else:
             render(printed(it), dst, (900, 1273))
         print(f"made {name}/{file} -> {expected}")
-        key.append({"file": file, "expected": expected, "accept": accept, "trap": trap, "truth": truth(it)})
+        lang = it.get("lang") or ("hi-IN" if it.get("labels") is HINDI else "ta-IN" if it.get("labels") is TAMIL else "en-IN")
+        key.append({"file": file, "expected": expected, "accept": accept, "trap": trap, "language": lang,
+                    **({"native_review": True} if it.get("review") else {}), "truth": truth(it)})
     key_path.write_text(json.dumps(key, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"wrote {len(key)} invoices to {out} and {key_path.name}")
 

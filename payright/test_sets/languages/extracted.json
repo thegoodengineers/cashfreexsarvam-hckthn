@@ -1,0 +1,982 @@
+[
+  {
+    "vendor_name": "ডো হার্ডওয়্যার সাপ্লাইজ",
+    "vendor_name_latin": null,
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0301",
+    "invoice_date": "01/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "এগারো হাজার আটশো টাকা মাত্র",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml01_bn.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9844,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9999,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "వెల్స్ పెయింట్స్",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/102",
+    "invoice_date": "02/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200,
+        "amount": 1000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "పదకొండు వేల ఎనిమిది వందల రూపాయలు మాత్రమే",
+    "total_in_words_value": 11800,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml02_te.png",
+    "confidence": {
+      "vendor_name": 0.9999,
+      "vendor_name_latin": 0.1313,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9999,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "होप इलेक्ट्रिकल्स",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-403",
+    "invoice_date": "03/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "अकरा हजार आठशे रुपये फक्त",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml03_mr.png",
+    "confidence": {
+      "vendor_name": 0.9988,
+      "vendor_name_latin": 0.1328,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "ડો હાર્ડવેર સપ્લાયઝ",
+    "vendor_name_latin": null,
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0304",
+    "invoice_date": "04/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "અગિયાર હજાર આઠસો રૂપિયા પૂરા",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml04_gu.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9978,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9999,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "ವೆಲ್ಸ್ ಪೇಂಟ್ಸ್",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/105",
+    "invoice_date": "05/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200,
+        "amount": 1000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "ಹನ್ನೊಂದು ಸಾವಿರದ ಎಂಟು ನೂರು ರೂಪಾಯಿಗಳು ಮಾತ್ರ",
+    "total_in_words_value": 11800,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml05_kn.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1326,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.5,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "ഹോപ്പ് ഇലക്ട്രിക്കൽസ്",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-406",
+    "invoice_date": "06/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "പതിനൊന്നായിരത്തി എണ്ണൂറ് രൂപ മാത്രം",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml06_ml.png",
+    "confidence": {
+      "vendor_name": 0.998,
+      "vendor_name_latin": 0.128,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.5,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "ଡୋ ହାର୍ଡୱେର ସପ୍ଲାଇଜ",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH - 0307",
+    "invoice_date": "07/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "ଏଗାର ହଜାର ଆଠ ଶହ ଟଙ୍କା ମାତ୍ର",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml07_od.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1083,
+      "gstin": 0.79,
+      "invoice_no": 0.9825,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9844,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.5,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "ਵੈੱਲਜ਼ ਪੇਂਟਸ",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/108",
+    "invoice_date": "08/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200,
+        "amount": 1000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "ਗਿਆਰਾਂ ਹਜ਼ਾਰ ਅੱਠ ਸੌ ਰੁਪਏ ਮਾਤਰ",
+    "total_in_words_value": 11800,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml08_pa.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1328,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9999,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "হ'প ইলেকট্রিক্যালছ",
+    "vendor_name_latin": null,
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-409",
+    "invoice_date": "09/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "এঘাৰ হাজাৰ আঠশ টকা মাত্ৰ",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml09_as.png",
+    "confidence": {
+      "vendor_name": 0.79,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.5,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "ڈو ہارڈویئر سپلائیز",
+    "vendor_name_latin": null,
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0310",
+    "invoice_date": "10/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "گیارہ ہزار آٹھ سو روپے صرف",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml10_ur.png",
+    "confidence": {
+      "vendor_name": 0.998,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9878,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "वेल्स पेन्ट्स",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/111",
+    "invoice_date": "11/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200,
+        "amount": 1000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "एघार हजार आठ सय रुपैयाँ मात्र",
+    "total_in_words_value": 11800,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml11_ne.png",
+    "confidence": {
+      "vendor_name": 0.9981,
+      "vendor_name_latin": 0.1328,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "होप इलॅक्ट्रिकल्स",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-412",
+    "invoice_date": "12/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml12_kok.png",
+    "confidence": {
+      "vendor_name": 0.9997,
+      "vendor_name_latin": 0.1327,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "डो हार्डवेयर सप्लाइज",
+    "vendor_name_latin": "Do Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0313",
+    "invoice_date": "13/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml13_mai.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1327,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9904,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "वेल्स्-पेण्ट्स्",
+    "vendor_name_latin": "Wells-Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/114",
+    "invoice_date": "14/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200,
+        "amount": 1000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml14_sa.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1224,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "होप इलैक्ट्रिकल्स",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-415",
+    "invoice_date": "15/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml15_doi.png",
+    "confidence": {
+      "vendor_name": 0.9999,
+      "vendor_name_latin": 0.1327,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9997,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "डो हार्डवेयार साप्लाइज",
+    "vendor_name_latin": null,
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0316",
+    "invoice_date": "16/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250,
+        "amount": 8000
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400,
+        "amount": 2000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml16_brx.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9802,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "ویلز پینٹس",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/117",
+    "invoice_date": "17/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500.0,
+        "amount": 9000.0
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200.0,
+        "amount": 1000.0
+      }
+    ],
+    "subtotal": 10000.0,
+    "tax": 1800.0,
+    "total": 11800.0,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800.0,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml17_ks.png",
+    "confidence": {
+      "vendor_name": 0.9998,
+      "vendor_name_latin": 0.1325,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9978,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "ہوپ الیکٹریکلز",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-418",
+    "invoice_date": "18/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 20,
+        "rate": 350,
+        "amount": 7000
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 12,
+        "rate": 250,
+        "amount": 3000
+      }
+    ],
+    "subtotal": 10000,
+    "tax": 1800,
+    "total": 11800,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "ml18_sd.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1298,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9998,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9904,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  },
+  {
+    "vendor_name": "ꯗꯣ ꯍꯥꯔꯗꯋꯦꯌꯥꯔ ꯁꯄ꯭ꯂꯥꯏꯖ",
+    "vendor_name_latin": null,
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0319",
+    "invoice_date": "19/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 32,
+        "rate": 250.0,
+        "amount": 8000.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 400.0,
+        "amount": 2000.0
+      }
+    ],
+    "subtotal": 10000.0,
+    "tax": 1800.0,
+    "total": 11800.0,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "ml19_mni.png",
+    "confidence": {
+      "vendor_name": 0.9999,
+      "vendor_name_latin": 0,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9983,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9998,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "ᱣᱮᱞᱥ ᱯᱮᱱᱴᱥ",
+    "vendor_name_latin": null,
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/120",
+    "invoice_date": "20/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L",
+        "qty": 2,
+        "rate": 4500.0,
+        "amount": 9000.0
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 5,
+        "rate": 200.0,
+        "amount": 1000.0
+      }
+    ],
+    "subtotal": 10000.0,
+    "tax": 1800.0,
+    "total": 11800.0,
+    "total_in_words_text": "Rupees Eleven Thousand Eight Hundred Only",
+    "total_in_words_value": 11800.0,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "ml20_sat.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1106,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9998,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.79,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name"
+    ]
+  }
+]

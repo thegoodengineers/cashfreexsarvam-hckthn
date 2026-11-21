@@ -3,7 +3,7 @@
 Cashfree x Sarvam Buildathon, 21 Nov 2026, Problem Statement 3: *Pay the right bill, to the right person.*
 Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/PayRight_Problem_and_Solution.pdf`.
 
-**In one line:** across 21 invoices in three scripts, read by the live Sarvam reader, **8 of 8 traps were caught, 0 of 13 good bills were stopped (1 was asked about once), and 0 wrong payments were approved.**
+**In one line:** across 41 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, read by the live Sarvam reader, **8 of 8 traps were caught and 0 wrong payments were approved.** 96% of 410 critical fields and 98% of 123 money fields were read exactly right.
 
 ---
 
@@ -68,16 +68,16 @@ Two other traps were stopped with their own reasons:
 
 ---
 
-## 3. Evidence: 21 invoices, scored field by field
+## 3. Evidence: 41 invoices in 23 languages, scored field by field
 
-We did not stop at the demo set. We built 21 invoices ourselves, so we know every value truly printed on each one. Each went through the live Sarvam reader and our real checker. Full report, with every invoice image beside what was read: `docs/evidence/PayRight_Evidence.pdf`.
+We did not stop at the demo set. We built 41 invoices ourselves, so we know every value truly printed on each one. Each went through the live Sarvam reader and our real checker. Full report, with every invoice image beside what was read: `docs/evidence/PayRight_Evidence.pdf`.
 
-| | Demo set (8) | Stress set (8) | Fail-safe ladder (5) | **All 21** |
-|---|---|---|---|---|
-| Traps caught before money moved | 4 / 4 | 3 / 3 | 1 / 1 | **8 / 8** |
-| Clean invoices wrongly stopped | 0 / 4 | 0 / 5 (1 asked) | 0 / 4 | **0 / 13** (1 asked) |
-| Wrong payments approved | 0 | 0 | 0 | **0** |
-| Critical fields read exactly right | 78 / 80 | 77 / 80 | 45 / 50 | **200 / 210 (95%)** |
+| | Demo set (8) | Stress set (8) | Fail-safe ladder (5) | 20 languages (20) | **All 41** |
+|---|---|---|---|---|---|
+| Traps caught before money moved | 4 / 4 | 3 / 3 | 1 / 1 | none planted | **8 / 8** |
+| Clean invoices wrongly stopped | 0 / 4 | 0 / 5 (1 asked) | 0 / 4 | 1 / 20 (9 asked) | **1 / 33** (10 asked) |
+| Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
+| Critical fields read exactly right | 78 / 80 | 77 / 80 | 45 / 50 | 193 / 200 | **393 / 410 (96%)** |
 
 - **Stress set:** each invoice targets a check the demo set does not:
   - the amount in words disagrees with the figures
@@ -87,6 +87,11 @@ We did not stop at the demo set. We built 21 invoices ourselves, so we know ever
   - the same bill re-sent with a new number
   - a dim handwritten photo
   - a total above one lakh, with the words in lakh notation
+- **India's languages:** one clean bill in each of the other 20 scheduled languages, each read with its own language code: Bengali, Telugu, Marathi, Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Urdu, Nepali, Konkani, Maithili, Sanskrit, Dogri, Bodo, Kashmiri, Sindhi, Manipuri (Meitei script) and Santali (Ol Chiki script).
+  - Sarvam read every total, account number and IFSC right in all 20.
+  - It scores non-English vendor names at 0.5 confidence, so 9 clean bills were asked about once instead of paid. A rule we measured on the saved reads would turn all 9 into PAY and change nothing else in all 41: do not ask about the name when the GSTIN or the account on file already proves the vendor. That rule goes in the checker, and Chirag owns that change.
+  - The Assamese bill was stopped. The GSTIN slip and an Assamese name with no English reading left the vendor unidentified. It was safe, but wrong. An Assamese name in the vendor list would fix it.
+  - For 9 lower-resource languages the labels are our best effort and the amount in words is in English. A native speaker should review them.
 - **Fail-safe ladder:** the same kind of clean bill, photographed from a flat scan down to barely readable. The first four were all paid correctly. The fifth was refused.
 - **What the ladder taught us.** On the unreadable photo, Sarvam invented a bank account (`0123456789012345`), a GSTIN and a 2023 date. It scored that account at confidence 0. Our reader was treating a 0 as fully sure, because in Python `0 or 1` is `1`. We fixed it, and a 0 now marks the field unsure. The bill was never at risk: code compares every account with the one on file. **This is our design working. We do not trust the model's confidence; we cross-check what it reads.**
 - **Honest gaps:**
@@ -114,7 +119,7 @@ We did not stop at the demo set. We built 21 invoices ourselves, so we know ever
 | 2:40 to 4:00 | Ayush | phone on speaker, the call live | **The owner approves by phone.** The agent says how many bills are clean and the total, which were stopped and why, in Hindi. Raghu must say the total aloud. The terminal prints `APPROVED`. |
 | 4:00 to 4:50 | Chirag | Relay Runs tab, then the Payouts test dashboard | **The payouts show as successful.** Open one transfer and show its transfer ID. "That ID comes from the invoice itself, not from this attempt." |
 | 4:50 to 5:20 | Chirag | run the same command again | **Nothing is paid twice.** Every row comes back as already sent. Nothing new appears in Relay. |
-| 5:20 to 6:00 | Bhumika | the `SCORE` line, then the top of `docs/evidence/PayRight_Evidence.pdf` | **Our numbers.** "Twenty-one invoices, scored field by field against what is truly printed: eight of eight traps caught, zero good bills stopped, zero wrong payments. On a photo nobody could read, the AI invented a bank account. Our code refused it." Then the judges' fresh batch numbers, if we got one. Close: "A model reads, code decides, a person approves, and money only goes to the account on file." |
+| 5:20 to 6:00 | Bhumika | the `SCORE` line, then the top of `docs/evidence/PayRight_Evidence.pdf` | **Our numbers.** "Forty-one invoices in twenty-three languages, every Indian language in the Constitution, scored field by field against what is truly printed: eight of eight traps caught, zero wrong payments. On a photo nobody could read, the AI invented a bank account. Our code refused it." Then the judges' fresh batch numbers, if we got one. Close: "A model reads, code decides, a person approves, and money only goes to the account on file." |
 
 **Fallbacks**
 - **Reading is slow** (more than about 60 s): stop it and run `python payright/run.py payright/invoices.json --cash 100000`. That uses the invoices already read this afternoon. Say so honestly.

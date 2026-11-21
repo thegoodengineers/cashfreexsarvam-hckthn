@@ -6,6 +6,7 @@
       "PAY"
     ],
     "trap": "clean, English",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -29,6 +30,7 @@
       "LATER"
     ],
     "trap": "clean, vendor name and labels in Tamil",
+    "language": "ta-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "வெல்ஸ் பெயிண்ட்ஸ்",
@@ -51,6 +53,7 @@
       "PAY"
     ],
     "trap": "clean, vendor name and labels in Hindi",
+    "language": "hi-IN",
     "truth": {
       "vendor_id": "v3",
       "vendor_printed": "होप इलेक्ट्रिकल्स",
@@ -73,6 +76,7 @@
       "STOP"
     ],
     "trap": "changed account: Hope Electricals asks to be paid into 026291800001190",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v3",
       "vendor_printed": "Hope Electricals",
@@ -95,6 +99,7 @@
       "STOP"
     ],
     "trap": "wrong arithmetic: 20,000 + 3,600 GST shown as total 26,300",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "Wells Paints and Chemicals",
@@ -117,6 +122,7 @@
       "STOP"
     ],
     "trap": "duplicate in disguise: inv01 again as dh/101, date 12 Nov 2026, new layout",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -139,6 +145,7 @@
       "STOP"
     ],
     "trap": "mismatched name: Jane D Traders asks to be paid into John Doe's account",
+    "language": "en-IN",
     "truth": {
       "vendor_id": null,
       "vendor_printed": "Jane D Traders",
@@ -161,6 +168,7 @@
       "PAY"
     ],
     "trap": "clean, handwritten bill-book page, photographed",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v2",
       "vendor_printed": "Wells Paints and Chemicals",

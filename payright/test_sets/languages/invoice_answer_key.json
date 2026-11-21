@@ -1,0 +1,471 @@
+[
+  {
+    "file": "ml01_bn.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Bengali",
+    "language": "bn-IN",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "ডো হার্ডওয়্যার সাপ্লাইজ",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0301",
+      "invoice_date": "01/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml02_te.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Telugu",
+    "language": "te-IN",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "వెల్స్ పెయింట్స్",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/102",
+      "invoice_date": "02/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml03_mr.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Marathi",
+    "language": "mr-IN",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "होप इलेक्ट्रिकल्स",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-403",
+      "invoice_date": "03/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml04_gu.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Gujarati",
+    "language": "gu-IN",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "ડો હાર્ડવેર સપ્લાયઝ",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0304",
+      "invoice_date": "04/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml05_kn.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Kannada",
+    "language": "kn-IN",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "ವೆಲ್ಸ್ ಪೇಂಟ್ಸ್",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/105",
+      "invoice_date": "05/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml06_ml.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Malayalam",
+    "language": "ml-IN",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "ഹോപ്പ് ഇലക്ട്രിക്കൽസ്",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-406",
+      "invoice_date": "06/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml07_od.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Odia",
+    "language": "od-IN",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "ଡୋ ହାର୍ଡୱେର ସପ୍ଲାଇଜ",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0307",
+      "invoice_date": "07/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml08_pa.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Punjabi",
+    "language": "pa-IN",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "ਵੈੱਲਜ਼ ਪੇਂਟਸ",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/108",
+      "invoice_date": "08/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml09_as.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Assamese",
+    "language": "as-IN",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "হ'প ইলেকট্ৰিকেলছ",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-409",
+      "invoice_date": "09/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml10_ur.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Urdu",
+    "language": "ur-IN",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "ڈو ہارڈویئر سپلائیز",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0310",
+      "invoice_date": "10/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml11_ne.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Nepali",
+    "language": "ne-IN",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "वेल्स पेन्ट्स",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/111",
+      "invoice_date": "11/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml12_kok.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Konkani (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "kok-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "होप इलॅक्ट्रिकल्स",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-412",
+      "invoice_date": "12/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml13_mai.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Maithili (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "mai-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "डो हार्डवेयर सप्लाइज",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0313",
+      "invoice_date": "13/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml14_sa.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Sanskrit (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "sa-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "वेल्स्-पेण्ट्स्",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/114",
+      "invoice_date": "14/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml15_doi.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Dogri (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "doi-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "होप इलैक्ट्रिकल्स",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-415",
+      "invoice_date": "15/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml16_brx.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Bodo (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "brx-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "डो हार्डवेयार साप्लाइज",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0316",
+      "invoice_date": "16/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml17_ks.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Kashmiri (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "ks-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "ویلز پینٹس",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/117",
+      "invoice_date": "17/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "ml18_sd.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Sindhi (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "sd-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "هوپ اليڪٽريڪلز",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-418",
+      "invoice_date": "18/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "ml19_mni.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Manipuri (Meitei script) (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "mni-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "ꯗꯣ ꯍꯥꯔꯗꯋꯦꯌꯥꯔ ꯁꯄ꯭ꯂꯥꯏꯖ",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0319",
+      "invoice_date": "19/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "ml20_sat.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Santali (Ol Chiki script) (labels best-effort: native speaker to review; amount in words in English)",
+    "language": "sat-IN",
+    "native_review": true,
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "ᱣᱮᱞᱥ ᱯᱮᱱᱴᱥ",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/120",
+      "invoice_date": "20/11/2026",
+      "subtotal": 10000,
+      "tax": 1800.0,
+      "total": 11800.0,
+      "total_in_words_value": 11800.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  }
+]

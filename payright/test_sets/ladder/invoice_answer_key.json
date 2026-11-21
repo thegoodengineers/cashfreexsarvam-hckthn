@@ -7,6 +7,7 @@
       "ASK"
     ],
     "trap": "clean; photo quality 0 of 4 (flat scan)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -30,6 +31,7 @@
       "ASK"
     ],
     "trap": "clean; photo quality 1 of 4 (good phone photo)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -53,6 +55,7 @@
       "ASK"
     ],
     "trap": "clean; photo quality 2 of 4 (dim, slight shake)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -76,6 +79,7 @@
       "ASK"
     ],
     "trap": "clean; photo quality 3 of 4 (dark, blurred, low resolution)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",
@@ -99,6 +103,7 @@
       "STOP"
     ],
     "trap": "clean; photo quality 4 of 4 (barely readable: must not be paid on what was read)",
+    "language": "en-IN",
     "truth": {
       "vendor_id": "v1",
       "vendor_printed": "Doe Hardware Supplies",

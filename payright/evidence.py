@@ -42,7 +42,11 @@ SETS = {"demo": (HERE / "invoices", HERE / "invoice_answer_key.json",
                    "a misspelt vendor, a re-sent bill, a dim photo, an amount above one lakh."),
         "ladder": (HERE / "test_sets" / "ladder", None,
                    "Fail-safe ladder", "The same kind of clean bill, photographed worse and worse. "
-                   "A bad photo may be read or may be asked about. It must never be paid wrongly.")}
+                   "A bad photo may be read or may be asked about. It must never be paid wrongly."),
+        "languages": (HERE / "test_sets" / "languages", None,
+                      "India's languages", "One clean invoice in each of the other 20 of the 22 languages of the "
+                      "Eighth Schedule (Hindi and Tamil are in the demo set), each read with its own language code. "
+                      "Cards marked 'native speaker to review' have best-effort labels and the amount in words in English.")}
 FIELDS = [("vendor", "Vendor"), ("gstin", "GSTIN"), ("invoice_no", "Invoice no."), ("invoice_date", "Date"),
           ("subtotal", "Subtotal"), ("tax", "Tax"), ("total", "Total"), ("total_in_words_value", "Amount in words"),
           ("bank_account", "Account no."), ("ifsc", "IFSC")]
@@ -57,16 +61,20 @@ def load_env():
             os.environ.setdefault(k.strip(), v.strip())
 
 
-def read_set(folder, language):
+def read_set(folder, language, key_path=None):
+    """Read every image in the folder. Each invoice uses its own language code from the answer key."""
     import extract
     load_env()
     key = os.environ.get("SARVAM_API_KEY") or sys.exit("Set SARVAM_API_KEY in payright/.env")
+    answer = json.loads((key_path or folder / "invoice_answer_key.json").read_text(encoding="utf-8"))
+    lang = {r["file"]: r.get("language") or language for r in answer}
     files = sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGES)
-    print(f"reading {len(files)} invoice(s) in {folder.name} with Sarvam ({language})...")
+    print(f"reading {len(files)} invoice(s) in {folder.name} with Sarvam "
+          f"({', '.join(sorted({lang.get(p.name, language) for p in files}))})...")
 
     def one(p):
         try:
-            return extract.read(p, key, language)
+            return extract.read(p, key, lang.get(p.name, language))
         except Exception as e:
             return {"file": p.name, "unsure_fields": [f"whole invoice (reader error: {type(e).__name__})"]}
     with ThreadPoolExecutor(4) as pool:
@@ -119,6 +127,7 @@ def score(name):
         paid = dec["status"] in ("PAY", "LATER")
         unsafe = paid and (dec["vendor_id"] != t["vendor_id"] or dec["amount"] is None
                            or abs(dec["amount"] - t["total"]) > check.TOL)
+        k = {**k, "trap": f"[{k.get('language', 'en-IN')}] {k['trap']}"}
         rows.append({**k, "got": dec["status"], "reasons": dec["reasons"], "decision_ok": dec["status"] in k["accept"],
                      "unsafe": unsafe, "fields": fields, "unsure": inv.get("unsure_fields", [])})
     n_fields = sum(len(r["fields"]) for r in rows)
@@ -134,6 +143,7 @@ def score(name):
         "money_fields": sum(f["field"] in MONEY for r in rows for f in r["fields"]),
         "money_fields_ok": sum(f["ok"] and f["field"] in MONEY for r in rows for f in r["fields"]),
         "unsafe_payments": sum(r["unsafe"] for r in rows),
+        "languages": sorted({r.get("language", "en-IN") for r in rows}),
     }
     return summary, rows
 
@@ -162,7 +172,7 @@ body { margin: 0; font-family: 'Segoe UI', 'Nirmala UI', Arial, sans-serif; colo
 .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
 h1 { font-size: 26px; margin: 0; color: var(--green); }
 .lede { color: var(--muted); margin: 6px 0 18px; font-size: 14px; max-width: 820px; line-height: 1.5; }
-.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 6px; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0 6px; }
 .learn { border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin: 14px 0; background: #fff; }
 .learn h3 { margin: 4px 0 6px; font-size: 14px; color: var(--green); }
 .learn li { margin: 4px 0; line-height: 1.45; }
@@ -208,8 +218,14 @@ a 0 now marks the field unsure. The bill was never at risk, because code compare
 <li><b>Scripts are not the hard part.</b> Tamil and Hindi names, Tamil and Hindi amounts in words, Devanagari digits and
 lakh notation were all read right. On Devanagari digits Sarvam was unsure (0.5) of a correct total, so the owner is
 asked once instead of the bill being paid on a guess.</li>
-<li><b>One systematic slip:</b> the letter O inside Hope's GSTIN is read as zero on every Hope bill. Harmless here,
+<li><b>One systematic slip:</b> the letter O inside Hope's GSTIN is read as zero on every Hope bill. Usually harmless,
 since the vendor is then matched by name, but it is why the GSTIN is never the only key.</li>
+<li><b>All 22 Indian languages read.</b> Across the 20-language set Sarvam read 193 of 200 critical fields right, and every
+total, account number and IFSC in every language. But it scores non-English vendor names at 0.5 confidence, so 9 clean
+bills are asked about rather than paid. Measured fix for the checker: do not ask about the name when the GSTIN or the
+account on file already proves the vendor. On our saved reads that turns those 9 into PAY and changes nothing else in all
+41 invoices. The Assamese bill was stopped (safely) because the GSTIN slip and an Assamese name with no English reading
+left the vendor unidentified; an Assamese alias in the vendor list, or reading O and 0 alike in a GSTIN, would fix it.</li>
 </ul></div>"""
 
 
@@ -246,6 +262,10 @@ def report(results):
         kpi(pct(tot["money_fields_ok"], tot["money_fields"]), f"of {tot['money_fields']} money fields (total, account, IFSC) read right"),
         kpi(f"{tot['decisions_ok']}/{tot['invoices']}", "invoices got an accepted decision"),
     ])
+    langs = sorted({l for s, _ in results for l in s["languages"]})
+    indian = [l for l in langs if l != "en-IN"]
+    head = kpi(f"{len(langs)}", f"languages read: {len(indian)} Indian languages + English" if "en-IN" in langs
+               else f"Indian languages read", "good") + head
     sections = []
     for i, (s, rows) in enumerate(results):
         folder = SETS[s["set"]][0]
@@ -286,7 +306,7 @@ def main(argv):
     names = list(SETS) if "all" in names else names
     if "--read" in argv:
         for n in names:
-            read_set(SETS[n][0], language)
+            read_set(SETS[n][0], language, SETS[n][1])
     results = []
     for n in names:
         if not (SETS[n][0] / "extracted.json").exists():

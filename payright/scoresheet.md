@@ -38,19 +38,23 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 - inv08 is a generated handwritten page made to look like a phone photo, not a real pen-and-paper photo. A real photographed bill would be a stronger test.
 - LATER on inv02 depends on the `--cash 100000` limit and today's date (MSME 45-day rule for Wells). With more cash it is PAY.
 
-## Beyond the demo set: 21 invoices, scored field by field
+## Beyond the demo set: 41 invoices in 23 languages, scored field by field
 
 `python payright/evidence.py all` re-scores the saved reads; full report with every image:
 `docs/evidence/PayRight_Evidence.pdf`.
 
-| | Demo (8) | Stress (8) | Fail-safe ladder (5) | All 21 |
-|---|---|---|---|---|
-| Traps caught | 4/4 | 3/3 | 1/1 | **8/8** |
-| Clean invoices wrongly stopped | 0/4 | 0/5 | 0/4 | **0/13** |
-| Wrong payments approved | 0 | 0 | 0 | **0** |
-| Critical fields read right | 78/80 | 77/80 | 45/50 | **200/210 (95%)** |
-| Money fields (total, account, IFSC) read right | | | | **61/63 (97%)** |
+| | Demo (8) | Stress (8) | Fail-safe ladder (5) | 20 languages (20) | All 41 |
+|---|---|---|---|---|---|
+| Traps caught | 4/4 | 3/3 | 1/1 | none planted | **8/8** |
+| Clean invoices wrongly stopped | 0/4 | 0/5 | 0/4 | 1/20 | **1/33** |
+| Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
+| Critical fields read right | 78/80 | 77/80 | 45/50 | 193/200 | **393/410 (96%)** |
+| Money fields (total, account, IFSC) read right | | | | 60/60 | **121/123 (98%)** |
 
 - One clean bill was asked about, not paid: `st03` (Devanagari digits). Read right, but Sarvam's confidence was 0.5.
 - The two money-field misses are both on `lad4`, the barely readable photo. Sarvam invented the account and IFSC there; the checker refused the bill.
 - Bug found by this test and fixed in `extract.py`: a confidence of 0 was treated as fully sure (`0 or 1` is `1`).
+- Languages: 23 (all 22 Indian languages of the Eighth Schedule + English). In the 20-language set, 9 clean bills were
+  asked about because Sarvam scores non-English vendor names at 0.5, and the Assamese bill was stopped (vendor not identified).
+  Suggested checker rule, measured on saved reads: don't ask about the name when GSTIN or account on file proves the vendor.
+  It turns those 9 into PAY and changes nothing else.

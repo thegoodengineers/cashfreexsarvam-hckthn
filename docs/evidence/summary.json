@@ -14,7 +14,12 @@
     "fields_ok": 78,
     "money_fields": 24,
     "money_fields_ok": 24,
-    "unsafe_payments": 0
+    "unsafe_payments": 0,
+    "languages": [
+      "en-IN",
+      "hi-IN",
+      "ta-IN"
+    ]
   },
   {
     "set": "stress",
@@ -31,7 +36,12 @@
     "fields_ok": 77,
     "money_fields": 24,
     "money_fields_ok": 24,
-    "unsafe_payments": 0
+    "unsafe_payments": 0,
+    "languages": [
+      "en-IN",
+      "hi-IN",
+      "ta-IN"
+    ]
   },
   {
     "set": "ladder",
@@ -48,6 +58,48 @@
     "fields_ok": 45,
     "money_fields": 15,
     "money_fields_ok": 13,
-    "unsafe_payments": 0
+    "unsafe_payments": 0,
+    "languages": [
+      "en-IN"
+    ]
+  },
+  {
+    "set": "languages",
+    "title": "India's languages",
+    "blurb": "One clean invoice in each of the other 20 of the 22 languages of the Eighth Schedule (Hindi and Tamil are in the demo set), each read with its own language code. Cards marked 'native speaker to review' have best-effort labels and the amount in words in English.",
+    "invoices": 20,
+    "decisions_ok": 10,
+    "traps": 0,
+    "traps_caught": 0,
+    "clean": 20,
+    "clean_blocked": 1,
+    "clean_asked": 9,
+    "fields": 200,
+    "fields_ok": 193,
+    "money_fields": 60,
+    "money_fields_ok": 60,
+    "unsafe_payments": 0,
+    "languages": [
+      "as-IN",
+      "bn-IN",
+      "brx-IN",
+      "doi-IN",
+      "gu-IN",
+      "kn-IN",
+      "kok-IN",
+      "ks-IN",
+      "mai-IN",
+      "ml-IN",
+      "mni-IN",
+      "mr-IN",
+      "ne-IN",
+      "od-IN",
+      "pa-IN",
+      "sa-IN",
+      "sat-IN",
+      "sd-IN",
+      "te-IN",
+      "ur-IN"
+    ]
   }
 ]
