@@ -1,5 +1,7 @@
 # Ayush — the owner's approval call (Sarvam voice agent)
 
+> Current list: `tasks/NOW.md`. Where it differs from anything below, NOW.md wins.
+
 Goal: the agent phones the shop owner in his language, says what is clean and
 what it stopped, and takes his approval. Voice is 20 of 100 marks, and the
 live call is a tick-box on the judge's card.

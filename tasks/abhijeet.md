@@ -1,5 +1,7 @@
 # Abhijeet (thegoodengineer) — repo, glue code, AWS
 
+> Current list: `tasks/NOW.md`. Where it differs from anything below, NOW.md wins.
+
 You have the most build capacity, so the code that joins the pieces is yours.
 Work top to bottom; do not start a lower item until the one above runs.
 

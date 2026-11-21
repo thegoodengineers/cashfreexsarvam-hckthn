@@ -1,5 +1,7 @@
 # Bhumika — invoices, proof, pitch
 
+> Current list: `tasks/NOW.md`. Where it differs from anything below, NOW.md wins.
+
 ## Now: make 8 fake invoices (photos or PDFs) into `payright/invoices/`
 The Cashfree sandbox only answers to these accounts, so use only these vendors:
 
