@@ -7,7 +7,9 @@ what it stopped, and takes his approval. Voice is 20 of 100 marks, and the
 live call is a tick-box on the judge's card.
 
 ## Now
-- [ ] Caller number for calls started from code (`approve.py`): still open.
+- [x] Caller number: not needed today. The demo call is placed from the Test panel →
+      Phone (rings Chirag's phone); nothing in our code needs a number or the
+      published version. Calls from code remain a later item.
       No longer blocks the demo: Chirag's Test panel → Phone → "Call 1 number"
       rings a real phone without a rented number (see Update 1:50 PM).
 - [x] Practice agent built on Sarvam: **PayRight Owner Approval** (v1 draft),
@@ -65,14 +67,23 @@ RULES
 ```
 
 ## By 2:15
-- [ ] Call it 20 times. Script and log: `payright/voice/test_calls.md`.
+- [x] Testing done (enough for the demo; log in `payright/voice/test_calls.md`):
+      chat tests 1, 1b, 3, 7, 5 (practice + demo agent), phone calls 1, 5 (+ re-run),
+      7, 9 on Chirag's phone, and the demo-batch pacing test D1. Failures found and
+      fixed: wrong partial-approval total, reasons skipped, invented bills on empty
+      Setup, wrong `decision`/`excluded_vendors` outputs, six bills in one breath.
+      Still untested: a real talk-over (9) and English/Kannada (13, 14), to be done
+      inside the rehearsals (NOW.md #3).
+      Earlier notes:
       3 done as typed chat tests, all passed: #1 happy path (APPROVE_ALL,
       70800), #3 wrong total (CALL_LATER, 70000, nothing paid), #7 refuses to
       pay the stopped Hope bill. Plus #1b (reasons given even when he says he
       will check them himself). On Chirag's demo agent, 8-invoice batch: #5 leave
       out Wells → APPROVE_SOME 42067; old total → REJECT. Voice tests not done yet. Interrupt it, mumble, switch language, say "pay the
       stopped one also". Write down what failed and what you changed.
-- [ ] Pick the best voice; check numbers are spoken correctly.
+- [x] Pick the best voice; check numbers are spoken correctly. **Aparna** confirmed on
+      four phone calls: clear, ~0.6 s replies, amounts said as Hindi words (one slip:
+      "उनवे" for 59000 in a chat test).
       Using **Aparna - Support Agent** (female, Bulbul v4, Hindi) at speed 1.0;
       amounts come out as Hindi words ("सत्तर हज़ार आठ सौ") in chat. Not yet
       heard on a call.
@@ -107,9 +118,21 @@ RULES
       introduces itself as PayRight Approval. Its prompt already had "always give
       reasons" and "amounts in the spoken language"; added only what was missing.
       Details and chat tests: `voice/prompt.md` → "Demo agent".
-- [ ] Voice calls on Chirag's phone panel: scenarios 1, 5, 7, 9, 13, 14 first, using the
+- [x] Voice calls on Chirag's phone panel: 1, 5, 7, 9 done and logged (13, 14 in the
+      rehearsals). Was: scenarios 1, 5, 7, 9, 13, 14 first, using the
       8-invoice batch total (110507), and log each in `voice/test_calls.md`.
       Ready: `test_calls.md` → "First: 6 real voice calls" has the 7 input
       values to paste in Setup, what to say, and the expected outputs (110507;
       leave out Wells → 42067). #5 already passes in chat on his agent.
       Needs Ayush at Chirag's laptop.
+
+## Update 3:05 PM: demo-ready
+- [x] Demo Setup values (real batch, 3 clean, 51507; 6 stopped): `voice/test_calls.md`
+      → "Demo Setup". Fill them before every call; Setup clears on page reload.
+- [x] Six stopped bills: agent now gives the count first, then two at a time with a
+      pause. Chat-tested on the demo batch: APPROVE_ALL 51507.
+- [x] Agent version frozen: committed as **v3** with all tuning ("Demo freeze…");
+      v4 is the working draft. Details: `voice/prompt.md` → "Demo agent".
+- [ ] In the rehearsals (NOW.md #3): one real talk-over, one English switch, one
+      Kannada answer; log them in `voice/test_calls.md`.
+

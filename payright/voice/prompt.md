@@ -23,6 +23,17 @@ language being spoken". It was not replaced. Added on 21 Nov:
    held_list it must not invent bills; it ends the call, CALL_LATER. Added after
    a test call with empty Setup made up vendors and a 15,800 total.
 6. Temperature set to Compliant (was Balanced).
+7. **Pacing** (Held bills): count first, then two stopped bills per turn with a
+   pause ("आगे बताऊँ?"); never more than two in one turn. Needed for the demo
+   batch's six stopped bills.
+8. **Output fixes after phone call 5:** `decision` = APPROVE_SOME when the spoken
+   total equals pay_total minus the left-out vendors; `excluded_vendors` always
+   uses the English name from pay_list (he said "वेल्स"/"बेल्स").
+
+**Frozen:** all of the above is committed as **v3** (note "Demo freeze…"); Sarvam
+opened v4 as the working draft (same content). The Test panel → Phone route runs
+the draft; if anyone edits after the freeze, compare with v3 or switch back to it.
+Demo Setup values: `test_calls.md` → "Demo Setup".
 4. **`decision` output:** a mismatched total (e.g. the old total after leaving
    vendors out) is REJECT, never APPROVE_ALL / APPROVE_SOME. Before this it
    returned APPROVE_SOME for a refused call; our code still paid nothing.

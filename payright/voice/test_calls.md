@@ -19,6 +19,28 @@ python payright/approve.py --fake '{\"decision\":\"APPROVE_SOME\",\"excluded_ven
 APPROVED or NOT APPROVED with the reason. Delete `payright/approvals.json`
 between tries, because each approval can be used only once.
 
+## Demo Setup (use this for the demo and rehearsals)
+The real batch, from `python payright/run.py payright/invoices.json --cash 100000 --dry-run`
+(line "WOULD CALL the owner with"; `payright/invoices/extracted.json` gives the same values).
+Fill these in Test agent → Phone → Setup before pressing "Call 1 number"; Setup clears
+whenever the page reloads, so check it shows 7/7 and pay_total 51507.
+
+| Input | Value |
+|---|---|
+| `owner_name` | `Raghu` |
+| `user_name` | `Raghu` |
+| `pay_count` | `3` |
+| `pay_total` | `51507` |
+| `pay_list` | `1) Doe Hardware Supplies, 18880 rupees. 2) Hope Electricals, 23187 rupees. 3) Wells Paints and Chemicals, 9440 rupees.` |
+| `held_count` | `6` |
+| `held_list` | `1) Wells Paints and Chemicals, 59000 rupees: not enough cash today, it waits for the next payment day. 2) Hope Electricals, 23600 rupees: bank account changed on the invoice, call the vendor on the old number first. 3) Wells Paints and Chemicals, 26300 rupees: the total on the bill is wrong, subtotal plus tax does not match, and also some part of the bill could not be read clearly. 4) Doe Hardware Supplies, 18880 rupees: this bill was already paid or is already in this batch, it looks like a duplicate. 5) Jane D Traders, 14160 rupees: the bank account on this bill belongs to a different vendor on our list, and also this vendor is not in our vendor list. 6) Hope Electricals, 12980 rupees: bank account changed on the invoice, call the vendor on the old number first.` |
+
+Owner's total to say: इक्यावन हज़ार पाँच सौ सात (51507).
+
+| # | Voice | What happened | Pass? | Outputs seen | What I changed |
+|---|---|---|---|---|---|
+| D1 | (chat test, Chirag's agent, demo batch) | Six stopped bills were too many for one breath, so the agent now says only the count first ("छह bills को रोक दिया गया है… कारण बताऊँ?"), then two bills per turn with "आगे बताऊँ?" (3 pairs), then asks; Raghu said इक्यावन हज़ार पाँच सौ सात; closed with "pay कर दिए जाएंगे" | Pass | APPROVE_ALL, -, 51507 → pays the 3 bills | Pacing rule added to Held bills. Note: once said "उनवे हज़ार" for 59000 (correct: उनसठ) |
+
 ## First: 6 real voice calls on Chirag's agent (8-invoice batch, 110507)
 On Chirag's laptop, open his agent **"PayRight Approval"** → Test agent →
 **Phone** → "Call 1 number" (it rings his phone; no rented number needed).
