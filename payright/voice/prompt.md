@@ -15,11 +15,11 @@ do not type it as plain text, or Sarvam will not fill it in.
 ## Input variables
 Make these in the editor. `approve.py` fills them on a real call (built by `call_vars.py`); to see
 the values for a batch, run `python payright/approve.py --dry-run` (set
-`OWNER_NAME=Ramesh` in `payright/.env`). For test calls, paste the sample values.
+`OWNER_NAME=Raghu` in `payright/.env`). For test calls, paste the sample values.
 
 | Variable | What it is | Sample (from `sample_invoices.json`) |
 |---|---|---|
-| `owner_name` | Owner's name | `Ramesh` |
+| `owner_name` | Owner's name | `Raghu` |
 | `pay_count` | Clean bills to pay | `2` |
 | `pay_total` | Their total, digits only | `70800` |
 | `pay_list` | Numbered: vendor, amount | `1) Doe Hardware Supplies, 11800 rupees. 2) Wells Paints and Chemicals, 59000 rupees.` |

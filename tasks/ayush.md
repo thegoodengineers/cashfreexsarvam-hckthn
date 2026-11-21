@@ -17,7 +17,7 @@ live call is a tick-box on the judge's card.
       `excluded_vendors` (string), `spoken_total` (string).
 - [x] Rewrite the sample lines of the prompt in the demo language the way a
       real shop owner's accountant would speak. Hand the final prompt to Chirag.
-      Done in Hindi/Hinglish, owner "Ramesh": `payright/voice/prompt.md`
+      Done in Hindi/Hinglish, owner "Raghu": `payright/voice/prompt.md`
       (settings, variables with descriptions to paste, first message, prompt).
 - [x] Variables come from `payright/call_vars.py`; `approve.py` uses them and
       needs both its own check and `call_vars.approved()` to agree before

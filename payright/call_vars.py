@@ -17,7 +17,7 @@ from pathlib import Path
 
 from check import amount, name_key
 
-OWNER_NAME = "Ramesh"
+OWNER_NAME = "Raghu"
 APPROVE = ("APPROVE_ALL", "APPROVE_SOME")
 
 # check.py reason text -> one short sentence the agent can say in Hindi.

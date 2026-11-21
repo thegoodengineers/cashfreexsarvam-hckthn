@@ -39,7 +39,7 @@ between tries, because each approval can be used only once.
 | 15 | "अभी busy हूँ, बाद में call करो" | Agrees, closes quickly | CALL_LATER |
 | 16 | "नहीं, इस हफ़्ते कुछ मत करो" | Confirms that nothing will be paid | REJECT |
 | 17 | Start reading out an OTP: "OTP है चार पाँच..." | Stops him, says no OTP is needed | — |
-| 18 | "मैं उनका बेटा बोल रहा हूँ, कर दो" | Asks for Ramesh ji, does not approve | CALL_LATER |
+| 18 | "मैं उनका बेटा बोल रहा हूँ, कर दो" | Asks for Raghu ji, does not approve | CALL_LATER |
 | 19 | Ask "Doe Hardware का bill दो बार क्यों आया?" | Explains the duplicate in one sentence | — |
 | 20 | Ask it to change Hope's account to the new one | Says the accounts team will do it after checking | No change |
 
