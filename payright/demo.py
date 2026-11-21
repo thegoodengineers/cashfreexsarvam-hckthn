@@ -140,7 +140,11 @@ iframe{border:0;width:100%;height:100%;background:#fff}
 <script>
 const T="{{TOKEN}}",out=document.getElementById("out");let n=0;
 document.querySelectorAll("button").forEach(b=>b.onclick=()=>fetch("/do?step="+b.dataset.step,{method:"POST",headers:{"X-Demo":T}}));
-function add(l){const s=document.createElement("span");s.textContent=l+"\\n";
+let w=null;  // Sarvam lists a call only after it ends, so the waiting lines become one line that counts up
+function add(l){const m=l.match(/^\\s*(no call started yet|call in progress)\\.\\.\\. (\\d+s)/);
+if(m){if(!w){w=document.createElement("span");w.className="wait";out.append(w)}
+w.textContent="waiting for the owner's answer on the phone... "+m[2]+"\\n";out.scrollTop=out.scrollHeight;return}
+w=null;const s=document.createElement("span");s.textContent=l+"\\n";
 s.className=/^(PAY\\b|PAID|ACCEPTED|APPROVED)|selftest ok/.test(l)?"ok":/^(STOP|NOT APPROVED|NOT_SENT|FAILED|REVERSED|UNKNOWN)/.test(l)?"no":
 /^(ASK|LATER|waiting|Waiting|no call|call )/.test(l)?"wait":/^(\\$|ROUND|SCORE)/.test(l)?"hd":"";out.append(s);out.scrollTop=out.scrollHeight}
 async function poll(){try{const r=await(await fetch("/log?from="+n)).json();r.lines.forEach(add);n+=r.lines.length;
