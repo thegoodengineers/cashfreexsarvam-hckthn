@@ -147,3 +147,18 @@ Task 7:
   In Chirag's `payright/.env`: `STATUS_URL=https://giants-made-stamp-wines.trycloudflare.com/status` and
   `STATUS_TOKEN=` (Abhijeet sends the value privately). The address dies if that laptop sleeps or the tunnel restarts.
 
+## Status 2:14 PM (Abhijeet) — task 6 now proven on real Sarvam data
+- Read today's real calls of the agent through the Analytics API (key made in Chirag's workspace, named
+  "PayRight approve.py - Abhijeet"). Test-panel calls ARE listed, with `decision`, `excluded_vendors`, `spoken_total`.
+- Replayed three real test calls through `approve.decide` on the 8-invoice batch: REJECT paid nothing;
+  APPROVE_SOME without Wells and spoken 42067 approved Doe + Hope; the old total 110507 with Wells left out paid nothing.
+- Two things the real data showed, both handled in `approve.latest_call`:
+  1. every Test-panel call has attempt id `NO_JOB_ID`, so calls are told apart by `interaction_id`;
+  2. a call can be listed twice while Sarvam is still writing it, and `decision` arrives a few seconds after the
+     call ends. The script keeps the fullest row and accepts a result only when it reads the same twice.
+- Demo command with a call started from the Test panel:
+  `python payright/run.py payright/invoices ta-IN --cash 100000 --latest`
+  It prints the 7 variables to paste into the Test panel, then waits for a call that begins after that moment.
+- Chirag's `payright/.env` needs `SARVAM_AGENT_API_KEY, SARVAM_ORG_ID, SARVAM_WORKSPACE_ID, SARVAM_APP_ID`
+  (Abhijeet sends them privately; they are not in this repo).
+

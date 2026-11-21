@@ -231,28 +231,51 @@ def _when(s):
     return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
-def latest_call(c, since, used=(), get=requests.get, wait_s=420, every_s=6, sleep=time.sleep, out=print):
+def call_id(a):
+    """What identifies one call. Calls started from Sarvam's Test panel all carry the attempt id
+    NO_JOB_ID (seen in real data, 21 Nov), so for those the interaction id is the unique one."""
+    att = a.get("attempt_id")
+    return att if att and att != "NO_JOB_ID" else (a.get("interaction_id") or att)
+
+
+def latest_call(c, since, used=(), get=requests.get, wait_s=420, every_s=6, settle_s=40, sleep=time.sleep, out=print):
     """For a call started by hand from Sarvam's Test panel (calls from code have no caller number yet).
     Waits for the newest call of our agent that began after `since` and reads its result once it ends.
-    `since` ties the call to this batch; `used` are attempt ids already spent on an approval, which are
-    never taken again. -> (attempt id or None, result). Whether Test-panel calls show up in Analytics
-    is not yet confirmed by a real run."""
-    t0, bad = time.time(), 0
+    `since` ties the call to this batch; `used` are calls already spent on an approval, never taken again.
+    Sarvam can list one call more than once while it is still writing it, so we keep the fullest row
+    and only accept a result that reads the same twice in a row. -> (call id or None, result)."""
+    t0, bad, last, done_at = time.time(), 0, None, None
     while time.time() - t0 < wait_s:
         problem, code = None, None
         try:
             r = _attempts(c, since, get)
             code = r.status_code
             if code == 200:
-                mine = [a for a in r.json().get("items") or [] if a.get("attempt_id") not in used
-                        and (_when(a.get("attempted_at") or a.get("start_datetime")) or since) >= since - timedelta(seconds=90)
-                        and (a.get("attempted_at") or a.get("start_datetime"))]
-                mine.sort(key=lambda a: _when(a.get("attempted_at") or a.get("start_datetime")), reverse=True)
-                if mine and _ended(mine[0]):
-                    a = mine[0]
-                    return a["attempt_id"], {"status": a.get("connectivity_status"), "source": "test panel call",
-                                             "variables": a.get("agent_variables") or a.get("final_agent_variables") or {}}
-                out(f"  {'call in progress' if mine else 'no call started yet'}... {int(time.time() - t0)}s")
+                calls = {}
+                for a in r.json().get("items") or []:
+                    began, cid = _when(a.get("attempted_at") or a.get("start_datetime")), call_id(a)
+                    if not began or not cid or cid in used or began < since - timedelta(seconds=90):
+                        continue
+                    fullness = (str(a.get("end_datetime") or ""), a.get("num_messages") or 0)
+                    if cid not in calls or fullness > calls[cid][0]:
+                        calls[cid] = (fullness, began, a)
+                if not calls:
+                    out(f"  no call started yet... {int(time.time() - t0)}s")
+                    last = done_at = None
+                else:
+                    cid, (fullness, _, a) = max(calls.items(), key=lambda kv: kv[1][1])   # the newest call
+                    v = a.get("agent_variables") or a.get("final_agent_variables") or {}
+                    if not _ended(a):
+                        out(f"  call in progress... {int(time.time() - t0)}s")
+                        last = done_at = None
+                    else:
+                        snap = (cid, fullness, str(v.get("decision") or ""), str(v.get("spoken_total") or ""))
+                        done_at = done_at or time.time()
+                        # the decision is written a little after the call ends: give it settle_s to appear
+                        if snap == last and (snap[2] or time.time() - done_at >= settle_s):
+                            return cid, {"status": a.get("connectivity_status"), "source": "test panel call", "variables": v}
+                        last = snap
+                        out("  call ended, waiting for Sarvam to finish writing the result...")
             else:
                 problem = f"Sarvam Analytics answered {code}: {(r.text or '')[:120]}"
         except (requests.RequestException, ValueError) as e:
@@ -529,9 +552,26 @@ def selftest():
     now = datetime.now(IST)
     old = {**done, "attempt_id": "old", "attempted_at": (now - timedelta(minutes=30)).astimezone(timezone.utc).isoformat(timespec="seconds")}
     live = {**done, "attempt_id": "live", "end_datetime": None, "attempted_at": now.astimezone(timezone.utc).isoformat(timespec="seconds")}
-    pages = [R({"items": [old]}), R({"items": [live, old]}), R({"items": [{**live, "end_datetime": "x"}, old]})]
+    ended = {**live, "end_datetime": "2026-11-21T08:41:43"}
+    pages = [R({"items": [old]}), R({"items": [live, old]}), R({"items": [ended, old]}), R({"items": [ended, old]})]
     att, got = latest_call(c, now, get=lambda *a, **k: pages.pop(0), sleep=lambda s: None, out=q)
-    assert att == "live" and decide(got, D)[0] == [doe, wells] and pages == []
+    assert att == "live" and decide(got, D)[0] == [doe, wells] and pages == []   # accepted only once it reads the same twice
+    # real Sarvam data: Test-panel calls all have attempt id NO_JOB_ID, and one call can be listed twice
+    # while it is being written. The interaction id tells calls apart; the fullest row wins.
+    half = {**ended, "attempt_id": "NO_JOB_ID", "interaction_id": "20261121/aaa", "num_messages": 5,
+            "end_datetime": "2026-11-21T08:41:31", "agent_variables": {"decision": "", "spoken_total": ""}}
+    full = {**half, "num_messages": 7, "end_datetime": "2026-11-21T08:41:43",
+            "agent_variables": {"decision": "APPROVE_ALL", "excluded_vendors": "", "spoken_total": "70800"}}
+    att, got = latest_call(c, now, get=lambda *a, **k: R({"items": [half, full, old]}), sleep=lambda s: None, out=q)
+    assert att == "20261121/aaa" and decide(got, D)[0] == [doe, wells]
+    other = {**full, "interaction_id": "20261121/bbb"}                    # a second test call is a different call
+    att, got = latest_call(c, now, used={"20261121/aaa"}, get=lambda *a, **k: R({"items": [other, full]}), sleep=lambda s: None, out=q)
+    assert att == "20261121/bbb"
+    # the decision arrives a moment after the call ends: an empty one is not accepted straight away
+    pages = [R({"items": [half]}), R({"items": [half]}), R({"items": [full]}), R({"items": [full]})]
+    att, got = latest_call(c, now, get=lambda *a, **k: pages.pop(0), sleep=lambda s: None, out=q)
+    assert decide(got, D)[0] == [doe, wells] and pages == []
+    live = ended
     att, got = latest_call(c, now, used={"live"}, get=lambda *a, **k: R({"items": [{**live, "end_datetime": "x"}, old]}),
                            wait_s=0.2, every_s=0, sleep=lambda s: time.sleep(0.05), out=q)
     assert att is None and decide(got, D)[0] == []                       # the same call cannot approve twice
