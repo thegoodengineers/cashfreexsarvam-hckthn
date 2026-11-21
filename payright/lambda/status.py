@@ -270,6 +270,7 @@ background:#fff;text-decoration:none;transform:rotate(-1.2deg);box-shadow:0 10px
 .case .fix{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.case .fix p{margin:10px 0 0;font-size:15px}
 .case .fix .cta{margin-top:14px}.case .fix .pill{padding:7px 14px;font-size:13px}
 .trick .src{margin-top:10px;font-size:13px}
+.trickline{margin:12px 0 0;font-size:14px;color:var(--mute)}.trickline b{color:var(--ink)}.trickline a{white-space:nowrap}
 @media (max-width:820px){.grid2{grid-template-columns:1fr}.log li{grid-template-columns:1fr;gap:0}
 .case{grid-template-columns:1fr}.case .shot{margin:16px 16px 0}.case .in{padding:20px}section.ink .steps{grid-template-columns:1fr!important}}
 @media (prefers-reduced-motion:no-preference){
@@ -393,6 +394,18 @@ def _call(data):
             f'{"<dl class=kv>" + kv + "</dl>" if kv else ""}</div></div></section>')
 
 
+# Each refusal names the old trick it matches. Keyed by check.py's evidence "check". A real case is linked only
+# where the reported facts are the same trick (see CASES on the problem page); the others carry no case.
+TRICK_OF = {
+    "bank account": ("A familiar vendor, a new account.", "This is how Manipal Technologies lost ₹1.04 crore"),
+    "account holder": ("The right vendor, somebody else's name on the account.", "The same family of fraud as the cases on record"),
+    "account owner": ("A real account, borrowed for another name's bill.", ""),
+    "duplicate": ("The same bill, sent twice.", ""),
+    "price": ("Next month's bill, quietly raised.", ""),
+    "total": ("Sums that do not add up.", ""), "line item": ("Sums that do not add up.", ""),
+    "line items": ("Sums that do not add up.", ""), "amount in words": ("Words and figures that disagree.", "")}
+
+
 def _card(r):
     e = html.escape
     meta = " · ".join(x for x in (
@@ -407,7 +420,10 @@ def _card(r):
         f'<div class="ref"><span>{e(str(v["b_label"]))}</span><b>{e(v["b"])}</b></div></div></div>' for v in r["evidence"])
     extra = " · ".join(x for x in (f"transfer {e(str(r['transfer_id']))}" if r["transfer_id"] else "",
                                    f"UTR {e(str(r['utr']))}" if r["utr"] else "") if x)
-    inside = (f'<ul class="why">{why}</ul>' if why else "") + ev + (f'<p class="meta" style="margin:12px 0 0">{extra}</p>' if extra else "")
+    trick, case = TRICK_OF.get(str(r["evidence"][0]["check"]) if r["evidence"] else "", ("", ""))
+    known = (f'<p class="trickline">Known trick: <b>{e(trick)}</b>'
+             + (f' <a href="./?page=problem">{e(case)} →</a>' if case else "") + "</p>") if trick else ""
+    inside = (f'<ul class="why">{why}</ul>' if why else "") + known + ev + (f'<p class="meta" style="margin:12px 0 0">{extra}</p>' if extra else "")
     hint = '<span class="hint">see the evidence</span>' if r["evidence"] else ""
     return (f'<details class="bill card-{e(r["state"])}" id="{r["id"]}" data-r><summary><div class="top">'
             f'<span class="vendor">{e(str(r["vendor"] or "Unknown vendor"))}</span><span class="amt">{_money(r["amount"])}</span></div>'
@@ -791,6 +807,7 @@ def selftest():
     p = handler({"httpMethod": "GET"})["body"]
     assert "Doe &lt;Hardware&gt;" in p and "₹1,20,500" in p and "····1191" in p
     assert "····1190 YESB0000262" in p and "····2658 ICIC0000009" in p and 'class="bad"' in p   # the evidence, masked
+    assert "Known trick: <b>A familiar vendor, a new account.</b>" in p                          # the refusal names its trick
     for full in ("026291800001191", "026291800001190", "388108022658"):
         assert full not in p                                             # no full account number anywhere
 

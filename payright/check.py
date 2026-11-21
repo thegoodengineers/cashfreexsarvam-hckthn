@@ -62,6 +62,26 @@ def invoice_key(s):  # 'INV-0042' == 'inv/42'
     return re.sub(r"\d+", lambda m: str(int(m.group())), code_key(s))
 
 
+CONFUSED = str.maketrans("OISBZG", "015826")  # letters a reader mixes up with digits: O/0, I/1, S/5, B/8, Z/2, G/6
+GSTIN_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def gstin_key(s):  # '33KLMN09012P1Z8' == '33KLMNO9012P1Z8': the same GSTIN, read with the usual slip
+    return code_key(s).translate(CONFUSED)
+
+
+def gstin_valid(s):
+    """A GSTIN carries its own check digit (the 15th character). True only if it adds up."""
+    g = code_key(s)
+    if len(g) != 15:
+        return False
+    total = 0
+    for i, ch in enumerate(g[:14]):
+        prod = GSTIN_CHARS.index(ch) * (1 + i % 2)
+        total += prod // 36 + prod % 36
+    return GSTIN_CHARS[(36 - total % 36) % 36] == g[14]
+
+
 def item_key(s):  # '1. PVC pipe 1 inch, 6 m' == 'PVC pipe 1 inch, 6 m'
     return name_key(re.sub(r"^\s*\d+\s*[.)]\s*", "", str(s or "")))
 
@@ -79,6 +99,10 @@ def find_vendor(inv, vendors):
     for v in vendors:
         if inv.get("gstin") and code_key(inv["gstin"]) == code_key(v.get("gstin")):
             return v, "gstin"
+    # the reader's usual slip (O for 0, I for 1 ...) must not hide a vendor: accept it only if exactly one vendor fits
+    slip = [v for v in vendors if inv.get("gstin") and v.get("gstin") and gstin_key(inv["gstin"]) == gstin_key(v["gstin"])]
+    if len(slip) == 1:
+        return slip[0], "gstin"
     best, score = None, 0.0
     seen_names = [name_key(inv.get(k)) for k in ("vendor_name", "vendor_name_latin")]
     for v in vendors:
@@ -149,6 +173,11 @@ def check(inv, vendors, seen, today, prices=None):
         ask.append("This vendor is not in our vendor list.")
     elif how == "unsure":
         ask.append(f"The vendor name looks like {v['name']}, but I am not sure it is the same vendor.")
+    # 2b. The right name with a different GSTIN is not the same vendor until a person says so.
+    if v and inv.get("gstin") and v.get("gstin") and gstin_key(inv["gstin"]) != gstin_key(v["gstin"]):
+        ask.append(f"The GSTIN on this invoice is not the one we have on file for {v['name']}."
+                   + ("" if gstin_valid(inv["gstin"]) else " It also fails the GSTIN check digit, so it was misread or made up."))
+        differ("GSTIN", "On the invoice", code_key(inv["gstin"]), "On our file", code_key(v["gstin"]))
 
     # 3a. An account we already know, but on someone else's bill: money would reach the wrong person.
     acct = code_key(inv.get("bank_account"))
@@ -300,6 +329,15 @@ def selftest():
     assert shaky["status"] == "PAY"  # GSTIN-free name match is certain and subtotal + tax confirms the total
     unsure = check({**base, "invoice_no": "INV-12", "unsure_fields": ["bank_account"]}, V, [], date(2026, 11, 21))
     assert unsure["status"] == "ASK"  # nothing else confirms a bank account, so a person is asked
+    # the reader's O-for-0 slip in a GSTIN still finds the vendor, even under a name in another script
+    VG = [{**V[0], "gstin": "33KLMNO9012P1Z8"}, V[1]]
+    slip = check({**base, "vendor_name": "হোপ ইলেকট্ৰিকেলছ", "gstin": "33KLMN09012P1Z8", "invoice_no": "INV-13"}, VG, [], date(2026, 11, 21))
+    assert slip["status"] == "PAY" and slip["vendor_id"] == "v1", slip["reasons"]
+    other = check({**base, "gstin": "27AAJCC9783E1Z7", "invoice_no": "INV-14"}, VG, [], date(2026, 11, 21))
+    assert other["status"] == "ASK" and "GSTIN" in other["reasons"][0] and "check digit" not in other["reasons"][0]   # right name, another real GSTIN
+    fake = check({**base, "gstin": "23AAAPF57799Q2123", "invoice_no": "INV-15"}, VG, [], date(2026, 11, 21))
+    assert fake["status"] == "ASK" and "fails the GSTIN check digit" in fake["reasons"][0]                           # an invented GSTIN
+    assert gstin_valid("27AAJCC9783E1Z7") and not gstin_valid("27AAJCC9783E1Z8")
     # price memory: next month's bill, every number doubled, agrees with itself; the last paid bill gives it away
     book = {"v1": {item_key("1. PVC pipe"): {"item": "PVC pipe", "rate": 1000, "invoice_no": "INV-0042"}}}
     dear = {**base, "invoice_no": "INV-0050", "lines": [{"description": "PVC pipe", "qty": 10, "rate": 2000, "amount": 20000}],
