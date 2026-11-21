@@ -7,16 +7,14 @@ what it stopped, and takes his approval. Voice is 20 of 100 marks, and the
 live call is a tick-box on the judge's card.
 
 ## Now
-- [ ] **Blocker.** Sarvam desk: which caller number do hackathon teams use for
-      outbound calls? (Renting one normally needs KYC.) Without it there is no
-      call. Ayush's free-plan account has no phone number either.
-- [x] Agent built on Sarvam: **PayRight Owner Approval** (v1 draft), for now
+- [ ] Caller number for calls started from code (`approve.py`): still open.
+      No longer blocks the demo: Chirag's Test panel → Phone → "Call 1 number"
+      rings a real phone without a rented number (see Update 1:50 PM).
+- [x] Practice agent built on Sarvam: **PayRight Owner Approval** (v1 draft),
       in Ayush's account (ayushupadhye301@gmail.com, free plan), Samvaad →
       Build → Agents. Exact settings and editor tips: `payright/voice/prompt.md`.
-- [ ] Rebuild it in Chirag's account (his has the credits, and `approve.py`
-      calls with his key and IDs), or have him invite Ayush to his workspace.
-      About 10 minutes from `prompt.md`. Then put the org, workspace, app and
-      connection IDs in his `payright/.env`.
+- [x] ~~Rebuild it in Chirag's account~~ Not needed: Chirag's agent already
+      existed and Ayush was added to his workspace; it was updated instead (below).
 - [x] Input variables (insert with @ in the editor): `owner_name`,
       `pay_count`, `pay_total`, `pay_list`, `held_count`, `held_list`.
       Defaults are the sample batch (Raghu, 2 clean, 70800, 3 stopped).
@@ -70,7 +68,9 @@ RULES
 - [ ] Call it 20 times. Script and log: `payright/voice/test_calls.md`.
       3 done as typed chat tests, all passed: #1 happy path (APPROVE_ALL,
       70800), #3 wrong total (CALL_LATER, 70000, nothing paid), #7 refuses to
-      pay the stopped Hope bill. Voice tests not done yet. Interrupt it, mumble, switch language, say "pay the
+      pay the stopped Hope bill. Plus #1b (reasons given even when he says he
+      will check them himself). On Chirag's demo agent, 8-invoice batch: #5 leave
+      out Wells → APPROVE_SOME 42067; old total → REJECT. Voice tests not done yet. Interrupt it, mumble, switch language, say "pay the
       stopped one also". Write down what failed and what you changed.
 - [ ] Pick the best voice; check numbers are spoken correctly.
       Using **Aparna - Support Agent** (female, Bulbul v4, Hindi) at speed 1.0;
@@ -111,4 +111,5 @@ RULES
       8-invoice batch total (110507), and log each in `voice/test_calls.md`.
       Ready: `test_calls.md` → "First: 6 real voice calls" has the 7 input
       values to paste in Setup, what to say, and the expected outputs (110507;
-      leave out Wells → 42067). Needs Ayush at Chirag's laptop.
+      leave out Wells → 42067). #5 already passes in chat on his agent.
+      Needs Ayush at Chirag's laptop.
