@@ -170,3 +170,4 @@ Task 7:
   I will not post test data to it again; from now on only real runs write to it.
 - `python payright/send.py` with no approval on file now says so before anything else.
 
+- 2:19 PM: the status Lambda in AWS now holds the board code too (test invocation succeeded). The organisers' call link still answers 403, so the tunnel address stays the one to use.
