@@ -8,8 +8,9 @@
   --fake '{"decision":"APPROVE_ALL","spoken_total":"70800"}'
                  use this as the owner's answer instead of placing the call
 
-Score line: put expected.json in the folder ({"file.png": "PAY" | "STOP", ...}) and the run
-prints traps caught and good invoices wrongly blocked. Without it, only the counts are printed.
+Score line: with invoice_answer_key.json (or expected.json = {"file.png": "PAY" | "STOP"} in the
+folder) the run prints traps caught and good invoices wrongly blocked. Files that are not in the
+key, such as the judges' fresh batch, only get the counts.
 """
 import json
 import os
@@ -101,6 +102,9 @@ def main(argv):
     else:
         invoices, folder = json.loads(src.read_text(encoding="utf-8")), src.parent
     expected = send.load(folder / "expected.json", None)
+    if expected is None:  # the team's answer key: [{"file": ..., "expected": "PAY" | "STOP"}]
+        key = next((p for p in (folder / "invoice_answer_key.json", HERE / "invoice_answer_key.json") if p.exists()), None)
+        expected = {r["file"]: r["expected"] for r in send.load(key, [])} if key else None
 
     # 2. check: plain code decides
     vendors = send.load(HERE / "vendors.json", [])
