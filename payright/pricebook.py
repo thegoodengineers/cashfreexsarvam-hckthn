@@ -13,6 +13,7 @@ to a person (ASK) when a rate is more than 10% above the last paid one. This fil
 No pricebook.json -> price memory is silent and the checker behaves exactly as before.
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def learn(invoices, vendors, book=None, paid_ids=None):
             key, rate = check.item_key(l.get("description")), check.amount(l.get("rate"))
             if key and rate:
                 book.setdefault(dec["vendor_id"], {})[key] = {
-                    "item": str(l.get("description")).strip(), "rate": rate, "invoice_no": str(dec["invoice_no"])}
+                    "item": re.sub(r"^\s*\d+\s*[.)]\s*", "", str(l.get("description"))).strip(), "rate": rate, "invoice_no": str(dec["invoice_no"])}
     return book
 
 
@@ -66,7 +67,7 @@ def selftest():
             "lines": [{"description": "1. PVC pipe", "qty": 10, "rate": 1000, "amount": 10000}],
             "subtotal": 10000, "tax": 1800, "total": 11800, "bank_account": "026291800001191", "ifsc": "YESB0000262"}
     book = learn([bill], V)
-    assert book == {"v1": {"pvcpipe": {"item": "1. PVC pipe", "rate": 1000.0, "invoice_no": "INV-1"}}}
+    assert book == {"v1": {"pvcpipe": {"item": "PVC pipe", "rate": 1000.0, "invoice_no": "INV-1"}}}
     assert learn([bill], V, paid_ids=set()) == {}                                  # not confirmed paid: not learnt
     assert learn([{**bill, "bank_account": "999999999999"}], V) == {}              # a stopped bill teaches nothing
     nxt = {**bill, "invoice_no": "INV-2", "invoice_date": "10-11-2026",

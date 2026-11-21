@@ -423,6 +423,10 @@ def _card(r):
     trick, case = TRICK_OF.get(str(r["evidence"][0]["check"]) if r["evidence"] else "", ("", ""))
     known = (f'<p class="trickline">Known trick: <b>{e(trick)}</b>'
              + (f' <a href="./?page=problem">{e(case)} →</a>' if case else "") + "</p>") if trick else ""
+    if r["evidence"] and r["evidence"][0]["check"] in ("bank account", "account holder", "account owner"):
+        # the step that was skipped in every reported case: one call, on a number the fraudster does not control
+        known += (f'<p class="trickline">Next step: <b>call {e(str(r["vendor"] or "the vendor"))} on the number already on file</b>, '
+                  f'never a number printed on this bill, and ask whether they sent invoice {e(str(r["invoice_no"] or "?"))}.</p>')
     inside = (f'<ul class="why">{why}</ul>' if why else "") + known + ev + (f'<p class="meta" style="margin:12px 0 0">{extra}</p>' if extra else "")
     hint = '<span class="hint">see the evidence</span>' if r["evidence"] else ""
     return (f'<details class="bill card-{e(r["state"])}" id="{r["id"]}" data-r><summary><div class="top">'

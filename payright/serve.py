@@ -27,6 +27,7 @@ import importlib.util
 import json
 import re
 import sys
+from datetime import timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, urlsplit
@@ -34,6 +35,7 @@ from urllib.parse import parse_qsl, urlsplit
 HERE = Path(__file__).parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
+import pricebook  # noqa: E402  (price memory: what a vendor charged on the last paid bill)
 import attack  # noqa: E402  (forges variants of real bills; the checker below decides each one)
 import check  # noqa: E402  (the real checker; /try runs it and nothing else)
 
@@ -54,7 +56,8 @@ NEWS = HERE.parent / "docs" / "news"
 
 PRESETS = (("clean", "Leave it alone"), ("digit", "Change one digit of the account"),
            ("other_account", "Swap in another vendor's account"), ("total", "Add ₹2,700 to the total"),
-           ("duplicate", "Send the same bill twice, disguised"), ("stranger", "Put a stranger's name on it"))
+           ("duplicate", "Send the same bill twice, disguised"), ("stranger", "Put a stranger's name on it"),
+           ("raised", "Next month's bill, every price up 25%"))
 _BASE = {}
 
 
@@ -99,7 +102,7 @@ def fool(req):
     preset = str(req.get("preset") or "clean")
     if preset not in dict(PRESETS):
         return 400, {"error": "unknown preset"}
-    inv, changed, first = copy.deepcopy(base), [], None
+    inv, changed, first, prices = copy.deepcopy(base), [], None, {}
     owner = check.plan([base], vendors, [], 1e12)[0]["vendor_id"]
     if preset == "digit":
         a = str(inv.get("bank_account") or "")
@@ -123,6 +126,21 @@ def fool(req):
             inv["invoice_date"] = d.strftime("%d %b %Y")
         changed.append(f"The same bill was sent a second time with its number rewritten from {old} to "
                        f"{inv['invoice_no']} and its date in another format.")
+    elif preset == "raised":
+        d = check.parse_date(inv.get("invoice_date"))
+        if d:
+            inv["invoice_date"] = (d + timedelta(days=30)).strftime("%d-%m-%Y")
+        inv["invoice_no"] = str(inv.get("invoice_no") or "") + "-B"
+        for l in inv.get("lines") or []:
+            for f in ("rate", "amount"):
+                if check.amount(l.get(f)) is not None:
+                    l[f] = round(check.amount(l[f]) * 1.25, 2)
+        for f in ("subtotal", "tax", "total", "total_in_words_value"):
+            if check.amount(inv.get(f)) is not None:
+                inv[f] = round(check.amount(inv[f]) * 1.25, 2)
+        prices = pricebook.learn([base], vendors)   # the checker has seen, and paid, the genuine bill
+        changed.append("A new bill a month later, with a new number. Every rate, the subtotal, the tax and the total were raised by 25%, "
+                       "so the bill still adds up. The checker remembers what this vendor charged on the last paid bill.")
     elif preset == "stranger":
         inv["vendor_name"] = inv["vendor_name_latin"] = "Jane D Traders"
         inv.pop("gstin", None)
@@ -141,7 +159,7 @@ def fool(req):
         value = check.amount(total)
         inv["total"] = value if value is not None else total
         changed.append(f"The total was typed in as {total}.")
-    dec = check.plan(([first] if first else []) + [inv], vendors, [], 1e12)[-1]   # memory only: no ledger, nothing sent
+    dec = check.plan(([first] if first else []) + [inv], vendors, [], 1e12, prices=prices)[-1]   # memory only: no ledger, nothing sent
     return 200, {"status": dec["status"], "vendor": dec["vendor"], "invoice_no": dec["invoice_no"], "amount": dec["amount"],
                  "reasons": [_mask(r) for r in dec["reasons"]],
                  "evidence": [{"check": e["check"], "a_label": e["a_label"], "a": _mask(e["a"]),
