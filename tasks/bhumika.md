@@ -92,3 +92,11 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
       fields right, ASK.
       All 44 invoices: traps 8/8, genuine bills paid 32/34 (2 stopped), wrong payments 0, fields 422/440.
 - [ ] Task 14: run the timer at the three rehearsals.
+
+## Done at 2:45 PM (NOW.md task 5)
+- [x] Judges' pack: a payout HAS completed (3 sandbox transfers at 2:26 PM, Rs 51,507 = the three
+      demo bills cleared to pay). New section naming the Relay bug: the built-in Request Transfer
+      (Sync) step shows Completed / success while Cashfree answered ERROR 403 "v1 and v1.2 APIs
+      deprecated"; routed around with an HTTP step to Payouts v2. Voice call still "not yet tested".
+      Demo prep now uses `new_round.py`. PDF rebuilt.
+- [ ] NOW.md task 8: run the timer at the three rehearsals (3:00 to 3:20).

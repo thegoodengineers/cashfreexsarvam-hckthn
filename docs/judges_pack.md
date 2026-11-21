@@ -5,7 +5,7 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
 
 **In one line:** across 44 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, two of them real bills, read by the live Sarvam reader, **8 of 8 planted traps were caught and 0 wrong payments were approved.** 32 of 34 genuine bills were cleared to pay; the other 2 were stopped safely (a photo nobody could read, and an Assamese bill whose vendor could not be identified). 96% of 440 critical fields and 98% of 132 money fields were read exactly right.
 
-**Status at 2 PM, honestly:** reading and checking are working and measured. Bank verification is blocked, because Cashfree says the Verification Suite is not enabled on our test account. No payout has completed yet. The owner's approval call is built and tested in chat, with no recorded call yet. Below, anything not yet run is marked *(planned)* or *(not yet tested)*.
+**Status at 2:30 PM, honestly:** reading and checking are working and measured. **Money has moved: at 2:26 PM three sandbox payouts went from our Relay agent to Cashfree Payouts, ₹51,507 in total**, exactly the three bills cleared to pay in the demo set (₹18,880 + ₹23,187 + ₹9,440). To get there we found and routed around a bug in Relay (section 1). Bank verification is still blocked, because Cashfree says the Verification Suite is not enabled on our test account. The owner's approval call is built and tested in chat, with no recorded voice call yet. Below, anything not yet run is marked *(planned)* or *(not yet tested)*.
 
 ---
 
@@ -23,14 +23,20 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
   - Is this a duplicate in disguise?
   - What is the legal deadline? 15 or 45 days for micro and small suppliers.
 - **Money only to the account on file.** Bank details for a payment come from `vendors.json`, never from the invoice. The invoice's account is only *compared*. `send.py` also treats `decisions.json` as untrusted and refuses any row whose account differs from the vendor file.
-- **One transfer ID per invoice, for life.** It is derived from vendor, invoice number and amount. A write-ahead ledger records each payment *before* it is sent. Running the same batch twice pays nothing the second time; `send.py`'s self-test proves this, though not yet with a real payout. Cashfree's docs say a repeated transfer ID is rejected, which would be a second lock *(not yet tested by us)*.
+- **One transfer ID per invoice, for life.** It is derived from vendor, invoice number and amount. A write-ahead ledger records each payment *before* it is sent. Running the same batch twice pays nothing the second time; `send.py`'s self-test proves this, though not yet by re-running real payouts. Cashfree's docs say a repeated transfer ID is rejected, which would be a second lock *(not yet tested by us)*.
 - **The owner approves by phone, in his language.** A Sarvam voice agent calls Raghu, tells him what is clean and what was stopped and why, and accepts a yes only if he says the total himself. One approval is good for one batch, once. *(The agent is built on Sarvam and tested in chat. The approval rules are in `approve.py` with a self-test. A real call has been placed from Sarvam's test panel; a call started by our code is not working yet.)*
 
 **What we chose not to use, and why**
 - **No LLM deciding about money.** Its answers are not repeatable and not auditable. Code gives the same answer every time, and a test proves it.
 - **No trusting bank details printed on an invoice.** A familiar vendor with a new account is the oldest fraud there is.
-- **No automatic payment retries.** A failed or reversed payout goes back to a person as ASK, and never becomes a second payment *(planned; not yet tested, because no payout has run)*.
-- **No payments backend of our own.** Verification and payouts are built to run inside Cashfree Relay, so every run is visible in its Runs tab *(not yet working: bank verification is blocked, "Verification Suite is not enabled", and no payout has completed)*.
+- **No automatic payment retries.** A failed or reversed payout goes back to a person as ASK, and never becomes a second payment *(planned; not yet tested, because no payout has failed yet)*.
+- **No payments backend of our own.** Payouts run inside Cashfree Relay, so every run is visible in its Runs tab. Three sandbox payouts have gone through this way. *(Bank verification is not working yet: "Verification Suite is not enabled".)*
+
+**A bug we found in Cashfree Relay, and how we routed around it**
+- **What happened.** Relay's built-in *Cashfree Payouts → Request Transfer (Sync)* step showed **Completed**, with `"success": true` and *"Transfer requested successfully"*. Inside the same response, Cashfree had answered **ERROR, 403: "The payout v1 and v1.2 APIs have been deprecated. Please use v2 APIs."** No money moved, but the step looked green. Proof: `docs/screenshots/3_relay_transfer_uses_deprecated_api.jpg`.
+- **Why it matters.** A payout that silently fails while showing success is the most dangerous failure in this problem. It is the reason we never trust a step's own "success": the board marks a bill PAID only when Cashfree confirms it.
+- **How we routed around it.** The Relay agent now pays through an **HTTP step that calls Cashfree Payouts v2** (`POST /payout/transfers`) with our own transfer ID. Cashfree answers `RECEIVED`, and the transfer appears in the Payouts dashboard. Proof: `docs/screenshots/4_payout_received_by_cashfree.jpg`, `5_payouts_dashboard_3_success.jpg`.
+- **Feedback to the sponsor.** Relay's Request Transfer step should move to the v2 API, and should report Cashfree's ERROR status as a failed step, not a completed one.
 - **No website first.** Time went into the problem, the voice, the money and the live demo.
 
 ---
@@ -114,7 +120,7 @@ We did not stop at the demo set. We built 42 invoices ourselves and added 2 real
 **Before the judges sit down**
 - Terminal open in the repo root.
 - Relay Runs tab open, and the Cashfree Payouts test dashboard open.
-- `payright/ledger.json` cleared, so the first run pays and the second run proves no double pay.
+- Run `python payright/new_round.py`. It sets the ledger aside and starts a new rehearsal round, so the sandbox accepts the demo bills again. Within a round, the first run pays and the second run proves no double pay.
 - Phone charged, volume up, on speaker.
 
 | Time | Who | On screen | What we say |
@@ -123,7 +129,7 @@ We did not stop at the demo set. We built 42 invoices ourselves and added 2 real
 | 0:40 to 1:40 | Chirag | `python payright/run.py payright/invoices ta-IN --cash 100000` | **The doctored invoice goes in.** "Sarvam reads all nine, including the handwritten-style photo and the Tamil and Hindi amounts in words. The model only reads. Plain code decides." |
 | 1:40 to 2:40 | Bhumika | the PAY / LATER / STOP table, pointing at row HE-310 | **The agent refuses and says why.** Read the STOP reason aloud. Then point at the duplicate `dh/101`, at Jane D Traders using John Doe's account, and at HE-312, where the account is one digit off. "Every refusal has a reason a shop owner understands. Money only ever goes to the account on file." |
 | 2:40 to 4:00 | Ayush | phone on speaker, the call live | *(Not yet tested: no recorded call yet.)* **The owner approves by phone.** The agent says how many bills are clean and the total, which were stopped and why, in Hindi. Raghu must say the total aloud. The terminal prints `APPROVED`. |
-| 4:00 to 4:50 | Chirag | Relay Runs tab, then the Payouts test dashboard | *(Not yet tested: no payout has completed.)* **The payouts show as successful.** Open one transfer and show its transfer ID. "That ID comes from the invoice itself, not from this attempt." |
+| 4:00 to 4:50 | Chirag | Relay Runs tab, then the Payouts test dashboard | *(Done at 2:26 PM with 3 sandbox payouts; not yet run after a live call.)* **The payouts show as successful.** Open one transfer and show its transfer ID. "That ID comes from the invoice itself, not from this attempt." |
 | 4:50 to 5:20 | Chirag | run the same command again | **Nothing is paid twice.** Every row comes back as already sent. Nothing new appears in Relay. *(Proven in `send.py`'s self-test; not yet with real payouts.)* |
 | 5:20 to 6:00 | Bhumika | the `SCORE` line, then the top of `docs/evidence/PayRight_Evidence.pdf` | **Our numbers.** "Forty-four invoices in twenty-three languages, every Indian language in the Constitution, plus two real bills, scored field by field against what is truly printed: eight of eight planted traps caught, zero wrong payments. One trap changed a single digit of the account. It was caught. On a photo nobody could read, the AI invented a bank account. Our code refused it." Then the judges' fresh batch numbers, if we got one. Close: "A model reads, code decides, a person approves, and money only goes to the account on file." |
 
