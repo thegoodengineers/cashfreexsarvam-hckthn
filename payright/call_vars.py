@@ -19,6 +19,7 @@ from check import amount, name_key
 
 OWNER_NAME = "Raghu"
 APPROVE = ("APPROVE_ALL", "APPROVE_SOME")
+EMPTY = {"", "none", "na", "nil", "null", "empty", "nobody"}
 
 # check.py reason text -> one short sentence the agent can say in Hindi.
 # First match wins, so the most serious reason comes first.
@@ -82,7 +83,9 @@ def approved(decisions, final_vars):
     if decision not in APPROVE:
         return []
     rows = [d for d in decisions if d["status"] == "PAY"]
-    excluded = [e for e in re.split(r"[,;\n]+", str(final_vars.get("excluded_vendors") or "")) if e.strip()]
+    # Sarvam shows an empty output variable as "-"; treat that and words like "none" as empty
+    excluded = [e for e in re.split(r"[,;\n]+", str(final_vars.get("excluded_vendors") or ""))
+                if name_key(e) not in EMPTY]
     if decision == "APPROVE_SOME":
         if not excluded:
             return []  # "some" with nobody left out is unclear: pay nothing, call again
@@ -131,6 +134,9 @@ def selftest():
     assert ok(decision="APPROVE_SOME", excluded_vendors="Wells Paints", spoken_total="70800") == []  # old total
     assert ok(decision="APPROVE_SOME", excluded_vendors="", spoken_total="70800") == []
     assert ok(decision="APPROVE_ALL", excluded_vendors="Doe", spoken_total="70800") == []
+    for blank in ("-", "None", "n/a", " - "):  # how Sarvam may send an empty output variable
+        assert len(ok(decision="APPROVE_ALL", excluded_vendors=blank, spoken_total="70800")) == 2, blank
+    assert ok(decision="APPROVE_SOME", excluded_vendors="-", spoken_total="11800") == []
     assert ok(decision="REJECT", spoken_total="70800") == [] and ok(decision="CALL_LATER") == []
     assert ok(decision="APPROVE_ALL", spoken_total="94400") == []            # stopped bill never paid
     assert agent_variables([])["pay_list"] == "none"

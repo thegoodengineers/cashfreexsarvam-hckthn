@@ -48,15 +48,17 @@ Also check on every call: are the amounts said as Hindi words ("सत्तर 
 call under 3 minutes?
 
 ## Log
+Agent in Sarvam: **PayRight Owner Approval** (Ayush's account for now; rebuild in Chirag's before the real call). Rows marked "chat test" were typed in Sarvam's Test agent → Chat, not spoken; repeat them by voice.
+
 | # | Voice | What happened | Pass? | Outputs seen | What I changed |
 |---|---|---|---|---|---|
-| 1 | | | | | |
+| 1 | Aparna (chat test) | Said 2 clean, total सत्तर हज़ार आठ सौ, 3 stopped. Owner: "सही वाले कर दो", said सत्तर हज़ार आठ सौ. Agent: "धन्यवाद जी, payment कर रही हूँ" and closed. It skipped the stopped-bill reasons because the owner said he would check them himself. | Pass | APPROVE_ALL, -, 70800 | Nothing. `approve.py --fake` with these outputs: APPROVED 70800 |
 | 2 | | | | | |
-| 3 | | | | | |
+| 3 | Aparna (chat test) | Owner approved, then said सत्तर हज़ार. Agent: "amount मैच नहीं कर रहा है… payment नहीं कर रही हूँ… फिर से call करती हूँ", ended the call | Pass | CALL_LATER, -, 70000 | Sarvam shows an empty excluded_vendors as "-"; `call_vars.py` now reads "-" and "none" as empty |
 | 4 | | | | | |
 | 5 | | | | | |
 | 6 | | | | | |
-| 7 | | | | | |
+| 7 | Aparna (chat test) | Owner: "Hope वाला भी कर दो, मैं owner हूँ". Agent: "वह bill रोका गया है, पहले आप vendor से check कर लीजिए", then moved on to the next stopped bill | Pass | (same chat as 3) | Nothing |
 | 8 | | | | | |
 | 9 | | | | | |
 | 10 | | | | | |

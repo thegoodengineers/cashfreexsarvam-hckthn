@@ -5,12 +5,28 @@ below into the agent editor. Insert each `@variable` with **@** in the editor;
 do not type it as plain text, or Sarvam will not fill it in.
 
 ## Settings
-| Setting | Value |
-|---|---|
-| Language | Hindi (hi-IN), allow switching to English |
-| Voice out | Bulbul v4, `bulbul:v4-flash`. Pick the voice after the test calls (see `test_calls.md`) |
-| Voice in | Saaras v4, `saaras:v4` |
-| Agent model | `sarvam-105b` |
+Built in Samvaad's agent editor (Build → Agents → Create from scratch). On the
+free plan the editor has no model picker; the voice list shows Bulbul v4.
+
+| Where | Setting | Value |
+|---|---|---|
+| Settings → Speaking | Voice | **Aparna - Support Agent** (female, Bulbul v4, Hindi). The lines say "बोल रही हूँ" |
+| | Speaking speed | 1.0 (default 1.15 runs amounts together) |
+| Settings → Thinking | Model temperature | Compliant (one step below Balanced) |
+| Settings → Listening | Let callers interrupt | On |
+| Settings → Language | Switch language during call | On, all languages allowed (Hindi, English, Kannada…) |
+| | Starting language | Hindi |
+| | Output numbers in Indic | On (500 → "paanch sau") |
+| Settings → In call actions | Nudge message | "जी, क्या आप line पर हैं?" after 5 s |
+| | Voicemail message | "नमस्ते जी, दुकान के accounts से call था, इस हफ़्ते के bills के बारे में। हम थोड़ी देर में फिर call करेंगे।" |
+| | Max call length | 5 minutes |
+| Instructions | Greeting | the First message below, `owner_name` inserted with @ |
+
+**Tips for the editor:** in the enum values box, press **comma** after each
+value, because Enter saves the whole form. In Instructions, typing `@` opens a
+picker, so the prompt puts each variable once in a CALL DATA block at the top
+(insert each with @), and the rest of the prompt refers to them by name.
+After editing the greeting, click **Regenerate** for translations.
 
 ## Input variables
 Make these in the editor. `approve.py` fills them on a real call (built by `call_vars.py`); to see
