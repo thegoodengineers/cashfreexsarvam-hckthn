@@ -54,7 +54,7 @@ amounts said as words? Log each call below with the voice used.
 | # | Voice | What happened | Pass? | Outputs seen | What I changed |
 |---|---|---|---|---|---|
 | 1 | | | | | |
-| 5 | | | | | |
+| 5 | (chat test, Chirag's agent) | Before the fix: agent refused the old total aloud, but `decision` came back APPROVE_SOME (code still paid nothing). After the fixes: correct total → APPROVE_SOME, Wells, 42067; old total twice → refused, REJECT, Wells, 110507; Raghu leaving Wells out on his first reply → agent still gave all 4 reasons first | Pass (chat) | see left | Partial-approval total rule; `decision` returns REJECT on a mismatched total; reasons before the total. Still to do by voice on the phone panel |
 | 7 | | | | | |
 | 9 | | | | | |
 | 13 | | | | | |

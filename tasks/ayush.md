@@ -102,9 +102,11 @@ RULES
       Done: amounts in the spoken language (Hindi, Kannada, English examples),
       a KANNADA LINES block, reasons may have "and also". Have a Kannada speaker
       check the lines on call 14.
-- [ ] At Chirag's laptop first: paste the updated prompt from `prompt.md` into
-      "PayRight Approval" (always give reasons, spoken-language amounts, Kannada
-      lines).
+- [x] Update Chirag's demo agent. Done from Ayush's login (added to Chirag's
+      workspace): it is listed as **"Conversation Agent 7411"** (v3 draft) and
+      introduces itself as PayRight Approval. Its prompt already had "always give
+      reasons" and "amounts in the spoken language"; added only what was missing.
+      Details and chat tests: `voice/prompt.md` → "Demo agent".
 - [ ] Voice calls on Chirag's phone panel: scenarios 1, 5, 7, 9, 13, 14 first, using the
       8-invoice batch total (110507), and log each in `voice/test_calls.md`.
       Ready: `test_calls.md` → "First: 6 real voice calls" has the 7 input

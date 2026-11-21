@@ -7,7 +7,7 @@ in a personal file says something different, this page wins.
 |---|---|---|---|
 | 1 | Get ONE real sandbox payout to succeed. Relay's "Request Transfer (Sync)" is refused by Cashfree (v1 API deprecated). Apply the desk's fix, or replace the step with an HTTP call to Payouts v2 | Chirag + Claude | 2:15 |
 | 2 | Desk: enable Secure ID / Verification Suite on the test account; ask about test balance | Chirag | 2:00 |
-| 3 | Put the final prompt from `payright/voice/prompt.md` into the agent on CHIRAG's Sarvam account ("PayRight Approval"). That is the only demo agent; the one in Ayush's account is practice | Ayush, at Chirag's laptop | 2:10 |
+| 3 | DONE: Chirag's agent (listed as "Conversation Agent 7411", v3 draft, introduces itself as PayRight Approval) already had most of `prompt.md`; added the missing pieces (partial-approval total, multi-problem bills, reasons before the total, Kannada lines, `decision` = REJECT on a wrong total). Chat-tested; see `voice/prompt.md` → "Demo agent" | Ayush | 2:10 |
 | 4 | Six real voice calls from that agent's Test panel -> Phone (scenarios 1, 5, 7, 9, 13, 14), logged in `voice/test_calls.md`; confirm the Aparna voice | Ayush | 2:30 |
 | 5 | DONE: `call_vars.py` sends `user_name` and every problem per bill; `prompt.md` amounts "in the language you are speaking" + Kannada lines | Ayush | 2:15 |
 | 6 | Let `approve.py` read the decision of a call that was started from Sarvam's Test panel (newest attempt for the app), since calls from code have no phone number yet | Abhijeet (IDs from Chirag) | 2:30 |

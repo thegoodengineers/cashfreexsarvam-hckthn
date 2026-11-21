@@ -4,6 +4,33 @@ Built on Chirag's Sarvam account (indus.sarvam.ai/samvaad). Paste the blocks
 below into the agent editor. Insert each `@variable` with **@** in the editor;
 do not type it as plain text, or Sarvam will not fill it in.
 
+## Demo agent (Chirag's account): what it has and what was changed
+The demo agent is in Chirag's workspace, listed as **"Conversation Agent 7411"**
+(v3 draft); it introduces itself as "PayRight Approval". Its prompt is Chirag's
+own (Persona / Objective / Speaking style / Facts / Conversation guidelines /
+Guardrails) and already covered "always give the reasons" and "amounts in the
+language being spoken". It was not replaced. Added on 21 Nov:
+
+1. **He excludes a vendor:** the expected total is pay_total minus the
+   left-out vendors' amounts from pay_list (example 110507 → 42067 without
+   Wells); never say it for him; the old full total is not an approval. The
+   original line compared with pay_total, which refuses every valid partial
+   approval. Same exception added to the "Approval requires…" guardrail.
+2. **Held bills:** a bill can have several problems ("…, and also …"): say
+   each. Give the reasons first even if he says yes or leaves a vendor out early.
+3. **Kannada sample lines** (a bullet under Guardrails, where the editor put it).
+4. **`decision` output:** a mismatched total (e.g. the old total after leaving
+   vendors out) is REJECT, never APPROVE_ALL / APPROVE_SOME. Before this it
+   returned APPROVE_SOME for a refused call; our code still paid nothing.
+
+Its 7 inputs have no defaults: fill them in Test → Setup (values in
+`test_calls.md`). Its outputs match ours (`decision`, `excluded_vendors`,
+`spoken_total`); it records a wrong total as REJECT where this file says
+CALL_LATER; both pay nothing.
+
+The practice agent in Ayush's workspace ("PayRight Owner Approval") follows
+the rest of this file.
+
 ## Settings
 Built in Samvaad's agent editor (Build → Agents → Create from scratch). On the
 free plan the editor has no model picker; the voice list shows Bulbul v4.
