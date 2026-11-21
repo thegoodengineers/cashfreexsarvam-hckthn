@@ -53,6 +53,7 @@ Agent in Sarvam: **PayRight Owner Approval** (Ayush's account for now; rebuild i
 | # | Voice | What happened | Pass? | Outputs seen | What I changed |
 |---|---|---|---|---|---|
 | 1 | Aparna (chat test) | Said 2 clean, total सत्तर हज़ार आठ सौ, 3 stopped. Owner: "सही वाले कर दो", said सत्तर हज़ार आठ सौ. Agent: "धन्यवाद जी, payment कर रही हूँ" and closed. It skipped the stopped-bill reasons because the owner said he would check them himself. | Pass | APPROVE_ALL, -, 70800 | Nothing. `approve.py --fake` with these outputs: APPROVED 70800 |
+| 1b | Aparna (chat test) | Owner: "रुके हुए मैं खुद देख लूँगा, छोड़ो उनको". Agent: "जी, पर एक बार कारण सुन लीजिए", gave all 3 reasons in one sentence each, then asked for approval; owner said सत्तर हज़ार आठ सौ | Pass | APPROVE_ALL, -, 70800 | Added rule: always give every stopped-bill reason before asking for approval (row 1 had skipped them) |
 | 2 | | | | | |
 | 3 | Aparna (chat test) | Owner approved, then said सत्तर हज़ार. Agent: "amount मैच नहीं कर रहा है… payment नहीं कर रही हूँ… फिर से call करती हूँ", ended the call | Pass | CALL_LATER, -, 70000 | Sarvam shows an empty excluded_vendors as "-"; `call_vars.py` now reads "-" and "none" as empty |
 | 4 | | | | | |

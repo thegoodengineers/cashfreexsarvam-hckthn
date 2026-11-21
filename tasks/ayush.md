@@ -74,8 +74,9 @@ RULES
       Using **Aparna - Support Agent** (female, Bulbul v4, Hindi) at speed 1.0;
       amounts come out as Hindi words ("सत्तर हज़ार आठ सौ") in chat. Not yet
       heard on a call.
-- [ ] Tune: when the owner says he will check the stopped bills himself, the
-      agent skips their reasons. For the demo it should always give them.
+- [x] Tune: when the owner says he will check the stopped bills himself, the
+      agent skipped their reasons. Added a rule to always give them; retested
+      in chat, it now says "पर एक बार कारण सुन लीजिए" and gives all three.
 
 ## Models (use Sarvam's newest)
 - Voice out: Bulbul v4 (`bulbul:v4-flash`); voice in: Saaras v4 (`saaras:v4`);
