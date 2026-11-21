@@ -3,7 +3,7 @@
 Cashfree x Sarvam Buildathon, 21 Nov 2026, Problem Statement 3: *Pay the right bill, to the right person.*
 Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/PayRight_Problem_and_Solution.pdf`.
 
-**In one line:** across 41 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, read by the live Sarvam reader, **7 of 7 planted traps were caught and 0 wrong payments were approved.** 22 of 34 genuine bills were cleared to pay; the other 12 were not paid (10 asked about once, 2 stopped). 96% of 410 critical fields and 98% of 123 money fields were read exactly right.
+**In one line:** across 41 invoices in **23 languages (all 22 Indian languages of the Eighth Schedule, plus English)**, read by the live Sarvam reader, **7 of 7 planted traps were caught and 0 wrong payments were approved.** 32 of 34 genuine bills were cleared to pay; the other 2 were stopped safely (a photo nobody could read, and an Assamese bill whose vendor could not be identified). 96% of 410 critical fields and 98% of 123 money fields were read exactly right.
 
 **Status at 2 PM, honestly:** reading and checking are working and measured. Bank verification is blocked, because Cashfree says the Verification Suite is not enabled on our test account. No payout has completed yet. The owner's approval call is built and tested in chat, with no recorded call yet. Below, anything not yet run is marked *(planned)* or *(not yet tested)*.
 
@@ -79,7 +79,7 @@ We did not stop at the demo set. We built 42 invoices ourselves, so we know ever
 | | Demo set (8) | Stress set (8) | Fail-safe ladder (5) | 20 languages (20) | **All 41** |
 |---|---|---|---|---|---|
 | Planted traps caught before money moved | 4 / 4 | 3 / 3 | none planted | none planted | **7 / 7** |
-| Genuine bills cleared to pay | 4 / 4 | 4 / 5 (1 asked) | 4 / 5 (1 stopped) | 10 / 20 (9 asked, 1 stopped) | **22 / 34** (10 asked, 2 stopped) |
+| Genuine bills cleared to pay | 4 / 4 | 5 / 5 | 4 / 5 (1 stopped) | 19 / 20 (1 stopped) | **32 / 34** (2 stopped) |
 | Wrong payments approved | 0 | 0 | 0 | 0 | **0** |
 | Critical fields read exactly right | 78 / 80 | 77 / 80 | 45 / 50 | 193 / 200 | **393 / 410 (96%)** |
 
@@ -93,13 +93,13 @@ We did not stop at the demo set. We built 42 invoices ourselves, so we know ever
   - a total above one lakh, with the words in lakh notation
 - **India's languages:** one clean bill in each of the other 20 scheduled languages, each read with its own language code: Bengali, Telugu, Marathi, Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Urdu, Nepali, Konkani, Maithili, Sanskrit, Dogri, Bodo, Kashmiri, Sindhi, Manipuri (Meitei script) and Santali (Ol Chiki script).
   - Sarvam read every total, account number and IFSC right in all 20.
-  - It scores non-English vendor names at 0.5 confidence, so 9 clean bills were asked about once instead of paid. A rule we measured on the saved reads would turn all 9 into PAY and change nothing else in all 41: do not ask about the name when the GSTIN or the account on file already proves the vendor. That rule goes in the checker, and Chirag owns that change.
+  - Sarvam scores non-English vendor names at 0.5 confidence, which at first sent 9 clean bills to ASK. We measured a fix on the saved reads, and the checker now asks only when nothing else confirms a shaky reading: here the GSTIN or the account on file proves the vendor. All 9 are now paid, and no other result changed.
   - The Assamese bill was stopped. The GSTIN slip and an Assamese name with no English reading left the vendor unidentified. It was safe, but wrong. An Assamese name in the vendor list would fix it.
   - For 9 lower-resource languages the labels are our best effort and the amount in words is in English. A native speaker should review them.
 - **Fail-safe ladder:** the same kind of genuine bill, photographed from a flat scan down to barely readable. The first four were paid correctly. The fifth was not paid: it was stopped, so it counts as a genuine bill not paid.
 - **What the ladder taught us.** On the unreadable photo, Sarvam invented a bank account (`0123456789012345`), a GSTIN and a 2023 date. It scored that account at confidence 0. Our reader was treating a 0 as fully sure, because in Python `0 or 1` is `1`. We fixed it, and a 0 now marks the field unsure. The bill was never at risk: code compares every account with the one on file. **This is our design working. We do not trust the model's confidence; we cross-check what it reads.**
 - **Honest gaps:**
-  - On the Devanagari-digit bill, Sarvam read the total right but was unsure of it (0.5), so the owner gets asked once. That is a cautious result, not a wrong one.
+  - On the Devanagari-digit bill, Sarvam read the total right but was unsure of it (0.5). The arithmetic and the amount in words confirm it, so it is paid.
   - The letter O inside one vendor's GSTIN is read as zero every time. That is harmless, because the vendor is then matched by name.
   - Not paying the barely readable photo is the safe outcome, but it is still a genuine bill not paid, and we count it that way.
 

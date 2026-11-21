@@ -77,7 +77,8 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
       NOT READ YET: my Sarvam account is out of credits (402). Chirag, please run
       `python payright/evidence.py demo --read` (or the reader) on your account.
 - [x] Task 11: judges' pack corrected. Generated handwriting is called generated. Counts are honest:
-      7/7 planted traps caught, 22/34 genuine bills cleared to pay (10 asked, 2 stopped), 0 wrong
+      7/7 planted traps caught, 32/34 genuine bills cleared to pay (2 stopped; was 22/34 before the
+      checker's 2:20 PM change), 0 wrong
       payments. Payout, bank verification, repeated-ID rejection, the recorded call and failed-payout
       handling are marked planned / not yet tested. PDF rebuilt.
 - [x] Task 9: real handwritten bill pushed: `payright/test_sets/real/real01_samsuddin.jpg`

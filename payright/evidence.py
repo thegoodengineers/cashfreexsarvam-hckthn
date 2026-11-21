@@ -227,16 +227,16 @@ a 0 now marks the field unsure. The bill was never at risk, because code compare
 <li><b>A model reads, code decides, and that is why it held.</b> Every wrong read we saw was caught by a cross-check
 (account on file, GSTIN, arithmetic, amount in words), not by trusting the model's confidence.</li>
 <li><b>Scripts are not the hard part.</b> Tamil and Hindi names, Tamil and Hindi amounts in words, Devanagari digits and
-lakh notation were all read right. On Devanagari digits Sarvam was unsure (0.5) of a correct total, so the owner is
-asked once instead of the bill being paid on a guess.</li>
+lakh notation were all read right. On Devanagari digits Sarvam was unsure (0.5) of a correct total; the arithmetic and
+the amount in words confirm it, so the bill is paid rather than asked about.</li>
 <li><b>One systematic slip:</b> the letter O inside Hope's GSTIN is read as zero on every Hope bill. Usually harmless,
 since the vendor is then matched by name, but it is why the GSTIN is never the only key.</li>
 <li><b>All 22 Indian languages read.</b> Across the 20-language set Sarvam read 193 of 200 critical fields right, and every
-total, account number and IFSC in every language. But it scores non-English vendor names at 0.5 confidence, so 9 clean
-bills are asked about rather than paid. Measured fix for the checker: do not ask about the name when the GSTIN or the
-account on file already proves the vendor. On our saved reads that turns those 9 into PAY and changes nothing else in all
-41 invoices. The Assamese bill was stopped (safely) because the GSTIN slip and an Assamese name with no English reading
-left the vendor unidentified; an Assamese alias in the vendor list, or reading O and 0 alike in a GSTIN, would fix it.</li>
+total, account number and IFSC in every language. It scores non-English vendor names at 0.5 confidence, which at first
+sent 9 clean bills to ASK. We measured a fix on the saved reads; the checker now asks only when nothing else confirms a
+shaky reading (here the GSTIN or the account on file proves the vendor). All 9 are now paid and no other result changed.
+The Assamese bill is still stopped (safely): the GSTIN slip and an Assamese name with no English reading leave the vendor
+unidentified; an Assamese alias in the vendor list, or reading O and 0 alike in a GSTIN, would fix it.</li>
 </ul></div>"""
 
 
