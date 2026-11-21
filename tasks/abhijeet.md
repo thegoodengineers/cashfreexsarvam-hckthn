@@ -97,3 +97,24 @@ Tested against a fake Relay on localhost: five runs of the same batch sent each 
 
 ## Not now
 - Landing page, login, database, CI. Nothing on the score card marks them.
+
+## Update 1:50 PM (from Chirag + review of your code)
+APPROVED: the live board ("the agent that says no") replaces the plain status page.
+- [ ] Lanes Pay / Ask / Stop with rupee totals, from real `decisions.json` + ledger only.
+- [ ] Click a stopped bill: show `evidence` from check.py (already there: `a_label`, `a`,
+      `b_label`, `b` per stop), wrong value in red. Do not edit check.py for this.
+- [ ] Show "paid" ONLY when Cashfree confirms. `lambda/status.py:71-75` currently shows
+      NOT_SENT and UNKNOWN rows as PAID. Fix first.
+- [ ] Label the call Hindi, not Tamil. Stop board work at 2:30; terminal table is the fallback.
+Bugs found in review, in order:
+- [ ] `run.py:133` / `approve.py:245`: `--fake '{"decision":...}'` arrives as `{decision:...}`
+      in PowerShell and crashes. Read the fake answer from a file instead. This is our
+      stage fallback if the call fails, so it must work.
+- [ ] `send.py:183`: standalone send.py pays every PAY row with no approval. Make it
+      require the approval that approve.py writes (`approval.json` is read by nothing).
+- [ ] `approve.py:173-192`: non-200s are swallowed and network errors uncaught; up to 7
+      silent minutes. Print the status and fail fast.
+IMPORTANT, new: Relay's built-in "Request Transfer (Sync)" returns 403 "payout v1 and
+v1.2 APIs have been deprecated". Payouts must go through Cashfree Payouts v2
+(POST https://sandbox.cashfree.com/payout/transfers, header x-api-version 2024-01-01).
+Claude is replacing that Relay step with an HTTP step; send.py's event fields stay the same.

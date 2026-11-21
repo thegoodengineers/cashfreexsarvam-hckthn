@@ -83,3 +83,17 @@ RULES
   agent brain: `sarvam-105b`. Pick these in the agent's settings if offered.
 - The free-plan editor has no model picker; Sarvam chooses the model. The
   voice list is Bulbul v4.
+
+## Update 1:50 PM (from Chirag + review of your work)
+- The agent ALREADY exists on Chirag's Sarvam account ("PayRight Approval"). Do not
+  rebuild it. Sit at Chirag's laptop and tune that one.
+- Caller number: on Chirag's account the agent's Test panel -> Phone -> "Call 1 number"
+  placed a real call to his phone with no rented number. Use that for all voice tests and
+  as the demo route. Calls started from code (approve.py) still need a number: open.
+- [ ] `call_vars.py:61`: add `"user_name": owner_name` (the agent has 7 inputs, you send 6).
+- [ ] `call_vars.py:50-53`: loops are nested the wrong way; a bill with two problems only
+      reports one.
+- [ ] `voice/prompt.md:55`: "Say every amount in Hindi words" breaks Kannada and English.
+      Write "in the language you are speaking". Add real Kannada lines.
+- [ ] Voice calls on Chirag's phone panel: scenarios 1, 5, 7, 9, 13, 14 first, using the
+      8-invoice batch total (110507), and log each in `voice/test_calls.md`.

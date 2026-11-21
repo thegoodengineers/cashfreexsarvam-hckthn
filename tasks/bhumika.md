@@ -53,3 +53,18 @@ expected results in `payright/invoice_answer_key.json`.
       21 invoices: traps 8/8, clean stopped 0/13, wrong payments 0, fields 95%.
 - [x] Invoices in all 22 Indian languages + English (`payright/test_sets/languages/`),
       each read with its own language code. 41 invoices in total, 23 languages.
+
+## Update 1:50 PM (from review of your work)
+Your numbers reproduce from the committed files. Fix these before anyone reads the pack:
+- [ ] `docs/judges_pack.md:40-41` says an invoice was "filled in by hand, photographed".
+      None was: all 21 are generated. Either photograph ONE real handwritten bill now and
+      run it, or change the sentence. This matters; judges will bring handwritten ones.
+- [ ] Lines 6, 77-78: "8/8 traps, 0/13 good stopped" counts a clean bill that got STOP as
+      a trap. Honest count: 7/7 traps caught, 2 of 14 good bills not paid.
+- [ ] Lines 24, 30, 31, 61, 121 claim things that have not happened: a completed payout,
+      bank verification in Relay, Cashfree rejecting a repeated ID, a recorded Hindi call,
+      failed payouts going back as ASK. Mark each "planned" or "not yet tested", then
+      rebuild the PDF.
+- [ ] New trap (Abhijeet's idea): Hope Electricals with account 388108022659 (one digit
+      off from 388108022658). Add it to the demo set and the answer key as STOP.
+- [ ] The rehearsal table is empty. Three timed runs after 2:45.
