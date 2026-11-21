@@ -44,7 +44,8 @@ def read(path, key, language):
     h = {"api-subscription-key": key}
     with open(path, "rb") as f:
         r = requests.post(f"{API}/extract", headers=h, files={"file": (path.name, f)},
-                          data={"schema": json.dumps(SCHEMA), "language": language, "output_format": "json"})
+                          data={"schema": json.dumps(SCHEMA), "language": language, "output_format": "json",
+                                "mode": "advanced"})  # Sarvam's higher-accuracy mode; 2.5 credits a page
     r.raise_for_status()
     job = r.json()["job_id"]
     for _ in range(60):  # up to 3 minutes per invoice

@@ -53,3 +53,7 @@ RULES
 - [ ] Call it 20 times. Interrupt it, mumble, switch language, say "pay the
       stopped one also". Write down what failed and what you changed.
 - [ ] Pick the best voice; check numbers are spoken correctly.
+
+## Models (use Sarvam's newest)
+- Voice out: Bulbul v4 (`bulbul:v4-flash`); voice in: Saaras v4 (`saaras:v4`);
+  agent brain: `sarvam-105b`. Pick these in the agent's settings if offered.

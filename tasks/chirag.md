@@ -24,3 +24,10 @@ money button is yours. Claude builds the Relay canvas with you in the pane.
 
 ## Demo
 - [ ] You drive the laptop: canvas, Runs tab, Payouts test dashboard.
+
+## Blocker found at 12:50 (go to the onboarding / Relay desk now)
+- [ ] Relay's "Verify Bank Details" returns: "Verification Suite is not
+      enabled for this account" (subCode 422). Ask them to enable Secure ID /
+      Verification Suite on our TEST account. Without it we cannot verify a
+      vendor's bank account, which problem 3 requires.
+- [ ] Our 3-step dry run took 3 minutes. Ask if that is normal today.
