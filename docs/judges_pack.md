@@ -14,7 +14,7 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
 **Our rule: a model reads, code decides, a person approves, and money only goes to the account we already have on file.**
 
 **What we chose**
-- **Sarvam Document AI reads; it never decides.** It turns each invoice (printed in any of 23 languages; handwriting tested so far only on generated pages) into fixed fields with a confidence for each. If a critical field (vendor, invoice number, total, account, IFSC) is low-confidence, it is marked *unsure*. The bill then goes to a person instead of being silently fixed.
+- **Sarvam Document AI reads; it never decides.** It turns each invoice (printed in any of 23 languages; handwriting tested so far only on generated pages, with one real handwritten bill waiting to be read) into fixed fields with a confidence for each. If a critical field (vendor, invoice number, total, account, IFSC) is low-confidence, it is marked *unsure*. The bill then goes to a person instead of being silently fixed.
 - **Plain, tested code decides PAY / ASK / STOP** (`payright/check.py`). Every decision carries a reason a shop owner can read aloud. The checks are:
   - Does the arithmetic hold, including the amount in words against the figures?
   - Who is the vendor? Matched by GSTIN, or by name across scripts.
@@ -40,7 +40,7 @@ Team: Chirag, Abhijeet, Bhumika, Ayush. Full problem and architecture: `docs/Pay
 Both cases come from a real run on 21 Nov 2026: our demo invoices went through the live Sarvam reader (advanced mode) and our checker. Results: `payright/scoresheet.md`.
 
 ### Success: a handwritten-style bill, as a phone photo, read and cleared
-`payright/invoices/inv08_wells.jpg` is a red-ruled bill-book page from Wells Paints and Chemicals. **It is generated, not a real handwritten bill:** the entries are in a handwriting font with every letter slightly tilted, and the page is then made to look like a phone photo, at an angle and in uneven light. A real photographed handwritten bill has not been tested yet. The date is in short form (`18/11/26`).
+`payright/invoices/inv08_wells.jpg` is a red-ruled bill-book page from Wells Paints and Chemicals. **It is generated, not a real handwritten bill:** the entries are in a handwriting font with every letter slightly tilted, and the page is then made to look like a phone photo, at an angle and in uneven light. A real handwritten bill, photographed by the team, is now in `payright/test_sets/real/` with its private details blacked out. It is waiting to be read: the photo is low resolution, and our Sarvam credits ran out. The date is in short form (`18/11/26`).
 - Sarvam read every field the checker needs correctly:
   - invoice no `512`
   - two line items

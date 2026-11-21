@@ -80,5 +80,10 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
       7/7 planted traps caught, 22/34 genuine bills cleared to pay (10 asked, 2 stopped), 0 wrong
       payments. Payout, bank verification, repeated-ID rejection, the recorded call and failed-payout
       handling are marked planned / not yet tested. PDF rebuilt.
-- [ ] Task 9: photograph ONE real handwritten invoice (me, by hand), push it, Chirag runs the reader.
+- [x] Task 9: real handwritten bill pushed: `payright/test_sets/real/real01_samsuddin.jpg`
+      (PAN, phones, customer details and signatures blacked out; the repo is public). Truth transcribed
+      in `invoice_answer_key.json`: bill 287, 28/10/2024, 9 lines, total 7,226; unknown vendor, no bank
+      details, so the right result is ASK. NOT READ YET (no credits). Chirag: run
+      `python payright/evidence.py real --read en-IN`. The photo is only 400x541; a full-size original
+      would be a fairer test.
 - [ ] Task 14: run the timer at the three rehearsals.

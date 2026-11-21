@@ -46,7 +46,10 @@ SETS = {"demo": (HERE / "invoices", HERE / "invoice_answer_key.json",
         "languages": (HERE / "test_sets" / "languages", None,
                       "India's languages", "One clean invoice in each of the other 20 of the 22 languages of the "
                       "Eighth Schedule (Hindi and Tamil are in the demo set), each read with its own language code. "
-                      "Cards marked 'native speaker to review' have best-effort labels and the amount in words in English.")}
+                      "Cards marked 'native speaker to review' have best-effort labels and the amount in words in English."),
+        "real": (HERE / "test_sets" / "real", None,
+                 "Real handwritten bills", "Real bills photographed by the team, not generated. Private details "
+                 "(PAN, phone numbers, customer, signatures) are blacked out. The truth was transcribed by hand.")}
 FIELDS = [("vendor", "Vendor"), ("gstin", "GSTIN"), ("invoice_no", "Invoice no."), ("invoice_date", "Date"),
           ("subtotal", "Subtotal"), ("tax", "Tax"), ("total", "Total"), ("total_in_words_value", "Amount in words"),
           ("bank_account", "Account no."), ("ifsc", "IFSC")]
@@ -95,6 +98,8 @@ def same(field, truth, inv, vendors):
                    for n in names), got
     got = inv.get(field)
     want = truth[field]
+    if want is None:  # not printed on the bill (real bills): right only if the reader left it empty
+        return got in (None, "", "-", 0) or (isinstance(got, str) and not got.strip(" -")), got
     if field in ("subtotal", "tax", "total", "total_in_words_value"):
         a = check.amount(got)
         return a is not None and abs(a - want) <= check.TOL, got
@@ -134,7 +139,8 @@ def score(name):
                      "unsafe": unsafe, "fields": fields, "unsure": inv.get("unsure_fields", [])})
     n_fields = sum(len(r["fields"]) for r in rows)
     # A trap is a bill planted to be refused; every other bill is genuine, however bad the photo.
-    traps = [r for r in rows if r["expected"] != "PAY"]
+    # Real bills from outside ("planted": false) are neither: they are scored on reading and on not being paid wrongly.
+    traps = [r for r in rows if r["expected"] != "PAY" and r.get("planted", True)]
     good = [r for r in rows if r["expected"] == "PAY"]
     summary = {
         "set": name, "title": title, "blurb": blurb, "invoices": len(rows), "unread": unread,
@@ -289,9 +295,9 @@ def report(results):
 <p class=lede>Every invoice below went through the live Sarvam Document AI reader (advanced mode) and our real
 <span class=mono>check.py</span>. We generated each invoice ourselves, so we know what is truly printed on it and can
 score the reader field by field. Nothing here is typed in by hand. The "handwritten" bills are generated pages in a
-handwriting font made to look like phone photos; no real handwritten bill has been tested yet.</p>
+handwriting font made to look like phone photos. One real handwritten bill (team photo, private details blacked out) is in <span class=mono>payright/test_sets/real/</span>, waiting to be read.</p>
 <div class=kpis>{head}</div>{pending}
-{LEARNED if {s['set'] for s, _ in results} == set(SETS) else ''}
+{LEARNED if {'demo', 'stress', 'ladder', 'languages'} <= {s['set'] for s, _ in results} else ''}
 {''.join(sections)}
 <p class=foot>Generated {datetime.now():%d %b %Y, %H:%M} by <span class=mono>payright/evidence.py</span> from saved reads
 (<span class=mono>extracted.json</span> in each set's folder). Re-run any time: <span class=mono>python payright/evidence.py all</span>.
