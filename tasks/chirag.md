@@ -1,4 +1,9 @@
-# Chirag — Relay and Cashfree owner, demo operator
+# Chirag — everything that touches Cashfree or Sarvam, demo operator
+
+Only your accounts have Cashfree access and Sarvam credits, so every REAL
+call to either service runs on your laptop: the invoice reader, the voice
+agent on Sarvam, Relay, and the payout run. Teammates write and dry-run;
+you run.
 
 You hold the Cashfree login, so everything that needs keys, approvals or a
 money button is yours. Claude builds the Relay canvas with you in the pane.
@@ -31,3 +36,10 @@ money button is yours. Claude builds the Relay canvas with you in the pane.
       Verification Suite on our TEST account. Without it we cannot verify a
       vendor's bank account, which problem 3 requires.
 - [ ] Our 3-step dry run took 3 minutes. Ask if that is normal today.
+
+## Sarvam (your account)
+- [ ] Sign in to indus.sarvam.ai in the Claude browser pane; Claude builds the
+      voice agent there with Ayush's prompt.
+- [ ] Run the reader on Bhumika's invoices:
+      `python payright/extract.py payright/invoices ta-IN`
+      then `python payright/check.py payright/invoices.json --cash 100000`.

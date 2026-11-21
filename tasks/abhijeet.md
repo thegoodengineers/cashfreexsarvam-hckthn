@@ -4,6 +4,8 @@ You have the most build capacity, so the code that joins the pieces is yours.
 Work top to bottom; do not start a lower item until the one above runs.
 
 ## Rules
+- You have no Cashfree or Sarvam keys, and do not need them. Write the code,
+  test it with `--dry-run` and fake responses, push it; Chirag runs it for real.
 - The repo is public. Never commit `payright/.env` (Sarvam key, Relay webhook
   URL) or any Cashfree / AWS password.
 - A model reads invoices; plain code decides about money. Do not move the

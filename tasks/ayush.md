@@ -7,14 +7,16 @@ live call is a tick-box on the judge's card.
 ## Now
 - [ ] Sarvam desk: which caller number do hackathon teams use for outbound
       calls? (Renting one normally needs KYC.) Without it there is no call.
-- [ ] Build the agent at indus.sarvam.ai/samvaad -> Create from scratch.
+- [ ] You do not need a Sarvam account. Chirag's account has the credits; the
+      agent is built on his laptop (indus.sarvam.ai/samvaad). Your job is the
+      words, the testing and the tuning. Sit with him for the build.
 - [ ] Input variables (insert with @ in the editor): `owner_name`,
       `pay_count`, `pay_total`, `pay_list`, `held_count`, `held_list`.
 - [ ] Output variables (filled by Sarvam after the call):
       `decision` (enum: APPROVE_ALL, APPROVE_SOME, REJECT, CALL_LATER),
       `excluded_vendors` (string), `spoken_total` (string).
-- [ ] Commit a version and deploy it. Tell Chirag the agent name so it can be
-      picked in Relay's "Sarvam Voice -> Call Outbound" step.
+- [ ] Rewrite the sample lines of the prompt in the demo language the way a
+      real shop owner's accountant would speak. Hand the final prompt to Chirag.
 
 ## Agent prompt (paste, then tune by calling it)
 ```

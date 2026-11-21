@@ -17,11 +17,12 @@ Mix Tamil, Hindi and English; at least one handwritten and photographed.
 - [ ] Wrong arithmetic: total not equal to subtotal + tax
 - [ ] Mismatched name: John Doe's account on a bill from "Jane D Traders"
 
-Try each photo first at indus.sarvam.ai/akshar/playground/extract.
+You do not need a Sarvam or Cashfree account. Push the files to the repo (or
+send them to Chirag); he runs the reader on his laptop.
 
 ## By 1:45
-- [ ] Run `python payright/extract.py payright/invoices ta-IN` then
-      `python payright/check.py payright/invoices.json --cash 100000`.
+- [ ] Chirag runs the reader and checker on your invoices and sends you the
+      output table.
 - [ ] Fill the score sheet: traps planted, traps caught, clean invoices
       wrongly stopped. Real numbers only.
 
