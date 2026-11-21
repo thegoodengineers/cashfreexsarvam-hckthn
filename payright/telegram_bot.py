@@ -17,6 +17,8 @@ What happens
      It must equal the total to be paid. "yes", "ok" or a thumbs-up approve nothing.
   4. The approved bills go to Cashfree through Relay, and the bot reports each transfer and what Cashfree confirmed.
   5. /new starts a fresh batch.
+  6. /sample makes the bot send a generated supplier bill into the chat (picked at random from the team's
+     generated sets) and deal with it like any other. /sample trap picks a tampered one, /sample clean a genuine one.
 
 Same guards as run.py, because it calls the same code: plain code decides (check.py), money goes only to the account
 on file, one transfer ID per invoice, a write-ahead ledger, an approval is bound to its batch and used once.
@@ -112,16 +114,58 @@ class Bot:
         return "\n".join(lines)
 
     def on_bill(self, chat, file_id, msg_id):
-        self.inbox.mkdir(parents=True, exist_ok=True)
         data, ext = self.fetch(file_id)
+        self.take(chat, data, ext, msg_id)
+
+    def samples(self):
+        """Every generated bill we have, with what it should be (PAY / STOP / ...) and its language where known."""
+        known = {}
+        for key in [HERE / "invoice_answer_key.json", *sorted((HERE / "test_sets").rglob("*.json"))]:
+            rows = send.load(key, [])
+            for r in rows if isinstance(rows, list) else []:
+                if isinstance(r, dict) and r.get("file"):
+                    known[r["file"]] = (str(r.get("expected") or ""), str(r.get("language") or r.get("lang") or ""))
+        out = []
+        for folder in (HERE / "invoices", HERE / "test_sets" / "stress", HERE / "test_sets" / "languages"):
+            for f in sorted(folder.iterdir()) if folder.exists() else []:
+                if f.suffix.lower() in (".png", ".jpg", ".jpeg"):
+                    out.append((f, *known.get(f.name, ("", ""))))
+        return out
+
+    def on_sample(self, chat, msg_id, want=""):
+        import random
+        pool = self.samples()
+        if want == "trap":
+            pool = [s for s in pool if s[1] and s[1] != "PAY"]
+        elif want == "clean":
+            pool = [s for s in pool if s[1] == "PAY"]
+        used = {b.get("sample") for b in self.invoices()}
+        pool = [s for s in pool if s[0].name not in used] or pool
+        if not pool:
+            return self.say(chat, "I have no generated bills to send.")
+        path, _, lang = random.choice(pool)
+        data = path.read_bytes()
+        self.post(f"{API}/bot{self.token}/sendPhoto", data={"chat_id": chat, "caption": "A supplier just sent this bill."},
+                  files={"photo": (path.name, data)}, timeout=90)
+        self.take(chat, data, path.suffix, f"{msg_id}_{path.stem}", sample=path.name, language=lang or None)
+
+    def take(self, chat, data, ext, msg_id, sample=None, language=None):
+        """One bill, however it arrived: save it, read it, check it, answer."""
+        self.inbox.mkdir(parents=True, exist_ok=True)
         path = self.inbox / f"bill_{msg_id}{ext}"
         path.write_bytes(data)
         self.say(chat, "Got the bill. Reading it now...")
+        usual = self.language
         try:
+            self.language = language or usual   # a generated bill is read in the language it was written in
             inv = self.reader(path)
         except Exception as e:  # an unreadable bill is held for a person, it never stops the bot
             inv = {"file": path.name, "unsure_fields": [f"whole invoice (reader error: {type(e).__name__})"]}
+        finally:
+            self.language = usual
         inv["file"] = path.name
+        if sample:
+            inv["sample"] = sample
         bills = self.invoices() + [inv]
         (self.inbox / "inbox.json").write_text(json.dumps(bills, ensure_ascii=False, indent=2), encoding="utf-8")
         decisions = self.decisions()
@@ -184,8 +228,10 @@ class Bot:
             return self.say(chat, f"This chat's id is {chat}")
         if text in ("/start", "/help"):
             return self.say(chat, "Send me a photo or PDF of a supplier bill. I read it, check it and tell you PAY, ASK or STOP "
-                                  "with the reason. The owner approves by sending the total. /batch shows the bills so far, "
-                                  "/new starts a fresh batch.")
+                                  "with the reason. The owner approves by sending the total. /sample sends a generated bill for me "
+                                  "to deal with. /batch shows the bills so far, /new starts a fresh batch.")
+        if text.split(" ")[0] == "/sample":
+            return self.on_sample(chat, msg_id, text.partition(" ")[2].strip().lower())
         if text == "/batch":
             return self.say(chat, self.summary(self.decisions()) if self.invoices() else "No bills yet. Send a photo.")
         if text == "/new":
@@ -263,8 +309,12 @@ def selftest():
     with tempfile.TemporaryDirectory() as d:
         said, relay, queue = [], [], []
 
-        def post(url, json=None, timeout=0):
+        photos = []
+
+        def post(url, json=None, timeout=0, data=None, files=None):
             method = url.rsplit("/", 1)[-1]
+            if method == "sendPhoto":
+                photos.append(files["photo"][0])
             if method == "sendMessage":
                 said.append(json["text"])
             return Reply({"result": {"file_path": "photos/bill.jpg"} if method == "getFile" else True})
@@ -318,6 +368,13 @@ def selftest():
         assert any(s.startswith("I heard") for s in said) and len(relay) == 3
         bot2.handle(text(42, 22, "/new"))
         assert bot2.invoices() == []
+
+        # 6. /sample: the bot sends a generated bill into the chat and deals with it like any other
+        before = len(said)
+        bot2.handle(text(42, 23, "/sample trap"))
+        assert len(photos) == 1 and len(bot2.invoices()) == 1 and bot2.invoices()[0]["sample"] == photos[0]
+        assert any(s.startswith(("PAY", "STOP", "ASK", "LATER")) for s in said[before:])
+        assert all(want != "PAY" for _, want, _ in [s for s in bot2.samples() if s[0].name == photos[0]])
     print("selftest ok: bills are read and checked for anyone; only the owner's exact total pays, once, "
           "to the account on file; no account number is sent to the chat")
 
