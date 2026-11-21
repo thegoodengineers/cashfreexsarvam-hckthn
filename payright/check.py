@@ -68,7 +68,7 @@ def find_vendor(inv, vendors):
     best, score = None, 0.0
     seen_names = [name_key(inv.get(k)) for k in ("vendor_name", "vendor_name_latin")]
     for v in vendors:
-        for known in (name_key(n) for n in [v["name"], *v.get("aliases", [])]):
+        for known in (name_key(n) for n in [v["name"], v.get("account_holder"), *v.get("aliases", [])]):
             for n in seen_names:
                 if n and known:
                     r = SequenceMatcher(None, n, known).ratio()
@@ -88,9 +88,6 @@ def check(inv, vendors, seen, today):
 
     def differ(what, a_label, a, b_label, b):
         evidence.append({"check": what, "a_label": a_label, "a": str(a), "b_label": b_label, "b": str(b)})
-
-    for f in inv.get("unsure_fields", []):
-        ask.append(f"I could not read '{f}' clearly on the invoice.")
 
     # 1. The invoice must agree with itself.
     total = amount(inv.get("total"))
@@ -119,6 +116,13 @@ def check(inv, vendors, seen, today):
 
     # 2. Who is asking to be paid?
     v, how = find_vendor(inv, vendors)
+    totals_agree = total is not None and sub is not None and abs(sub + tax - total) <= TOL
+    for f in inv.get("unsure_fields", []):
+        if f == "vendor_name" and how in ("gstin", "name"):
+            continue  # the vendor was still identified for certain
+        if f == "total" and totals_agree:
+            continue  # subtotal + tax confirms the total
+        ask.append(f"I could not read '{f}' clearly on the invoice.")
     if v is None:
         ask.append("This vendor is not in our vendor list.")
     elif how == "unsure":
@@ -141,6 +145,17 @@ def check(inv, vendors, seen, today):
             stop.append(f"The bank account on this invoice is not the account we have on file for {v['name']}. "
                         "Call the vendor on the number we already have before paying.")
             differ("bank account", "On the invoice", " ".join(on_invoice).strip(), "On our file", " ".join(on_file))
+
+    # 3c. The account holder written on the invoice must be the one on file (Latin script only:
+    #     a name in another script cannot be compared letter by letter, so it is left to the bank check).
+    holder = name_key(inv.get("account_holder"))
+    if v and re.search(r"[a-z]", holder):
+        known = [name_key(n) for n in (v.get("account_holder"), v["name"], *v.get("aliases", [])) if n]
+        if max(SequenceMatcher(None, holder, k).ratio() for k in known) < 0.6:
+            on_file_holder = v.get("account_holder") or v["name"]
+            stop.append(f"The invoice names the account holder as {inv['account_holder']}, "
+                        f"but the holder on file for {v['name']} is {on_file_holder}.")
+            differ("account holder", "On the invoice", inv["account_holder"], "On our file", on_file_holder)
 
     # 4. The same invoice coming back in disguise.
     key, d = invoice_key(inv.get("invoice_no")), parse_date(inv.get("invoice_date"))
@@ -203,7 +218,8 @@ def main(argv):
     path = Path(argv[1])
     here = path.parent
     cash = float(argv[argv.index("--cash") + 1]) if "--cash" in argv else float("inf")
-    vendors = json.loads((here / "vendors.json").read_text(encoding="utf-8"))
+    vfile = here / "vendors.json" if (here / "vendors.json").exists() else Path(__file__).parent / "vendors.json"
+    vendors = json.loads(vfile.read_text(encoding="utf-8"))
     ledger_file = here / "ledger.json"
     ledger = json.loads(ledger_file.read_text(encoding="utf-8")) if ledger_file.exists() else []
     out = plan(json.loads(path.read_text(encoding="utf-8")), vendors, ledger, cash)
@@ -242,6 +258,15 @@ def selftest():
     borrowed = plan([{**base, "vendor_name": "Jane D Traders", "invoice_no": "JDT-1"}], V, [], 1e9)[0]
     assert borrowed["status"] == "STOP" and "belongs to" in borrowed["reasons"][0]  # known account, other name
     assert amount("1.2 lakh") == 120000 and amount("௧௨௦") == 120 and parse_date("10.11.2026") == date(2026, 11, 10)
+    jane = check({**base, "invoice_no": "INV-9", "account_holder": "Jane Doe"}, V, [], date(2026, 11, 21))
+    assert jane["status"] == "STOP" and "account holder" in jane["reasons"][0]  # right account, wrong holder name
+    own = check({**base, "vendor_name": "John Doe", "invoice_no": "INV-10", "account_holder": "John Doe"},
+                [{**V[0], "account_holder": "John Doe"}, V[1]], [], date(2026, 11, 21))
+    assert own["status"] == "PAY", own["reasons"]  # billed in the holder's own name, own account
+    shaky = check({**base, "invoice_no": "INV-11", "unsure_fields": ["vendor_name", "total"]}, V, [], date(2026, 11, 21))
+    assert shaky["status"] == "PAY"  # GSTIN-free name match is certain and subtotal + tax confirms the total
+    unsure = check({**base, "invoice_no": "INV-12", "unsure_fields": ["bank_account"]}, V, [], date(2026, 11, 21))
+    assert unsure["status"] == "ASK"  # nothing else confirms a bank account, so a person is asked
     print("selftest ok")
 
 
