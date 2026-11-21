@@ -53,17 +53,19 @@ def read_folder(folder, language):
     return invoices
 
 
-def publish(decisions, ledger_path, approval=None):
-    """Update the judges' status page (Lambda). Never stops the run if the page is unreachable."""
+def publish(decisions, ledger_path, approval=None, stage=None):
+    """Update the live board. `stage` tells it where the run is: checked, calling, answered, sent,
+    confirmed. Never stops the run if the board is unreachable."""
     url = os.environ.get("STATUS_URL")
     if not url:
         return
     try:
         import requests
         requests.post(url, timeout=10, headers={"x-payright-token": os.environ.get("STATUS_TOKEN", "")},
-                      json={"decisions": decisions, "ledger": send.load(ledger_path, []), "approval": approval})
+                      json={"decisions": decisions, "ledger": send.load(ledger_path, []), "approval": approval,
+                            "stage": stage, "round": check.demo_round().lstrip("|")})
     except Exception as e:
-        print(f"(status page not updated: {type(e).__name__})")
+        print(f"(board not updated: {type(e).__name__})")
 
 
 def settle(decisions, ledger_path, approval=None, tries=6, wait_s=5):
@@ -74,8 +76,8 @@ def settle(decisions, ledger_path, approval=None, tries=6, wait_s=5):
                      "Check the Payouts test dashboard.)")
     import time
     for i in range(tries):
-        waiting = send.confirm(ledger_path, cid, sec, out=print if i == tries - 1 else (lambda *a: None))
-        publish(decisions, ledger_path, approval)
+        waiting = send.confirm(ledger_path, cid, sec, out=print if i in (0, tries - 1) else (lambda *a: None))
+        publish(decisions, ledger_path, approval, stage="sent" if waiting else "confirmed")
         if not waiting:
             break
         time.sleep(wait_s)
@@ -142,9 +144,12 @@ def main(argv):
     decisions = check.plan(invoices, vendors, ledger, cash)
     (HERE / "decisions.json").write_text(json.dumps(decisions, ensure_ascii=False, indent=2), encoding="utf-8")
     print()
+    tag = check.demo_round().lstrip("|")
+    print(f"ROUND  {tag}  (rehearsal round: transfer IDs are fresh for this round only)" if tag
+          else "ROUND  none  (real use: every invoice keeps one transfer ID for life)")
     table(decisions)
     score(decisions, expected, {r["transfer_id"] for r in ledger})
-    publish(decisions, ledger_path)
+    publish(decisions, ledger_path, stage="checked")
     pay = [d for d in decisions if d["status"] == "PAY"]
     if "--no-pay" in argv or not pay:
         return print("\nnothing to pay." if not pay else "\n--no-pay: stopped before the approval call.")
@@ -169,6 +174,7 @@ def main(argv):
         print("Paste these into the agent's variables in Sarvam's Test panel, then start the call:")
         print(json.dumps(variables, ensure_ascii=False, indent=2))
         print(f"Waiting for a call that begins after {since:%H:%M:%S}...")
+        publish(decisions, ledger_path, stage="calling")
         attempt, result = approve.latest_call(c, since, approve.used_attempts(HERE / "approvals.json"))
         attempt = attempt or "none"
     else:
@@ -177,12 +183,13 @@ def main(argv):
         started, nonce = datetime.now(approve.IST), uuid.uuid4().hex
         attempt = approve.place_call(c, variables, bid, nonce)
         print(f"calling the owner (attempt {attempt})")
+        publish(decisions, ledger_path, stage="calling")
         result = approve.read_result(c, attempt, started, nonce)
     approved, reason = approve.decide(result, decisions)
     a = approve.record(HERE / "approvals.json", bid, attempt, approved, reason, result)
     a["language"] = "Hindi"
     print(("APPROVED  " if approved else "NOT APPROVED  ") + reason)
-    publish(decisions, ledger_path, a)
+    publish(decisions, ledger_path, a, stage="answered")
     if not approved:
         return print("nothing is paid.")
 
@@ -197,7 +204,7 @@ def main(argv):
             d["approval"] = a["approval_id"]
     print()
     sent = send.send(to_send, vendors, ledger_path, url, approval=a["approval_id"])
-    publish(decisions, ledger_path, a)
+    publish(decisions, ledger_path, a, stage="sent")
     settle(decisions, ledger_path, a)
     print(f"sent {len(sent)} payment(s) to Relay, total {sum(e['data']['amount'] for e in sent):.0f}. "
           f"Run the same command again: nothing will be paid twice.")

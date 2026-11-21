@@ -209,7 +209,14 @@ def confirm(ledger_path, client_id, secret, get=requests.get, out=print):
             row.pop("payout_note", None)
             waiting += row["payout"] == "PENDING"
         else:
-            out(f"Cashfree answered {r.status_code} for {row['transfer_id']}: {(r.text or '')[:160]}")
+            text = r.text or ""
+            out(f"Cashfree answered {r.status_code} for {row['transfer_id']}: {text[:400]}")
+            ips = re.findall(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", text)
+            if "whitelist" in text.lower() or (r.status_code == 403 and ips):
+                out("  -> this laptop's IP is not whitelisted for Payouts"
+                    + (f". IP to whitelist: {', '.join(sorted(set(ips)))}" if ips else "")
+                    + "  (Payouts dashboard -> Developers -> Two-Factor Authentication -> IP whitelist)")
+                return sum(x["status"] != "NOT_SENT" for x in ledger)   # same answer for every row: stop asking
             waiting += 1
             continue
         out(f"{row.get('payout', '?'):9} {str(row['invoice_no']):14} {row['transfer_id']}  "
@@ -344,6 +351,10 @@ def selftest():
         assert [r.get("payout") for r in load(ledger_path, [])] == ["PAID", "NOT_FOUND"]
         answers = {t1: CF(200, {"data": {"status": "REVERSED"}}), t2: CF(200, {"status": "PENDING"})}
         confirm(ledger_path, "id", "secret", get=cf, out=quiet)          # a paid transfer can still come back
+        said = []
+        blocked = lambda url, params, headers, timeout: CF(403, '{"message":"IP not whitelisted. Your IP is 219.65.10.20"}')
+        assert confirm(ledger_path, "id", "secret", get=blocked, out=said.append) == 2
+        assert len(said) == 2 and "219.65.10.20" in said[1]               # says which IP, and asks only once
         assert [r.get("payout") for r in load(ledger_path, [])] == ["REVERSED", "PENDING"]
         calls.clear()
         retry(vendors, ledger_path, "http://relay.test", post=ok, out=quiet)
