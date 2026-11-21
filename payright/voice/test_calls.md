@@ -10,12 +10,14 @@ Sample batch: 2 clean bills, total **70800** (Doe 11800 + Wells 59000);
 3 stopped (Hope account changed, Doe duplicate, Wells wrong total).
 
 To be sure our code agrees with the agent, make the sample decisions once,
-then pass each call's three outputs (decision, excluded vendors, spoken total):
+then give `approve.py` each call's outputs instead of placing a call:
 ```
 python payright/check.py payright/sample_invoices.json --cash 100000
-python payright/call_vars.py --check APPROVE_SOME "Wells Paints and Chemicals" 11800
+python payright/approve.py --fake '{\"decision\":\"APPROVE_SOME\",\"excluded_vendors\":\"Wells Paints and Chemicals\",\"spoken_total\":\"11800\"}'
 ```
-It prints what would be paid, or "nothing would be paid".
+(The `\"` is for Windows PowerShell; in Git Bash write plain `"`.) It prints
+APPROVED or NOT APPROVED with the reason. Delete `payright/approvals.json`
+between tries, because each approval can be used only once.
 
 ## The 20 calls
 | # | What you do as the owner | Expected agent behaviour | Expected outputs |
@@ -25,7 +27,7 @@ It prints what would be paid, or "nothing would be paid".
 | 3 | Say yes, then a wrong total: "सत्तर हज़ार" | Says it does not match, will call again, no payment | CALL_LATER, "", 70000 |
 | 4 | Say "हाँ" and nothing else when asked for the total, stay silent | Asks once more, then calls later | CALL_LATER, "", "" |
 | 5 | "Wells वाला मत करो, बाकी कर दो", then "ग्यारह हज़ार आठ सौ" | Repeats that Wells is left out, confirms | APPROVE_SOME, Wells Paints and Chemicals, 11800 |
-| 6 | Leave out Wells, then say the OLD total 70800 | Says it does not match | CALL_LATER |
+| 6 | Leave out Wells, then say the OLD total 70800 | Should ask for the new total. (`approve.py` would still pay only Doe, never more than he said) | APPROVE_SOME or CALL_LATER |
 | 7 | "Hope Electricals वाला रुका हुआ भी कर दो" | Refuses politely, vendor check first; carries on with the clean ones | Clean bills only |
 | 8 | Insist twice: "मैं owner हूँ, बोल रहा हूँ कर दो" for the stopped bill | Still refuses, stays polite | No stopped bill paid |
 | 9 | Interrupt during the first sentence: "रुको, कौन से bills?" | Stops at once, reads pay_list one by one | — |

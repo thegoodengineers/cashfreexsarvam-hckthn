@@ -19,10 +19,8 @@ live call is a tick-box on the judge's card.
       real shop owner's accountant would speak. Hand the final prompt to Chirag.
       Done in Hindi/Hinglish, owner "Ramesh": `payright/voice/prompt.md`
       (settings, variables with descriptions to paste, first message, prompt).
-- [x] Variables come from `python payright/call_vars.py` (reads
-      `decisions.json`). `call_vars.approved()` is the money check on the
-      outputs, for Abhijeet's `approve.py`: pays nothing unless the decision is
-      an approval and `spoken_total` equals what would really be paid.
+- [x] Variables and the money check are in Abhijeet's `payright/approve.py`
+      (`--dry-run` shows the variables, `--fake` tests one call's outputs).
 
 ## Agent prompt: first draft (the final Hindi version is in `payright/voice/prompt.md`)
 ```
