@@ -7,7 +7,7 @@ Team The Good Engineers: Chirag, Abhijeet, Bhumika, Ayush.
 
 [![The 25-second story: nine bills, five lying, one phone call](docs/PayRight_story.jpg)](docs/PayRight_story.mp4)
 
-*25-second animated story of one real run. Click to play: [docs/PayRight_story.mp4](docs/PayRight_story.mp4).*
+*25-second animated story of one real run, narrated by Sarvam text-to-speech (Bulbul v3; the owner's line is spoken in Hindi). Click to play: [docs/PayRight_story.mp4](docs/PayRight_story.mp4).*
 
 ## What is new here
 
