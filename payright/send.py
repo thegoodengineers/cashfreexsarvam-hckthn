@@ -234,6 +234,8 @@ def main(argv):
         if not (cid and sec):
             sys.exit("Set CASHFREE_PAYOUT_CLIENT_ID and CASHFREE_PAYOUT_CLIENT_SECRET (test mode) in payright/.env")
         return print(f"{confirm(HERE / 'ledger.json', cid, sec)} transfer(s) still waiting for Cashfree")
+    if not dry and "--retry" not in argv and not (HERE / "approval.json").exists():
+        sys.exit("NOT SENT  There is no owner approval on file. Run approve.py first.")
     if not dry and not url:
         sys.exit("Set RELAY_WEBHOOK_URL in payright/.env (or use --dry-run)")
     if "--retry" in argv:

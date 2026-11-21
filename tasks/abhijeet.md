@@ -64,11 +64,11 @@ Done with fake responses only; the real call has not been placed yet (Chirag run
 ## 3. AWS Lambda (by 2:30, only after 1 and 2 run)
 Use the organisers' Lambda guide. Function name must start with your ID; role
 is the existing `<ID>-exec`; do not create a Function URL, use their call link.
-- [ ] `<ID>-payright-callback`: receives Sarvam's post-call webhook
+- [x] `<ID>-payright-callback`: receives Sarvam's post-call webhook
       (`attempt_id, status, final_agent_variables, interaction_transcript`)
       and stores or forwards the decision, so `approve.py` no longer polls.
       Put its call link in `webhook_config.url` when placing the call.
-- [ ] `<ID>-payright-status`: serves one HTML page listing each invoice with
+- [x] `<ID>-payright-status`: serves one HTML page listing each invoice with
       PAY / ASK / STOP, the reason, and transfer status, so judges can open it
       on their phones. Feed it by POSTing `decisions.json` to it; keep the
       last copy in memory or `/tmp` (good enough for a demo).
@@ -102,19 +102,19 @@ Tested against a fake Relay on localhost: five runs of the same batch sent each 
 
 ## Update 1:50 PM (from Chirag + review of your code)
 APPROVED: the live board ("the agent that says no") replaces the plain status page.
-- [ ] Lanes Pay / Ask / Stop with rupee totals, from real `decisions.json` + ledger only.
-- [ ] Click a stopped bill: show `evidence` from check.py (already there: `a_label`, `a`,
+- [x] Lanes Pay / Ask / Stop with rupee totals, from real `decisions.json` + ledger only.
+- [x] Click a stopped bill: show `evidence` from check.py (already there: `a_label`, `a`,
       `b_label`, `b` per stop), wrong value in red. Do not edit check.py for this.
-- [ ] Show "paid" ONLY when Cashfree confirms. `lambda/status.py:71-75` currently shows
+- [x] Show "paid" ONLY when Cashfree confirms. `lambda/status.py:71-75` currently shows
       NOT_SENT and UNKNOWN rows as PAID. Fix first.
-- [ ] Label the call Hindi, not Tamil. Stop board work at 2:30; terminal table is the fallback.
+- [x] Label the call Hindi, not Tamil. Stop board work at 2:30; terminal table is the fallback.
 Bugs found in review, in order:
-- [ ] `run.py:133` / `approve.py:245`: `--fake '{"decision":...}'` arrives as `{decision:...}`
+- [x] `run.py:133` / `approve.py:245`: `--fake '{"decision":...}'` arrives as `{decision:...}`
       in PowerShell and crashes. Read the fake answer from a file instead. This is our
       stage fallback if the call fails, so it must work.
-- [ ] `send.py:183`: standalone send.py pays every PAY row with no approval. Make it
+- [x] `send.py:183`: standalone send.py pays every PAY row with no approval. Make it
       require the approval that approve.py writes (`approval.json` is read by nothing).
-- [ ] `approve.py:173-192`: non-200s are swallowed and network errors uncaught; up to 7
+- [x] `approve.py:173-192`: non-200s are swallowed and network errors uncaught; up to 7
       silent minutes. Print the status and fail fast.
 IMPORTANT, new: Relay's built-in "Request Transfer (Sync)" returns 403 "payout v1 and
 v1.2 APIs have been deprecated". Payouts must go through Cashfree Payouts v2
@@ -161,4 +161,12 @@ Task 7:
   It prints the 7 variables to paste into the Test panel, then waits for a call that begins after that moment.
 - Chirag's `payright/.env` needs `SARVAM_AGENT_API_KEY, SARVAM_ORG_ID, SARVAM_WORKSPACE_ID, SARVAM_APP_ID`
   (Abhijeet sends them privately; they are not in this repo).
+
+## Status 2:17 PM (Abhijeet) — everything assigned to me is done
+- NOW.md tasks 6, 7, 8: done, pushed, all six selftests pass on the newest check.py (1bb1a1f).
+- Every box above is ticked. The one thing not as specified: the Lambdas are deployed but the organisers'
+  call link still answers 403 to outside requests, so the board is served through the tunnel instead.
+- The board is being updated from Chirag's laptop (9 bills, three shown as "sent, waiting for Cashfree" at 2:15 PM).
+  I will not post test data to it again; from now on only real runs write to it.
+- `python payright/send.py` with no approval on file now says so before anything else.
 
