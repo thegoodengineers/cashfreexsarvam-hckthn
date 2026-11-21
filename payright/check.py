@@ -24,6 +24,8 @@ DATE_FORMATS = ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%d.%m.%Y", "%d-%m-%y",
 # To verify with current MSME rules: micro/small Udyam vendors, 15 days without
 # a written agreement, 45 with one. Medium vendors are not covered.
 MSME_DAYS = {True: 45, False: 15}
+PRICE_RISE = 0.10  # price memory: a rate more than this far above the last paid bill goes to a person
+PRICE_BOOK = Path(__file__).parent / "pricebook.json"  # written by pricebook.py; absent -> price memory is silent
 
 
 def amount(x):
@@ -60,6 +62,18 @@ def invoice_key(s):  # 'INV-0042' == 'inv/42'
     return re.sub(r"\d+", lambda m: str(int(m.group())), code_key(s))
 
 
+def item_key(s):  # '1. PVC pipe 1 inch, 6 m' == 'PVC pipe 1 inch, 6 m'
+    return name_key(re.sub(r"^\s*\d+\s*[.)]\s*", "", str(s or "")))
+
+
+def load_prices():
+    """{vendor_id: {item_key: {"item", "rate", "invoice_no"}}} from bills we really paid, or {} if none yet."""
+    try:
+        return json.loads(PRICE_BOOK.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
 def find_vendor(inv, vendors):
     """-> (vendor, 'gstin' | 'name' | 'unsure') or (None, None)."""
     for v in vendors:
@@ -88,8 +102,9 @@ def demo_round():
     return "|" + f.read_text().strip() if f.exists() else ""
 
 
-def check(inv, vendors, seen, today):
-    """One invoice -> decision dict. `seen` = invoices already paid or earlier in the batch."""
+def check(inv, vendors, seen, today, prices=None):
+    """One invoice -> decision dict. `seen` = invoices already paid or earlier in the batch.
+    `prices` = what each vendor charged on bills we really paid (load_prices()); None or {} switches it off."""
     stop, ask = [], []
     evidence = []  # the two values each STOP compared, for the board; no decision reads it
 
@@ -164,6 +179,16 @@ def check(inv, vendors, seen, today):
                         f"but the holder on file for {v['name']} is {on_file_holder}.")
             differ("account holder", "On the invoice", inv["account_holder"], "On our file", on_file_holder)
 
+    # 3d. Price memory: the same item from the same vendor, at a rate well above the last bill we really paid.
+    #     A bill with every number raised together agrees with itself; only the vendor's own past bills show it.
+    #     ASK, not STOP: prices do rise, so a person decides.
+    for l in lines if v and prices else []:
+        was, rate = (prices.get(v["id"]) or {}).get(item_key(l.get("description"))), amount(l.get("rate"))
+        if was and rate is not None and was["rate"] > 0 and rate > was["rate"] * (1 + PRICE_RISE) + 0.005:
+            ask.append(f"'{was['item']}' was {was['rate']:g} on invoice {was['invoice_no']}. This bill charges {rate:g}, "
+                       f"{(rate / was['rate'] - 1) * 100:.0f}% more. Ask {v['name']} before paying.")
+            differ("price", "On this bill", f"{rate:g}", f"Last paid, invoice {was['invoice_no']}", f"{was['rate']:g}")
+
     # 4. The same invoice coming back in disguise.
     key, d = invoice_key(inv.get("invoice_no")), parse_date(inv.get("invoice_date"))
     for s in seen if v else []:
@@ -200,12 +225,13 @@ def check(inv, vendors, seen, today):
     }
 
 
-def plan(invoices, vendors, ledger, cash, today=None):
+def plan(invoices, vendors, ledger, cash, today=None, prices=None):
     """Check a batch, then order the payable ones by deadline within the cash available."""
     today = today or date.today()
+    prices = load_prices() if prices is None else prices
     seen, out = list(ledger), []
     for inv in invoices:
-        dec = check(inv, vendors, seen, today)
+        dec = check(inv, vendors, seen, today, prices)
         out.append(dec)
         if dec["vendor_id"] and dec["amount"] is not None and dec["status"] != "STOP":
             seen.append({**dec, "status": "QUEUED"})
@@ -274,6 +300,17 @@ def selftest():
     assert shaky["status"] == "PAY"  # GSTIN-free name match is certain and subtotal + tax confirms the total
     unsure = check({**base, "invoice_no": "INV-12", "unsure_fields": ["bank_account"]}, V, [], date(2026, 11, 21))
     assert unsure["status"] == "ASK"  # nothing else confirms a bank account, so a person is asked
+    # price memory: next month's bill, every number doubled, agrees with itself; the last paid bill gives it away
+    book = {"v1": {item_key("1. PVC pipe"): {"item": "PVC pipe", "rate": 1000, "invoice_no": "INV-0042"}}}
+    dear = {**base, "invoice_no": "INV-0050", "lines": [{"description": "PVC pipe", "qty": 10, "rate": 2000, "amount": 20000}],
+            "subtotal": 20000, "tax": 3600, "total": 23600, "total_in_words_value": 23600}
+    assert check(dear, V, [], date(2026, 11, 21))["status"] == "PAY"            # no memory: nothing to compare with
+    asked = check(dear, V, [], date(2026, 11, 21), book)
+    assert asked["status"] == "ASK" and "100% more" in asked["reasons"][0] and asked["evidence"][0]["check"] == "price"
+    assert check({**base, "invoice_no": "INV-0051"}, V, [], date(2026, 11, 21), book)["status"] == "PAY"   # same price: no fuss
+    small = {**dear, "lines": [{"description": "PVC pipe", "qty": 10, "rate": 1100, "amount": 11000}],
+             "subtotal": 11000, "tax": 1980, "total": 12980, "total_in_words_value": 12980}
+    assert check(small, V, [], date(2026, 11, 21), book)["status"] == "PAY"     # a 10% rise is allowed; more is asked
     print("selftest ok")
 
 

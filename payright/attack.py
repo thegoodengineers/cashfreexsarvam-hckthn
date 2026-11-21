@@ -10,7 +10,9 @@ anything: this file only forges and counts. Memory only: no ledger, no approval,
 Three groups, and what must happen to each:
   FORGERY   must never be cleared to pay (STOP or ASK are both fine: a person sees it before any money moves)
   HARMLESS  the same genuine bill written differently (spaces in the account, another date format): must still be cleared
-  BEYOND    a forgery no bill-only check can catch (every number raised together). Counted and shown, never hidden.
+  BEYOND    a forgery no bill-only check can catch: next month's bill with every number raised together.
+            Decided twice: with no history (it is cleared, and we say so), and with price memory holding the
+            vendor's last genuine bill (check.py then sends a raise of more than 10% to a person).
 """
 import copy
 import glob
@@ -18,9 +20,11 @@ import json
 import random
 import re
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 import check
+import pricebook
 
 HERE = Path(__file__).parent
 STRANGERS = ("Jane D Traders", "Sunrise Agencies", "K P Enterprises", "New Bharat Stores", "Metro Trade Links")
@@ -35,7 +39,7 @@ def base_bills():
     for f in files:
         if f.exists():
             for inv in json.loads(f.read_text(encoding="utf-8")):
-                if check.plan([inv], vendors, [], 1e12)[0]["status"] == "PAY":
+                if check.plan([inv], vendors, [], 1e12, prices={})[0]["status"] == "PAY":
                     bills.append(inv)
     return bills, vendors
 
@@ -78,7 +82,7 @@ def acct_new(inv, rng, vendors):
 
 
 def acct_of_another_vendor(inv, rng, vendors):
-    mine = check.plan([inv], vendors, [], 1e12)[0]["vendor_id"]
+    mine = check.plan([inv], vendors, [], 1e12, prices={})[0]["vendor_id"]
     others = [v for v in vendors if v["id"] != mine]
     if not others:
         return None
@@ -181,12 +185,20 @@ def holder_changed(inv, rng, vendors):
     return inv, None
 
 
+def _next_month(inv, rng):
+    d = check.parse_date(inv.get("invoice_date"))
+    if d:
+        inv["invoice_date"] = (d + timedelta(days=30)).strftime("%d-%m-%Y")
+    inv["invoice_no"] = "NM-" + str(rng.randint(1000, 9999))
+
+
 def everything_raised_together(inv, rng, vendors):
-    """Lines, subtotal, tax, total and words all raised by the same factor: the bill agrees with itself."""
+    """Next month's bill: lines, subtotal, tax, total and words all raised by the same factor. It agrees with itself."""
     t, s = check.amount(inv.get("total")), check.amount(inv.get("subtotal"))
     if t is None or s is None:
         return None
-    k = rng.choice((1.1, 1.25, 1.5, 2))
+    _next_month(inv, rng)
+    k = rng.choice((1.05, 1.1, 1.25, 1.5, 2))
     for l in inv.get("lines") or []:
         for f in ("rate", "amount"):
             if check.amount(l.get(f)) is not None:
@@ -226,6 +238,13 @@ def date_rewritten(inv, rng, vendors):
     return inv, None
 
 
+def next_month_same_prices(inv, rng, vendors):
+    """A genuine repeat order: new number, new date, the same prices. Price memory must not get in its way."""
+    _next_month(inv, rng)
+    return inv, None
+
+
+WITH_MEMORY = (everything_raised_together, next_month_same_prices)   # decided with the vendor's last genuine bill on file
 FORGERY, HARMLESS, BEYOND = "forgery", "harmless", "beyond"
 KINDS = (
     (FORGERY, "One digit of the bank account changed", acct_one_digit),
@@ -245,7 +264,8 @@ KINDS = (
     (HARMLESS, "Account written with spaces, IFSC in small letters", acct_with_spaces),
     (HARMLESS, "Total written with commas, a rupee sign or Hindi digits", total_with_commas),
     (HARMLESS, "Date written in another format", date_rewritten),
-    (BEYOND, "Every number on the bill raised together", everything_raised_together),
+    (HARMLESS, "Next month's bill at the same prices, price memory on", next_month_same_prices),
+    (BEYOND, "Next month's bill, every number raised together", everything_raised_together),
 )
 
 
@@ -253,20 +273,26 @@ def run(n=1000, seed=1):
     """Forge n bills and let check.plan decide each one. -> counts per kind, plus the totals."""
     bills, vendors = base_bills()
     rng = random.Random(seed)
-    rows = [{"group": g, "kind": label, "tried": 0, "stop": 0, "ask": 0, "cleared": 0, "example": None} for g, label, _ in KINDS]
+    rows = [{"group": g, "kind": label, "tried": 0, "stop": 0, "ask": 0, "cleared": 0, "cleared_memory": 0, "example": None} for g, label, _ in KINDS]
     if not bills:
         return {"error": "No clean bill is available to forge from."}
     made, guard = 0, 0
     while made < n and guard < n * 20:
         guard += 1
         k = rng.randrange(len(KINDS))
-        made_bill = KINDS[k][2](copy.deepcopy(rng.choice(bills)), rng, vendors)
+        base = rng.choice(bills)
+        made_bill = KINDS[k][2](copy.deepcopy(base), rng, vendors)
         if made_bill is None:
             continue
         inv, first = made_bill
-        dec = check.plan(([first] if first else []) + [inv], vendors, [], 1e12)[-1]
+        dec = check.plan(([first] if first else []) + [inv], vendors, [], 1e12, prices={})[-1]
         row = rows[k]
         row["tried"] += 1
+        if KINDS[k][2] in WITH_MEMORY:      # the same bill again, with the vendor's last genuine bill in the price book
+            remembered = check.plan([inv], vendors, [], 1e12, prices=pricebook.learn([base], vendors))[-1]
+            row["cleared_memory"] += remembered["status"] == "PAY"
+            if row["group"] == HARMLESS:
+                dec = remembered
         row["stop" if dec["status"] == "STOP" else "ask" if dec["status"] == "ASK" else "cleared"] += 1
         wrong = dec["status"] == "PAY" if row["group"] == FORGERY else dec["status"] != "PAY" if row["group"] == HARMLESS else False
         if row["example"] is None or (wrong and not row["example"]["wrong"]):
@@ -280,7 +306,8 @@ def run(n=1000, seed=1):
             "forgeries": total(FORGERY, "tried"), "forgeries_cleared": total(FORGERY, "cleared"),
             "forgeries_stopped": total(FORGERY, "stop"), "forgeries_asked": total(FORGERY, "ask"),
             "harmless": total(HARMLESS, "tried"), "harmless_cleared": total(HARMLESS, "cleared"),
-            "beyond": total(BEYOND, "tried"), "beyond_cleared": total(BEYOND, "cleared")}
+            "beyond": total(BEYOND, "tried"), "beyond_cleared": total(BEYOND, "cleared"),
+            "beyond_cleared_memory": total(BEYOND, "cleared_memory")}
 
 
 def selftest():
@@ -308,8 +335,9 @@ def main(argv):
     print(f"\nFORGERIES cleared to pay: {r['forgeries_cleared']} of {r['forgeries']}"
           f"   (stopped {r['forgeries_stopped']}, sent to a person {r['forgeries_asked']})")
     print(f"HARMLESS rewrites still cleared: {r['harmless_cleared']} of {r['harmless']}")
-    print(f"BEYOND a bill-only check (every number raised together): {r['beyond_cleared']} of {r['beyond']} cleared. "
-          "Only a purchase order can catch these.")
+    print(f"BEYOND a bill-only check (next month's bill, every number raised together): {r['beyond_cleared']} of {r['beyond']} "
+          f"cleared with no history; {r['beyond_cleared_memory']} of {r['beyond']} with price memory on. "
+          "A raise of 10% or less passes by design.")
 
 
 if __name__ == "__main__":

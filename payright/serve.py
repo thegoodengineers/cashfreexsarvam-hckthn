@@ -278,14 +278,14 @@ the same bill twice. The same checker answers every one. Pick any number: a diff
 var out=document.getElementById('atk-out');
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function stat(cls,a,b,label){var d=el('div',cls),n=el('b',null,String(a));n.appendChild(el('em',null,' of '+b));d.appendChild(n);d.appendChild(el('span',null,label));return d}
-var NAME={forgery:'forgery',harmless:'genuine, rewritten',beyond:'beyond a bill-only check'};
+var NAME={forgery:'forgery',harmless:'genuine, rewritten',beyond:'beyond a bill-only check; decided with price memory'};
 function show(r,ms){
   out.textContent='';
   if(r.error){out.appendChild(el('p','sub',r.error));return}
   var s=el('div','atk-stats');
   s.appendChild(stat(r.forgeries_cleared?'r':'g',r.forgeries_cleared,r.forgeries,'forgeries cleared to pay. '+r.forgeries_stopped+' were stopped and '+r.forgeries_asked+' sent to a person.'));
   s.appendChild(stat(r.harmless_cleared===r.harmless?'g':'r',r.harmless_cleared,r.harmless,'genuine bills, only written differently, still cleared.'));
-  s.appendChild(stat('w',r.beyond_cleared,r.beyond,'we cannot catch: every number raised together. Only a purchase order can.'));
+  s.appendChild(stat('w',r.beyond_cleared_memory,r.beyond,'inflated bills still cleared with price memory on. A bill with every number raised together agrees with itself: with no history all '+r.beyond_cleared+' pass. A raise of 10% or less passes by design.'));
   out.appendChild(s);
   var w=el('div','tablewrap'),t=el('table'),h=el('tr');
   [['What was done to the bill',''],['Tried','num'],['Stopped','num'],['Sent to a person','num'],['Cleared','num']].forEach(function(c){h.appendChild(el('th',c[1],c[0]))});
@@ -293,7 +293,7 @@ function show(r,ms){
   r.rows.forEach(function(x){var tr=el('tr'),k=el('td',null,x.kind);k.appendChild(el('br'));k.appendChild(el('span','grp',NAME[x.group]));
     tr.appendChild(k);tr.appendChild(el('td','num',x.tried));tr.appendChild(el('td','num',x.stop));tr.appendChild(el('td','num',x.ask));
     var bad=x.group==='forgery'?x.cleared>0:x.group==='harmless'?x.cleared<x.tried:false;
-    tr.appendChild(el('td','num '+(bad?'bad':x.group==='beyond'?'':'good'),x.cleared));t.appendChild(tr)});
+    tr.appendChild(el('td','num '+(bad?'bad':x.group==='beyond'?'':'good'),x.group==='beyond'?x.cleared_memory+' (no history: '+x.cleared+')':x.cleared));t.appendChild(tr)});
   w.appendChild(t);out.appendChild(w);
   out.appendChild(el('p','sub',r.made+' forged bills from '+r.base_bills+' genuine ones, number '+r.seed+', decided in '+ms+' ms by the same check.py that guards the money. Memory only: nothing was sent, paid or saved.'));
 }
