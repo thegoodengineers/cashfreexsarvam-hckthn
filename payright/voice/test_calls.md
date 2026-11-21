@@ -53,7 +53,7 @@ amounts said as words? Log each call below with the voice used.
 
 | # | Voice | What happened | Pass? | Outputs seen | What I changed |
 |---|---|---|---|---|---|
-| 1 | | | | | |
+| 1 | Aparna (phone, Chirag, 2:31 PM, 90 s) | Greeted Raghu, 4 clean bills, total एक लाख दस हज़ार पाँच सौ सात. On "सही वाले कर दो" it first said "पर उससे पहले… चार bills रोक दिए गए हैं" and gave all 4 reasons (both problems for Wells and Jane), then asked for the total; Raghu said एक लाख दस हज़ार पाँच सौ सात; it closed with "approval मिल गया है… payment कर देंगे". Amounts all in words; agent reply ~0.6 s | Pass | APPROVE_ALL, -, 110507 → call_vars and approve.py --fake both pay all 4 | None |
 | 0 | Aparna (phone, Chirag) | Stray call placed by mistake with Setup EMPTY. The agent invented bills ("ABC Hardware 4000, XYZ Suppliers 6000…, total 15,800"). Owner never said a total | Fail (made-up data) | REJECT, -, - (nothing payable) | Added guard: if pay_total / pay_list / held_list is empty, never invent; say details not ready, end, CALL_LATER. Always check Setup shows 7/7 before calling |
 | 5 | (chat test, Chirag's agent) | Before the fix: agent refused the old total aloud, but `decision` came back APPROVE_SOME (code still paid nothing). After the fixes: correct total → APPROVE_SOME, Wells, 42067; old total twice → refused, REJECT, Wells, 110507; Raghu leaving Wells out on his first reply → agent still gave all 4 reasons first | Pass (chat) | see left | Partial-approval total rule; `decision` returns REJECT on a mismatched total; reasons before the total. Still to do by voice on the phone panel |
 | 7 | | | | | |
