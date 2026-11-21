@@ -13,7 +13,8 @@ approve.py therefore puts a random nonce in webhook_config.metadata when it plac
 call, Sarvam echoes it back, and approve.py ignores any result whose nonce is not its own.
 
 Results are kept in memory and /tmp. That survives for as long as the Lambda stays warm,
-which is enough for a demo. Single file, standard library only. Handler: callback.handler
+which is enough for a demo. Single file, standard library only. Paste it into the console editor as lambda_function.py
+(the default handler name works), or upload it as callback.py with handler callback.handler.
 """
 import base64
 import json
@@ -100,6 +101,9 @@ def selftest():
     assert handler({"httpMethod": "POST", "body": "not json"})["statusCode"] == 400
     assert "a1" not in handler({"httpMethod": "GET"})["body"]
     print("selftest ok")
+
+
+lambda_handler = handler  # the console default is lambda_function.lambda_handler: paste this file as is
 
 
 if __name__ == "__main__":

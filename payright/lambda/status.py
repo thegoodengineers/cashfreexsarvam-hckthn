@@ -9,7 +9,8 @@ value, so only our laptop can update the page. Put the call link in payright/.en
 
 The last copy is kept in memory and /tmp, which is enough for a demo.
 No full bank account number is ever shown: last four digits only.
-Single file, standard library only. Handler: status.handler
+Single file, standard library only. Paste it into the console editor as lambda_function.py
+(the default handler name works), or upload it as status.py with handler status.handler.
 """
 import base64
 import html
@@ -218,6 +219,9 @@ def selftest():
     assert [x["status"] for x in r] == ["PAID", "STOP"]
     del os.environ["PAYRIGHT_TOKEN"]
     print("selftest ok")
+
+
+lambda_handler = handler  # the console default is lambda_function.lambda_handler: paste this file as is
 
 
 if __name__ == "__main__":
