@@ -1,0 +1,42 @@
+[
+  {
+    "file": "inv01_doe.png",
+    "expected": "PAY",
+    "trap": "clean, English"
+  },
+  {
+    "file": "inv02_wells.png",
+    "expected": "PAY",
+    "trap": "clean, vendor name and labels in Tamil"
+  },
+  {
+    "file": "inv03_hope.png",
+    "expected": "PAY",
+    "trap": "clean, vendor name and labels in Hindi"
+  },
+  {
+    "file": "inv04_hope.png",
+    "expected": "STOP",
+    "trap": "changed account: Hope Electricals asks to be paid into 026291800001190"
+  },
+  {
+    "file": "inv05_wells.png",
+    "expected": "STOP",
+    "trap": "wrong arithmetic: 20,000 + 3,600 GST shown as total 26,300"
+  },
+  {
+    "file": "inv06_doe.png",
+    "expected": "STOP",
+    "trap": "duplicate in disguise: inv01 again as dh/101, date 12 Nov 2026, new layout"
+  },
+  {
+    "file": "inv07_jane.png",
+    "expected": "STOP",
+    "trap": "mismatched name: Jane D Traders asks to be paid into John Doe's account"
+  },
+  {
+    "file": "inv08_wells.jpg",
+    "expected": "PAY",
+    "trap": "clean, handwritten bill-book page, photographed"
+  }
+]

@@ -10,20 +10,25 @@ The Cashfree sandbox only answers to these accounts, so use only these vendors:
 | Hope Electricals | Bob Hope | 388108022658 | ICIC0000009 |
 
 Mix Tamil, Hindi and English; at least one handwritten and photographed.
-- [ ] 4 clean invoices (one with the vendor name in Tamil or Hindi script)
-- [ ] Changed account: Hope Electricals with account 026291800001190
-- [ ] Duplicate in disguise: copy a clean one, change number format
+- [x] 4 clean invoices (one with the vendor name in Tamil or Hindi script)
+- [x] Changed account: Hope Electricals with account 026291800001190
+- [x] Duplicate in disguise: copy a clean one, change number format
       (DH-0101 -> dh/101) and date format
-- [ ] Wrong arithmetic: total not equal to subtotal + tax
-- [ ] Mismatched name: John Doe's account on a bill from "Jane D Traders"
+- [x] Wrong arithmetic: total not equal to subtotal + tax
+- [x] Mismatched name: John Doe's account on a bill from "Jane D Traders"
 
 You do not need a Sarvam or Cashfree account. Push the files to the repo (or
 send them to Chirag); he runs the reader on his laptop.
 
+Done: 8 invoices in `payright/invoices/`, regenerate with `python payright/make_invoices.py`;
+expected results in `payright/invoice_answer_key.json`.
+
 ## By 1:45
-- [ ] Chirag runs the reader and checker on your invoices and sends you the
+- [x] Chirag runs the reader and checker on your invoices and sends you the
       output table.
-- [ ] Fill the score sheet: traps planted, traps caught, clean invoices
+      Done: reader and checker run on the real Sarvam API; results in
+      `payright/scoresheet.md`.
+- [x] Fill the score sheet: traps planted, traps caught, clean invoices
       wrongly stopped. Real numbers only.
 
 ## By 2:45: what the judges must receive
