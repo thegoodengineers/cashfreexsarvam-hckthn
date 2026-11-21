@@ -32,23 +32,32 @@ For each PAY row in `decisions.json`, POST one event to `RELAY_WEBHOOK_URL`.
 ## 2. `payright/approve.py`: the owner's approval call (by 2:00)
 Ayush builds the voice agent on Sarvam. Your script places the call and reads
 the answer.
-- [ ] Build the call variables from `decisions.json`: `owner_name, pay_count,
+- [x] Build the call variables from `decisions.json`: `owner_name, pay_count,
       pay_total, pay_list, held_count, held_list` (reasons in plain words).
-- [ ] Place the call. From docs.sarvam.ai (read today, not run by us):
+- [x] Place the call. From docs.sarvam.ai (read today, not run by us):
       `POST https://apps.sarvam.ai/api/outbounds/v1/orgs/{org_id}/workspaces/{workspace_id}/outbounds`
       header `X-API-Key`; body `app_config{app_id, app_version,
       connection_config{connection_id, agent_phone_number}, agent_variables}`,
       `user_config{user_phone_number}`, optional `webhook_config{url, metadata}`.
       It returns `{attempt_id}` and the call runs in the background.
-- [ ] Read the result: poll the Analytics API
+- [x] Read the result: poll the Analytics API
       (`https://apps.sarvam.ai/api/analytics/v1/{org_id}/{workspace_id}/{app_id}/attempts`,
       needs `start_datetime` and `end_datetime`) for that `attempt_id` and
       take `final_agent_variables`: `decision`, `excluded_vendors`,
       `spoken_total`.
-- [ ] Approve only if `decision` is APPROVE_ALL or APPROVE_SOME AND
+- [x] Approve only if `decision` is APPROVE_ALL or APPROVE_SOME AND
       `spoken_total` equals the total to be paid. Otherwise pay nothing.
-- [ ] One approval is good for one batch only: store the batch id with the
+- [x] One approval is good for one batch only: store the batch id with the
       approval in the ledger and refuse to reuse it.
+
+Done with fake responses only; the real call has not been placed yet (Chirag runs it).
+- `python payright/approve.py --dry-run` prints the variables and the request.
+- `python payright/approve.py --fake '{"decision":"APPROVE_ALL","spoken_total":"70800"}'` tests the decision without a call.
+- Needs in `payright/.env`: `SARVAM_AGENT_API_KEY, SARVAM_ORG_ID, SARVAM_WORKSPACE_ID, SARVAM_APP_ID,
+  SARVAM_APP_VERSION, SARVAM_CONNECTION_ID, SARVAM_AGENT_PHONE, OWNER_PHONE, OWNER_NAME`.
+- Docs check: the Analytics API returns the variables as `agent_variables`; only the post-call
+  webhook calls them `final_agent_variables`. The script reads both.
+- Approvals live in `approvals.json`, not `ledger.json`: check.py reads every ledger row as a payment.
 
 ## 3. AWS Lambda (by 2:30, only after 1 and 2 run)
 Use the organisers' Lambda guide. Function name must start with your ID; role

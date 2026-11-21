@@ -3,3 +3,6 @@ ledger.json
 decisions.json
 __pycache__/
 invoices.json
+approval.json
+approvals.json
+*.tmp
