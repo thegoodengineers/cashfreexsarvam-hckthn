@@ -72,9 +72,16 @@ is the existing `<ID>-exec`; do not create a Function URL, use their call link.
       last copy in memory or `/tmp` (good enough for a demo).
 
 ## 4. One command for demo day (by 2:45)
-- [ ] `python payright/run.py <folder>` = extract -> check -> approve -> send,
+- [x] `python payright/run.py <folder>` = extract -> check -> approve -> send,
       printing the table and the score line (traps caught, good ones blocked).
       The judges hand us a fresh batch; this is what we run on it.
+
+Tested against a fake Relay on localhost: five runs of the same batch sent each payment exactly once.
+- `python payright/run.py payright/invoices ta-IN --cash 100000` is the demo command.
+- `--dry-run` places no call and sends nothing; `--no-pay` stops after the table and score line.
+- `--fake '{"decision":"APPROVE_ALL","spoken_total":"70800"}'` stands in for the call if telephony fails on stage.
+- Put `expected.json` (`{"file.png": "PAY" | "STOP"}`) in the invoice folder to get "traps caught x/y".
+- Reads 4 invoices at a time, so a batch of 8 takes about as long as 2.
 
 ## Not now
 - Landing page, login, database, CI. Nothing on the score card marks them.
