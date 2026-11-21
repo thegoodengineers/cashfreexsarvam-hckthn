@@ -1,28 +1,30 @@
-# NOW — the one current list (updated 1:50 PM, freeze 3:30 PM)
+# NOW — the one current list (updated 2:30 PM, freeze 3:30 PM)
 
-Every open task appears here exactly once, with one owner. Where an older line
-in a personal file says something different, this page wins.
+**Money has moved.** At 2:26 PM three sandbox payouts went through Relay to Cashfree and
+the Payouts dashboard shows "Success 3, Rs 51,507". Proof: `docs/screenshots/4_*.jpg`, `5_*.jpg`.
+How: Relay's built-in "Request Transfer (Sync)" is refused by Cashfree (v1 API deprecated),
+so the agent now has an HTTP step calling Payouts v2 (`POST /payout/transfers`).
+
+Every open task appears here exactly once, with one owner.
 
 | # | Task | Owner | By |
 |---|---|---|---|
-| 1 | Get ONE real sandbox payout to succeed. Relay's "Request Transfer (Sync)" is refused by Cashfree (v1 API deprecated). Apply the desk's fix, or replace the step with an HTTP call to Payouts v2 | Chirag + Claude | 2:15 |
-| 2 | Desk: enable Secure ID / Verification Suite on the test account; ask about test balance | Chirag | 2:00 |
-| 3 | DONE: Chirag's agent (listed as "Conversation Agent 7411", v3 draft, introduces itself as PayRight Approval) already had most of `prompt.md`; added the missing pieces (partial-approval total, multi-problem bills, reasons before the total, Kannada lines, `decision` = REJECT on a wrong total). Chat-tested; see `voice/prompt.md` → "Demo agent" | Ayush | 2:10 |
-| 4 | Six real voice calls from that agent's Test panel -> Phone (scenarios 1, 5, 7, 9, 13, 14), logged in `voice/test_calls.md`; confirm the Aparna voice | Ayush | 2:30 |
-| 5 | DONE: `call_vars.py` sends `user_name` and every problem per bill; `prompt.md` amounts "in the language you are speaking" + Kannada lines | Ayush | 2:15 |
-| 6 | Let `approve.py` read the decision of a call that was started from Sarvam's Test panel (newest attempt for the app), since calls from code have no phone number yet | Abhijeet (IDs from Chirag) | 2:30 |
-| 7 | Fix `lambda/status.py:71-75` (unsent rows show as PAID), then build the Pay / Ask / Stop board from real `decisions.json`, ledger and check.py `evidence`; deploy both Lambdas | Abhijeet | 2:30 |
-| 8 | Stage fallback: `--fake` must read from a file (it crashes in PowerShell); `send.py` must refuse to pay without an approval; `approve.py` must print errors instead of waiting silently | Abhijeet | 2:30 |
-| 9 | Photograph ONE real handwritten invoice and push it; Chirag runs the reader on it | Bhumika | 2:15 |
-| 10 | Add the Hope Electricals invoice with account 388108022659 (one digit off) to the demo set and answer key as STOP | Bhumika | 2:15 |
-| 11 | Correct `docs/judges_pack.md` lines 6, 24, 30, 31, 40-41, 61, 77-78, 121: nothing may be claimed that has not happened; rebuild the PDF | Bhumika | 2:30 |
-| 12 | checker: compare the account-holder name on the invoice with the one on file; stop wrongly blocking a bill issued in the holder's own name; let the CLI find `vendors.json` from any folder | Claude | 2:15 |
-| 13 | Ask an organiser: are the three problems today's tracks, is there a fresh invoice batch at demo time, is the demo 10 or 13 minutes | Chirag | 2:15 |
-| 14 | Full run on all invoices, then three timed rehearsals and one screen-recorded backup run | Everyone; Bhumika runs the timer | 2:45 to 3:15 |
+| 1 | **Six real VOICE calls** from the agent's Test panel -> Phone (scenarios 1, 5, 7, 9, 13, 14), logged in `voice/test_calls.md`. Only chat tests exist so far; voice is 20 of 100 marks. You now have your own login to Chirag's Sarvam workspace, so call from your own laptop | Ayush | 2:50 |
+| 2 | **End-to-end with a real call**: `python payright/new_round.py`, then `python payright/run.py payright/invoices.json --cash 100000 --latest`, place the call from the Test panel, owner says the total, payouts go out. Needs the Sarvam voice-agents API key in Chirag's `.env` | Abhijeet + Ayush + Chirag | 2:55 |
+| 3 | Board shows **PAID, Cashfree confirmed**: `python payright/run.py --refresh` after Chirag puts `CASHFREE_PAYOUT_CLIENT_ID` / `CASHFREE_PAYOUT_CLIENT_SECRET` in `.env` and whitelists the laptop's IP in Payouts | Abhijeet (keys and IP: Chirag) | 2:50 |
+| 4 | `docs/RUNBOOK.md`: the exact demo commands in order, what each screen shows, and the fallback for each step. One page | Abhijeet | 3:00 |
+| 5 | Update `docs/judges_pack.md` and the PDF: a payout HAS completed (3 transfers, Rs 51,507); name the Relay bug we found and routed around; keep "not yet tested" on the voice call until task 1 is done | Bhumika | 2:50 |
+| 6 | Remove the three dead v1 steps from the Relay flow so the canvas shows Webhook -> Pay (HTTP v2) only | Claude | 2:45 |
+| 7 | Create the Sarvam voice-agents API key; put the Payouts keys in `.env`; whitelist the laptop IP; ask the desk again about Secure ID | Chirag | 2:40 |
+| 8 | Three timed rehearsals (run `python payright/new_round.py` before each) and one screen-recorded backup run | Everyone; Bhumika runs the timer | 3:00 to 3:20 |
 
-## Removed as duplicates or already done
-- "Rebuild the agent in Chirag's account": not needed, it exists (task 3 replaces it).
-- "Caller number blocker": test calls work from the Test panel; only calls from code lack a number (task 6 covers it).
-- "Plain status page": replaced by the board (task 7).
-- "Run the reader on Bhumika's invoices": done at 1:07 PM, 4 of 4 traps caught, 0 of 4 good bills blocked.
-- "One test payout by 1:15": became task 1.
+## Rehearsal rule
+An invoice has one transfer ID for life, so Cashfree refuses the same bill twice. Before each
+rehearsal run `python payright/new_round.py`: it sets the ledger aside and tags a new round so
+the sandbox accepts the demo bills again. Inside one round nothing is ever paid twice.
+
+## Done since 1:50 PM
+Payout through Relay (Chirag + Claude) · live board with lanes and evidence, Lambda deployed,
+fallback and approval fixes, Test-panel call reading (Abhijeet) · real handwritten and printed
+bills read 20/20 fields, one-digit-off trap, honest pack wording (Bhumika) · demo agent tuned
+and chat-tested, call variables fixed, Kannada lines (Ayush) · checker gaps (Claude).

@@ -171,3 +171,16 @@ Task 7:
 - `python payright/send.py` with no approval on file now says so before anything else.
 
 - 2:19 PM: the status Lambda in AWS now holds the board code too (test invocation succeeded). The organisers' call link still answers 403, so the tunnel address stays the one to use.
+
+## Next (2:30 PM) — all earlier items are done, thank you
+Money moved at 2:26 PM: 3 payouts, Rs 51,507, "Success" in the Payouts dashboard. The Relay
+agent now pays through an HTTP step to Payouts v2; `send.py`'s event is unchanged.
+- [ ] **End-to-end with the real call (task 2 in NOW.md).** With Ayush and Chirag: `new_round.py`,
+      `run.py ... --latest`, call from the Test panel. Fix whatever breaks; this is the demo path.
+- [ ] **PAID on the board (task 3).** `run.py --refresh` once Chirag adds the Payouts keys and
+      whitelists the laptop IP. If Cashfree says "IP not whitelisted", print the IP it names.
+- [ ] **`docs/RUNBOOK.md` (task 4).** One page: commands in order, what is on each screen,
+      fallback per step (call fails -> `--fake` file, said aloud as simulated; board down -> terminal table).
+- [ ] `new_round.py` and `check.demo_round()` are new (Claude): a rehearsal tag in the transfer ID.
+      Make `run.py` print the round tag so it is visible on screen, and say so in the runbook.
+- [ ] Record one clean run of the screen as the backup video.

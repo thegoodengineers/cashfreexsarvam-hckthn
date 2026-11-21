@@ -81,6 +81,13 @@ def find_vendor(inv, vendors):
     return None, None
 
 
+def demo_round():
+    """Empty in real use: an invoice has one transfer ID for life. For rehearsals only,
+    new_round.py writes round.txt so the sandbox accepts the same demo bills again."""
+    f = Path(__file__).parent / "round.txt"
+    return "|" + f.read_text().strip() if f.exists() else ""
+
+
 def check(inv, vendors, seen, today):
     """One invoice -> decision dict. `seen` = invoices already paid or earlier in the batch."""
     stop, ask = [], []
@@ -181,7 +188,7 @@ def check(inv, vendors, seen, today):
 
     transfer_id = None
     if v and total is not None:  # same invoice -> same id, so a retry cannot become a second payment
-        transfer_id = "PR" + hashlib.sha1(f"{v['id']}|{key}|{round(total * 100)}".encode()).hexdigest()[:18]
+        transfer_id = "PR" + hashlib.sha1(f"{v['id']}|{key}|{round(total * 100)}{demo_round()}".encode()).hexdigest()[:18]
     return {
         "invoice_no": inv.get("invoice_no"), "file": inv.get("file"),
         "vendor_id": v["id"] if v else None, "vendor": v["name"] if v else inv.get("vendor_name"),
