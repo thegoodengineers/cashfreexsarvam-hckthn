@@ -140,7 +140,8 @@ def decide(result, decisions):
         return [], "The owner left every vendor out. Nothing is paid."
     # Second opinion: call_vars.approved() is written separately. Both must agree, or nothing is paid.
     # (It gets the amount as digits: it does not read amounts spoken in words.)
-    second = call_vars.approved(decisions, {**v, "spoken_total": money(said)})
+    second = call_vars.approved(decisions, {**v, "spoken_total": money(said),
+                                            "excluded_vendors": ", ".join(left_out(v.get("excluded_vendors")))})
     if {d["transfer_id"] for d in second} != {d["transfer_id"] for d in approved}:
         return [], "The two approval checks disagree about what the owner approved. Nothing is paid."
     return [d["transfer_id"] for d in approved], (
