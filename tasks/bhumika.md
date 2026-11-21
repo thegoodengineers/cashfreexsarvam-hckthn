@@ -32,11 +32,14 @@ expected results in `payright/invoice_answer_key.json`.
       wrongly stopped. Real numbers only.
 
 ## By 2:45: what the judges must receive
-- [ ] Design note, half a page: what we chose, what we chose NOT to use and
+- [x] Design note, half a page: what we chose, what we chose NOT to use and
       why (a model reads, code decides; money only to the account on file;
       one transfer ID per invoice so a retry cannot pay twice).
-- [ ] One success case and one failure case the agent handled.
+- [x] One success case and one failure case the agent handled.
 - [ ] 6-minute demo script, then run the timer in three rehearsals:
       problem (40 s) -> doctored invoice goes in -> agent refuses and says
       why -> owner approves by phone -> payouts show as successful ->
       run the batch again, nothing is paid twice -> our numbers.
+      Written: `docs/judges_pack.md` (PDF: `docs/PayRight_Judges_Pack.pdf`,
+      rebuild with `python docs/make_judges_pdf.py`). Still to do: the three timed
+      rehearsals; write the times in the table at the end of the pack.

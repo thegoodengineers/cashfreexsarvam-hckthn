@@ -1,13 +1,16 @@
 # Score sheet — demo invoice set
 
-Run on 21 Nov 2026 with the real Sarvam reader (`mode: advanced`, `ta-IN`) and `check.py --cash 100000`.
+Run on 21 Nov 2026 with the real Sarvam reader (`mode: advanced`, `ta-IN`), then
+`python payright/run.py payright/invoices.json --no-pay --cash 100000`.
+
+Run output: `SCORE  PAY 3  LATER 1  STOP 4   |   traps caught 4/4, good invoices wrongly blocked 0/4`
 Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: `invoice_answer_key.json`.
 
 | | Result |
 |---|---|
 | Invoices read | **8 / 8** (no reader failures) |
 | Traps planted | **4** |
-| Traps caught (not paid) | **4 / 4**: 3 STOP, 1 ASK |
+| Traps caught (not paid) | **4 / 4**, all STOP |
 | Clean invoices wrongly stopped | **0 / 4** |
 | Clean invoices paid | 3 PAY + 1 LATER (cash limit; nearer deadlines paid first) |
 | Reader field errors | 1 character in 1 field: Hope's GSTIN `33KLMNO…` read as `33KLMN0…` (letter O read as zero) on both Hope invoices. It did not change any decision: the checker fell back to the vendor name. |
@@ -22,13 +25,13 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 | inv04_hope.png | HE-310 | English | changed account | STOP | **STOP** | The bank account on this invoice is not the account we have on file for Hope Electricals. Call the vendor on the number we already have before paying. |
 | inv05_wells.png | WP/78 | English | wrong arithmetic | STOP | **STOP** | Subtotal 20000 plus tax 3600 is 23600, but the total says 26300. |
 | inv06_doe.png | dh/101 | English, different layout | duplicate in disguise (number and date format changed) | STOP | **STOP** | Invoice number DH-0101 from Doe Hardware Supplies has already been queued. |
-| inv07_jane.png | JDT-21 | English | mismatched name: John Doe's account on Jane D Traders' bill | STOP | **ASK** | This vendor is not in our vendor list. |
+| inv07_jane.png | JDT-21 | English | mismatched name: John Doe's account on Jane D Traders' bill | STOP | **STOP** | The bank account on this invoice belongs to John Doe (Doe Hardware Supplies), but the bill is from Jane D Traders. Do not pay until both vendors confirm. |
 | inv08_wells.jpg | 512 | handwritten bill book, phone photo | clean | PAY | **PAY** | |
 
 ## What the numbers say
 - The reader got every amount, account number and IFSC right, including Tamil and Hindi amounts in words and the handwritten photo.
 - Every trap was held before money moved, and no clean bill was blocked.
-- **Weak spot:** inv07 is held only because Jane D Traders is unknown. The checker does not say the real reason: the account on the bill belongs to John Doe, a vendor already on file. Fix: when an invoice's account matches a *different* vendor's account on file, STOP with that reason.
+- inv07 was first only an ASK ("vendor not in our list"), which hid the real danger. `check.py` now also STOPs any bill whose account belongs to a *different* vendor on file, and says whose account it is. Self-test covers it.
 - On inv05 the reader also flagged its own confidence on `total` as low. That was the right instinct: the total is the number that is wrong.
 
 ## Honest notes

@@ -23,6 +23,7 @@ APPROVE = ("APPROVE_ALL", "APPROVE_SOME")
 # check.py reason text -> one short sentence the agent can say in Hindi.
 # First match wins, so the most serious reason comes first.
 SHORT = [
+    ("bank account on this invoice belongs to", "the bank account on this bill belongs to a different vendor on our list"),
     ("bank account on this invoice is not", "bank account changed on the invoice, call the vendor on the old number first"),
     ("has already been", "this bill was already paid or is already in this batch, it looks like a duplicate"),
     ("same bill with a new number", "same amount and date as another bill, it may be a duplicate"),

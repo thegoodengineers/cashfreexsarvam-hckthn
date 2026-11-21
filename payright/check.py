@@ -115,7 +115,15 @@ def check(inv, vendors, seen, today):
     elif how == "unsure":
         ask.append(f"The vendor name looks like {v['name']}, but I am not sure it is the same vendor.")
 
-    # 3. A familiar vendor with new bank details is never paid on the invoice's word.
+    # 3a. An account we already know, but on someone else's bill: money would reach the wrong person.
+    acct = code_key(inv.get("bank_account"))
+    owner = next((o for o in vendors if acct and code_key(o["bank_account"]) == acct), None)
+    if owner and (v is None or owner["id"] != v["id"]):
+        stop.append(f"The bank account on this invoice belongs to {owner.get('account_holder') or owner['name']} "
+                    f"({owner['name']}), but the bill is from {inv.get('vendor_name') or 'another name'}. "
+                    "Do not pay until both vendors confirm.")
+
+    # 3b. A familiar vendor with new bank details is never paid on the invoice's word.
     if v and inv.get("bank_account"):
         on_invoice = (code_key(inv["bank_account"]), code_key(inv.get("ifsc")))
         on_file = (code_key(v["bank_account"]), code_key(v["ifsc"]))
@@ -219,6 +227,8 @@ def selftest():
     assert out[0]["transfer_id"] == plan([base], V, [], 1e9)[0]["transfer_id"]  # stable id
     paid = [{**out[0], "status": "PAID"}]
     assert plan([base], V, paid, 1e9)[0]["status"] == "STOP"  # re-running a paid invoice never pays again
+    borrowed = plan([{**base, "vendor_name": "Jane D Traders", "invoice_no": "JDT-1"}], V, [], 1e9)[0]
+    assert borrowed["status"] == "STOP" and "belongs to" in borrowed["reasons"][0]  # known account, other name
     assert amount("1.2 lakh") == 120000 and amount("௧௨௦") == 120 and parse_date("10.11.2026") == date(2026, 11, 10)
     print("selftest ok")
 
