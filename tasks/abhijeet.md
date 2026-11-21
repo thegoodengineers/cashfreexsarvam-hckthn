@@ -1,27 +1,69 @@
-# Abhijeet (thegoodengineer) — repo, glue code, status page
+# Abhijeet (thegoodengineer) — repo, glue code, AWS
 
-## Now
-- [ ] Clone the repo, run `python payright/check.py --selftest` (must print
-      "selftest ok") and `python payright/check.py payright/sample_invoices.json`.
-- [ ] Never commit `payright/.env` (keys, webhook URL). The repo is public.
+You have the most build capacity, so the code that joins the pieces is yours.
+Work top to bottom; do not start a lower item until the one above runs.
 
-## By 1:30
-- [ ] `payright/send.py`: read `decisions.json`, and for each PAY invoice
-      POST one event to the Relay webhook (`RELAY_WEBHOOK_URL` in `.env`).
-      Event fields the Relay agent expects, all inside `{"data": {...}}`:
-      `invoice_no, vendor, account_holder, phone, email, bank_account, ifsc,
-      address, city, state, pincode, beneficiary_id, amount, transfer_id`.
-      Before each POST, append the invoice to `ledger.json` with status SENT
-      (write first, send second: a crash must never cause a second payment).
-      Take bank details from `vendors.json`, never from the invoice.
+## Rules
+- The repo is public. Never commit `payright/.env` (Sarvam key, Relay webhook
+  URL) or any Cashfree / AWS password.
+- A model reads invoices; plain code decides about money. Do not move the
+  PAY / ASK / STOP decision into an LLM.
+- Bank details for a payment come from `vendors.json`, never from the invoice.
 
-## By 2:30 (only after the core works)
-- [ ] One static status page: each invoice with PAY / ASK / STOP, the reason,
-      and the transfer status. Read `decisions.json`. No framework, no login.
-- [ ] If we need Sarvam's call result sent back to us: a Lambda that receives
-      the post-call webhook. Name must start with your ID; use the existing
-      `<ID>-exec` role; call URL pattern is in the organisers' Lambda guide.
+## 0. Check the base (5 min)
+- [ ] `python payright/check.py --selftest` prints "selftest ok".
+- [ ] `python payright/check.py payright/sample_invoices.json --cash 100000`
+      prints 2 PAY and 3 STOP with reasons.
+
+## 1. `payright/send.py` (by 1:15)
+For each PAY row in `decisions.json`, POST one event to `RELAY_WEBHOOK_URL`.
+- [ ] Body is `{"data": {...}}` with exactly these fields (the Relay agent
+      maps them): `invoice_no, vendor, account_holder, phone, email,
+      bank_account, ifsc, address, city, state, pincode, beneficiary_id,
+      amount, transfer_id`. `beneficiary_id` = the vendor `id`, alphanumeric.
+- [ ] Write-ahead ledger: append the row to `ledger.json` with status SENT
+      BEFORE the POST. `check.py` already refuses anything in the ledger, so
+      running the batch twice must pay nothing the second time. Prove it.
+- [ ] `--dry-run` prints the events without sending. Chirag presses the real
+      run; it triggers sandbox payouts.
+
+## 2. `payright/approve.py`: the owner's approval call (by 2:00)
+Ayush builds the voice agent on Sarvam. Your script places the call and reads
+the answer.
+- [ ] Build the call variables from `decisions.json`: `owner_name, pay_count,
+      pay_total, pay_list, held_count, held_list` (reasons in plain words).
+- [ ] Place the call. From docs.sarvam.ai (read today, not run by us):
+      `POST https://apps.sarvam.ai/api/outbounds/v1/orgs/{org_id}/workspaces/{workspace_id}/outbounds`
+      header `X-API-Key`; body `app_config{app_id, app_version,
+      connection_config{connection_id, agent_phone_number}, agent_variables}`,
+      `user_config{user_phone_number}`, optional `webhook_config{url, metadata}`.
+      It returns `{attempt_id}` and the call runs in the background.
+- [ ] Read the result: poll the Analytics API
+      (`https://apps.sarvam.ai/api/analytics/v1/{org_id}/{workspace_id}/{app_id}/attempts`,
+      needs `start_datetime` and `end_datetime`) for that `attempt_id` and
+      take `final_agent_variables`: `decision`, `excluded_vendors`,
+      `spoken_total`.
+- [ ] Approve only if `decision` is APPROVE_ALL or APPROVE_SOME AND
+      `spoken_total` equals the total to be paid. Otherwise pay nothing.
+- [ ] One approval is good for one batch only: store the batch id with the
+      approval in the ledger and refuse to reuse it.
+
+## 3. AWS Lambda (by 2:30, only after 1 and 2 run)
+Use the organisers' Lambda guide. Function name must start with your ID; role
+is the existing `<ID>-exec`; do not create a Function URL, use their call link.
+- [ ] `<ID>-payright-callback`: receives Sarvam's post-call webhook
+      (`attempt_id, status, final_agent_variables, interaction_transcript`)
+      and stores or forwards the decision, so `approve.py` no longer polls.
+      Put its call link in `webhook_config.url` when placing the call.
+- [ ] `<ID>-payright-status`: serves one HTML page listing each invoice with
+      PAY / ASK / STOP, the reason, and transfer status, so judges can open it
+      on their phones. Feed it by POSTing `decisions.json` to it; keep the
+      last copy in memory or `/tmp` (good enough for a demo).
+
+## 4. One command for demo day (by 2:45)
+- [ ] `python payright/run.py <folder>` = extract -> check -> approve -> send,
+      printing the table and the score line (traps caught, good ones blocked).
+      The judges hand us a fresh batch; this is what we run on it.
 
 ## Not now
-- Landing page, auth, database, deploy pipeline. Nothing on the score card
-  marks them.
+- Landing page, login, database, CI. Nothing on the score card marks them.

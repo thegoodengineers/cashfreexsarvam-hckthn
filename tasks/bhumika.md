@@ -1,4 +1,4 @@
-# Teammate 4 (rename this file to your name) — invoices, proof, pitch
+# Bhumika — invoices, proof, pitch
 
 ## Now: make 8 fake invoices (photos or PDFs) into `payright/invoices/`
 The Cashfree sandbox only answers to these accounts, so use only these vendors:

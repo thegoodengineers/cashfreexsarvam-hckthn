@@ -1,4 +1,4 @@
-# Teammate 3 (rename this file to your name) — the owner's approval call
+# Ayush — the owner's approval call (Sarvam voice agent)
 
 Goal: the agent phones the shop owner in his language, says what is clean and
 what it stopped, and takes his approval. Voice is 20 of 100 marks, and the
