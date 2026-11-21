@@ -102,15 +102,26 @@ def refuse(dec, v, ledger):
     return None
 
 
+NEVER_CONNECTED = ("NewConnectionError", "NameResolutionError", "Failed to resolve", "getaddrinfo failed",
+                   "Connection refused", "ConnectTimeout")
+
+
+def never_connected(e):
+    """True only if the request cannot have reached Relay. 'Connection aborted' / 'reset' after the
+    body went out is a ConnectionError too, but Relay may already have the event: that is UNKNOWN."""
+    return isinstance(e, requests.ConnectTimeout) or any(m in str(e) for m in NEVER_CONNECTED)
+
+
 def post_event(row, body, url, post):
     """POST one event and set the row's final status. Only NOT_SENT may ever be retried."""
     try:
         r = post(url, json=body, timeout=30)
-    except (requests.ConnectionError, requests.ConnectTimeout) as e:
-        if isinstance(e, requests.ReadTimeout):
-            row.update(status="UNKNOWN", note="timed out waiting for Relay; check Relay's Runs tab, do not resend")
-        else:
+    except requests.ConnectionError as e:
+        if never_connected(e):
             row.update(status="NOT_SENT", note=f"could not reach Relay: {type(e).__name__}")
+        else:
+            row.update(status="UNKNOWN", note=f"connection dropped after sending ({type(e).__name__}); "
+                                              "check Relay's Runs tab, do not resend")
         return
     except requests.RequestException as e:
         row.update(status="UNKNOWN", note=f"{type(e).__name__}; check Relay's Runs tab, do not resend")
@@ -177,6 +188,7 @@ def retry(vendors, ledger_path, url, post=requests.post, out=print):
 PAYOUTS = "https://sandbox.cashfree.com/payout/transfers"   # Cashfree Payouts v2, sandbox only
 OUTCOME = {"SUCCESS": "PAID", "FAILED": "FAILED", "REJECTED": "FAILED", "MANUALLY_REJECTED": "FAILED",
            "REVERSED": "REVERSED"}
+SETTLED = {"PAID", "FAILED", "REVERSED"}   # final answers from Cashfree (a PAID can still become REVERSED)
 
 
 def confirm(ledger_path, client_id, secret, get=requests.get, out=print):
@@ -196,13 +208,21 @@ def confirm(ledger_path, client_id, secret, get=requests.get, out=print):
             out(f"could not reach Cashfree for {row['transfer_id']}: {type(e).__name__}")
             waiting += 1
             continue
+        settled = row.get("payout") in SETTLED
         if r.status_code == 404:
-            row["payout"], row["payout_note"] = "NOT_FOUND", "Cashfree has no transfer with this id yet"
-            waiting += 1
+            if settled:  # Cashfree already gave a final answer; one odd 404 must not undo it on the board
+                row["payout_note"] = f"Cashfree answered 404 at {time.strftime('%H:%M:%S')}; keeping {row['payout']}"
+            else:
+                row["payout"], row["payout_note"] = "NOT_FOUND", "Cashfree has no transfer with this id yet"
+                waiting += 1
         elif r.status_code == 200:
             d = r.json()
             d = d.get("data", d) if isinstance(d, dict) else {}
             st = str(d.get("status") or "").upper()
+            if settled and st not in OUTCOME:  # no final status in this answer: keep the final one we have
+                row["payout_note"] = f"Cashfree answered '{st or 'no status'}'; keeping {row['payout']}"
+                out(f"{row['payout']:9} {str(row['invoice_no']):14} {row['transfer_id']}  (kept)")
+                continue
             row.update(payout=OUTCOME.get(st, "PENDING"), payout_status=st, payout_code=d.get("status_code"),
                        utr=d.get("transfer_utr"), cf_transfer_id=d.get("cf_transfer_id"),
                        confirmed_at=time.strftime("%Y-%m-%dT%H:%M:%S"))
@@ -304,8 +324,8 @@ def selftest():
 
         # 3. Relay unreachable: NOT_SENT, and --retry reuses the same transfer id exactly once
         ledger_path.unlink()
-        def down(url, json, timeout):
-            raise requests.ConnectionError("no route")
+        def down(url, json, timeout):   # what requests really raises when the host cannot be reached
+            raise requests.ConnectionError("Max retries exceeded (Caused by NewConnectionError: Connection refused)")
         send(decisions, vendors, ledger_path, "http://relay.test", approval="A-test", post=down, out=quiet)
         assert {r["status"] for r in load(ledger_path, [])} == {"NOT_SENT"}
         calls.clear()
@@ -318,6 +338,15 @@ def selftest():
         def slow(url, json, timeout):
             raise requests.ReadTimeout("slow")
         send(decisions, vendors, ledger_path, "http://relay.test", approval="A-test", post=slow, out=quiet)
+        calls.clear()
+        retry(vendors, ledger_path, "http://relay.test", post=ok, out=quiet)
+        assert calls == [] and {r["status"] for r in load(ledger_path, [])} == {"UNKNOWN"}
+
+        # 4b. the connection dropped after the body went out: Relay may have it, so UNKNOWN, never resent
+        ledger_path.unlink()
+        def dropped(url, json, timeout):
+            raise requests.ConnectionError("('Connection aborted.', RemoteDisconnected('Remote end closed connection'))")
+        send(decisions, vendors, ledger_path, "http://relay.test", approval="A-test", post=dropped, out=quiet)
         calls.clear()
         retry(vendors, ledger_path, "http://relay.test", post=ok, out=quiet)
         assert calls == [] and {r["status"] for r in load(ledger_path, [])} == {"UNKNOWN"}
@@ -348,6 +377,11 @@ def selftest():
         answers = {t1: CF(200, {"transfer_id": t1, "status": "SUCCESS", "transfer_utr": "UTR1"}), t2: CF(404, {})}
         cf = lambda url, params, headers, timeout: answers[params["transfer_id"]]
         assert confirm(ledger_path, "id", "secret", get=cf, out=quiet) == 1
+        assert [r.get("payout") for r in load(ledger_path, [])] == ["PAID", "NOT_FOUND"]
+        answers = {t1: CF(404, {}), t2: CF(404, {})}                     # one odd answer must not undo a PAID
+        confirm(ledger_path, "id", "secret", get=cf, out=quiet)
+        answers = {t1: CF(200, {"data": {}}), t2: CF(404, {})}            # nor an answer with no status
+        confirm(ledger_path, "id", "secret", get=cf, out=quiet)
         assert [r.get("payout") for r in load(ledger_path, [])] == ["PAID", "NOT_FOUND"]
         answers = {t1: CF(200, {"data": {"status": "REVERSED"}}), t2: CF(200, {"status": "PENDING"})}
         confirm(ledger_path, "id", "secret", get=cf, out=quiet)          # a paid transfer can still come back
