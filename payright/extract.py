@@ -58,8 +58,11 @@ def read(path, key, language):
     inv = out.get("result") or {}
     notes = out.get("annotations") or {}
     inv["file"] = path.name
-    inv["unsure_fields"] = [k for k, a in notes.items()
-                            if isinstance(a, dict) and (a.get("confidence") or 1) < MIN_CONFIDENCE]
+    conf = {k: a.get("confidence") for k, a in notes.items() if isinstance(a, dict)}
+    inv["confidence"] = conf  # kept for the audit trail
+    # Only fields nothing else cross-checks. Totals are checked by arithmetic, GSTIN is optional.
+    inv["unsure_fields"] = [k for k in ("vendor_name", "invoice_no", "total", "bank_account", "ifsc")
+                            if (conf.get(k) or 1) < MIN_CONFIDENCE]
     return inv
 
 
