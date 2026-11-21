@@ -2,41 +2,178 @@
   {
     "file": "inv01_doe.png",
     "expected": "PAY",
-    "trap": "clean, English"
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, English",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0101",
+      "invoice_date": "12-11-2026",
+      "subtotal": 16000,
+      "tax": 2880.0,
+      "total": 18880.0,
+      "total_in_words_value": 18880.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
   },
   {
     "file": "inv02_wells.png",
     "expected": "PAY",
-    "trap": "clean, vendor name and labels in Tamil"
+    "accept": [
+      "PAY",
+      "LATER"
+    ],
+    "trap": "clean, vendor name and labels in Tamil",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "வெல்ஸ் பெயிண்ட்ஸ்",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/77",
+      "invoice_date": "05/11/2026",
+      "subtotal": 50000,
+      "tax": 9000.0,
+      "total": 59000.0,
+      "total_in_words_value": 59000.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
   },
   {
     "file": "inv03_hope.png",
     "expected": "PAY",
-    "trap": "clean, vendor name and labels in Hindi"
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, vendor name and labels in Hindi",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "होप इलेक्ट्रिकल्स",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-305",
+      "invoice_date": "14.11.2026",
+      "subtotal": 19650,
+      "tax": 3537.0,
+      "total": 23187.0,
+      "total_in_words_value": 23187.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
   },
   {
     "file": "inv04_hope.png",
     "expected": "STOP",
-    "trap": "changed account: Hope Electricals asks to be paid into 026291800001190"
+    "accept": [
+      "STOP"
+    ],
+    "trap": "changed account: Hope Electricals asks to be paid into 026291800001190",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "Hope Electricals",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-310",
+      "invoice_date": "2026-11-15",
+      "subtotal": 20000,
+      "tax": 3600.0,
+      "total": 23600.0,
+      "total_in_words_value": 23600.0,
+      "bank_account": "026291800001190",
+      "ifsc": "YESB0000262",
+      "account_holder": "Bob Hope"
+    }
   },
   {
     "file": "inv05_wells.png",
     "expected": "STOP",
-    "trap": "wrong arithmetic: 20,000 + 3,600 GST shown as total 26,300"
+    "accept": [
+      "STOP"
+    ],
+    "trap": "wrong arithmetic: 20,000 + 3,600 GST shown as total 26,300",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "Wells Paints and Chemicals",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/78",
+      "invoice_date": "10/11/2026",
+      "subtotal": 20000,
+      "tax": 3600.0,
+      "total": 26300,
+      "total_in_words_value": 26300,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
   },
   {
     "file": "inv06_doe.png",
     "expected": "STOP",
-    "trap": "duplicate in disguise: inv01 again as dh/101, date 12 Nov 2026, new layout"
+    "accept": [
+      "STOP"
+    ],
+    "trap": "duplicate in disguise: inv01 again as dh/101, date 12 Nov 2026, new layout",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "dh/101",
+      "invoice_date": "12 Nov 2026",
+      "subtotal": 16000,
+      "tax": 2880.0,
+      "total": 18880.0,
+      "total_in_words_value": 18880.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
   },
   {
     "file": "inv07_jane.png",
     "expected": "STOP",
-    "trap": "mismatched name: Jane D Traders asks to be paid into John Doe's account"
+    "accept": [
+      "STOP"
+    ],
+    "trap": "mismatched name: Jane D Traders asks to be paid into John Doe's account",
+    "truth": {
+      "vendor_id": null,
+      "vendor_printed": "Jane D Traders",
+      "gstin": "33PQRST3456U1Z9",
+      "invoice_no": "JDT-21",
+      "invoice_date": "16/11/2026",
+      "subtotal": 12000,
+      "tax": 2160.0,
+      "total": 14160.0,
+      "total_in_words_value": 14160.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
   },
   {
     "file": "inv08_wells.jpg",
     "expected": "PAY",
-    "trap": "clean, handwritten bill-book page, photographed"
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, handwritten bill-book page, photographed",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "Wells Paints and Chemicals",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "512",
+      "invoice_date": "18/11/26",
+      "subtotal": 8000,
+      "tax": 1440.0,
+      "total": 9440.0,
+      "total_in_words_value": 9440.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
   }
 ]

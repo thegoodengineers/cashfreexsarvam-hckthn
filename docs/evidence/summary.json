@@ -1,0 +1,53 @@
+[
+  {
+    "set": "demo",
+    "title": "Demo set",
+    "blurb": "The 8 invoices we demo: 4 clean, 4 traps.",
+    "invoices": 8,
+    "decisions_ok": 8,
+    "traps": 4,
+    "traps_caught": 4,
+    "clean": 4,
+    "clean_blocked": 0,
+    "clean_asked": 0,
+    "fields": 80,
+    "fields_ok": 78,
+    "money_fields": 24,
+    "money_fields_ok": 24,
+    "unsafe_payments": 0
+  },
+  {
+    "set": "stress",
+    "title": "Stress set",
+    "blurb": "8 harder cases: words against figures, a wrong line, Devanagari digits, a misspelt vendor, a re-sent bill, a dim photo, an amount above one lakh.",
+    "invoices": 8,
+    "decisions_ok": 7,
+    "traps": 3,
+    "traps_caught": 3,
+    "clean": 5,
+    "clean_blocked": 0,
+    "clean_asked": 1,
+    "fields": 80,
+    "fields_ok": 77,
+    "money_fields": 24,
+    "money_fields_ok": 24,
+    "unsafe_payments": 0
+  },
+  {
+    "set": "ladder",
+    "title": "Fail-safe ladder",
+    "blurb": "The same kind of clean bill, photographed worse and worse. A bad photo may be read or may be asked about. It must never be paid wrongly.",
+    "invoices": 5,
+    "decisions_ok": 5,
+    "traps": 1,
+    "traps_caught": 1,
+    "clean": 4,
+    "clean_blocked": 0,
+    "clean_asked": 0,
+    "fields": 50,
+    "fields_ok": 45,
+    "money_fields": 15,
+    "money_fields_ok": 13,
+    "unsafe_payments": 0
+  }
+]

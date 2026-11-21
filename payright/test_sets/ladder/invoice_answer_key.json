@@ -1,0 +1,117 @@
+[
+  {
+    "file": "lad0_doe.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY",
+      "ASK"
+    ],
+    "trap": "clean; photo quality 0 of 4 (flat scan)",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0200",
+      "invoice_date": "13-11-2026",
+      "subtotal": 4180,
+      "tax": 752.4,
+      "total": 4932.4,
+      "total_in_words_value": 4932.4,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "lad1_doe.jpg",
+    "expected": "PAY",
+    "accept": [
+      "PAY",
+      "ASK"
+    ],
+    "trap": "clean; photo quality 1 of 4 (good phone photo)",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0201",
+      "invoice_date": "14-11-2026",
+      "subtotal": 5850,
+      "tax": 1053.0,
+      "total": 6903.0,
+      "total_in_words_value": 6903.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "lad2_doe.jpg",
+    "expected": "PAY",
+    "accept": [
+      "PAY",
+      "ASK"
+    ],
+    "trap": "clean; photo quality 2 of 4 (dim, slight shake)",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0202",
+      "invoice_date": "15-11-2026",
+      "subtotal": 7520,
+      "tax": 1353.6,
+      "total": 8873.6,
+      "total_in_words_value": 8873.6,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "lad3_doe.jpg",
+    "expected": "PAY",
+    "accept": [
+      "PAY",
+      "ASK"
+    ],
+    "trap": "clean; photo quality 3 of 4 (dark, blurred, low resolution)",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0203",
+      "invoice_date": "16-11-2026",
+      "subtotal": 9190,
+      "tax": 1654.2,
+      "total": 10844.2,
+      "total_in_words_value": 10844.2,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "lad4_doe.jpg",
+    "expected": "ASK",
+    "accept": [
+      "ASK",
+      "STOP"
+    ],
+    "trap": "clean; photo quality 4 of 4 (barely readable: must not be paid on what was read)",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0204",
+      "invoice_date": "17-11-2026",
+      "subtotal": 10860,
+      "tax": 1954.8,
+      "total": 12814.8,
+      "total_in_words_value": 12814.8,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  }
+]

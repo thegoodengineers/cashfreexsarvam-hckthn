@@ -1,0 +1,371 @@
+[
+  {
+    "vendor_name": "Hope Electricals",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-318",
+    "invoice_date": "16-11-2026",
+    "due_date": "02-12-2026",
+    "lines": [
+      {
+        "description": "Exhaust fan 300 mm",
+        "qty": 8,
+        "rate": 1250.0,
+        "amount": 10000.0
+      },
+      {
+        "description": "LED bulb 9 W",
+        "qty": 300,
+        "rate": 100.0,
+        "amount": 30000.0
+      }
+    ],
+    "subtotal": 40000.0,
+    "tax": 7200.0,
+    "total": 47200.0,
+    "total_in_words_text": "Rupees Forty Two Thousand Seven Hundred Only",
+    "total_in_words_value": 42700.0,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "st01_hope.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 1,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0107",
+    "invoice_date": "17-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "GI elbow 1/2 inch",
+        "qty": 120,
+        "rate": 35.0,
+        "amount": 4200.0
+      },
+      {
+        "description": "CPVC pipe 3/4 inch, 3 m",
+        "qty": 12,
+        "rate": 450.0,
+        "amount": 5600.0
+      }
+    ],
+    "subtotal": 9800.0,
+    "tax": 1764.0,
+    "total": 11564.0,
+    "total_in_words_text": "Rupees Eleven Thousand Five Hundred Sixty Four Only",
+    "total_in_words_value": 11564.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "st02_doe.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9987,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "वेल्स पेंट्स",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/80",
+    "invoice_date": "१८/११/२०२६",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Distemper 20 kg",
+        "qty": 10,
+        "rate": 900,
+        "amount": 9000
+      },
+      {
+        "description": "Paint brush 4 inch",
+        "qty": 30,
+        "rate": 200,
+        "amount": 6000
+      }
+    ],
+    "subtotal": 15000,
+    "tax": 2700,
+    "total": 17700,
+    "total_in_words_text": "सत्रह हज़ार सात सौ रुपये मात्र",
+    "total_in_words_value": 17700,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "st03_wells.png",
+    "confidence": {
+      "vendor_name": 0.5,
+      "vendor_name_latin": 0.1327,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.5,
+      "tax": 0.5,
+      "total": 0.5,
+      "total_in_words_text": 0.9999,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "vendor_name",
+      "total"
+    ]
+  },
+  {
+    "vendor_name": "Doe Hardwares Supply",
+    "vendor_name_latin": "Doe Hardwares Supply",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0108",
+    "invoice_date": "19-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Teflon tape",
+        "qty": 200,
+        "rate": 15.0,
+        "amount": 3000.0
+      },
+      {
+        "description": "Pipe clamp 1 inch",
+        "qty": 150,
+        "rate": 20.0,
+        "amount": 3000.0
+      }
+    ],
+    "subtotal": 6000.0,
+    "tax": 1080.0,
+    "total": 7080.0,
+    "total_in_words_text": "Rupees Seven Thousand Eighty Only",
+    "total_in_words_value": 7080.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "st04_doe.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9934,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Hope Electricals",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-320",
+    "invoice_date": "17/11/2026",
+    "due_date": "03/12/2026",
+    "lines": [
+      {
+        "description": "Extension board 4 socket",
+        "qty": 25,
+        "rate": 380.0,
+        "amount": 9500.0
+      }
+    ],
+    "subtotal": 9500.0,
+    "tax": 1710.0,
+    "total": 11210.0,
+    "total_in_words_text": "Rupees Eleven Thousand Two Hundred Ten Only",
+    "total_in_words_value": 11210.0,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "st05_hope.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 1,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Hope Electricals",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-321",
+    "invoice_date": "17/11/2026",
+    "due_date": "03/12/2026",
+    "lines": [
+      {
+        "description": "1. Extension board 4 socket",
+        "qty": 25,
+        "rate": 380.0,
+        "amount": 9500.0
+      }
+    ],
+    "subtotal": 9500.0,
+    "tax": 1710.0,
+    "total": 11210.0,
+    "total_in_words_text": "Rupees Eleven Thousand Two Hundred Ten Only",
+    "total_in_words_value": 11210.0,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "st06_hope.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 1,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "WELLS PAINTS AND CHEMICALS",
+    "vendor_name_latin": "WELLS PAINTS AND CHEMICALS",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "518",
+    "invoice_date": "20/11/26",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Turpentine 1 L",
+        "qty": 20,
+        "rate": 150,
+        "amount": 3000
+      },
+      {
+        "description": "Sandpaper pack",
+        "qty": 10,
+        "rate": 250,
+        "amount": 2500
+      }
+    ],
+    "subtotal": 5500,
+    "tax": 990,
+    "total": 6490,
+    "total_in_words_text": "Six Thousand Four Hundred Ninety Only",
+    "total_in_words_value": 6490,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom wells",
+    "file": "st07_wells.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 0.9997,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "வெல்ஸ் பெயிண்ட்ஸ்",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/81",
+    "invoice_date": "19/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Exterior emulsion 20 L",
+        "qty": 20,
+        "rate": 5000,
+        "amount": 100000
+      }
+    ],
+    "subtotal": 100000,
+    "tax": 18000,
+    "total": 118000,
+    "total_in_words_text": "Rupees One Lakh Eighteen Thousand Only",
+    "total_in_words_value": 118000,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "st08_wells.png",
+    "confidence": {
+      "vendor_name": 0.9997,
+      "vendor_name_latin": 0.1328,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  }
+]

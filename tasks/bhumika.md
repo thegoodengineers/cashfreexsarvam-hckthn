@@ -43,3 +43,11 @@ expected results in `payright/invoice_answer_key.json`.
       Written: `docs/judges_pack.md` (PDF: `docs/PayRight_Judges_Pack.pdf`,
       rebuild with `python docs/make_judges_pdf.py`). Still to do: the three timed
       rehearsals; write the times in the table at the end of the pack.
+
+## Extra (done): proof beyond the demo set
+- [x] Stress set (8) and fail-safe photo ladder (5) in `payright/test_sets/`,
+      made by `python payright/make_invoices.py all`; every invoice has its
+      true values in the answer key.
+- [x] `python payright/evidence.py all` scores the reader field by field and
+      the checker's decisions: `docs/evidence/PayRight_Evidence.pdf`.
+      21 invoices: traps 8/8, clean stopped 0/13, wrong payments 0, fields 95%.

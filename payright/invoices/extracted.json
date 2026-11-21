@@ -1,0 +1,400 @@
+[
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0101",
+    "invoice_date": "12-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "1. PVC pipe 1 inch, 6 m",
+        "qty": 40,
+        "rate": 250.0,
+        "amount": 10000.0
+      },
+      {
+        "description": "2. PVC elbow 1 inch",
+        "qty": 100,
+        "rate": 18.0,
+        "amount": 1800.0
+      },
+      {
+        "description": "3. Brass ball valve 1 inch",
+        "qty": 10,
+        "rate": 420.0,
+        "amount": 4200.0
+      }
+    ],
+    "subtotal": 16000.0,
+    "tax": 2880.0,
+    "total": 18880.0,
+    "total_in_words_text": "Rupees Eighteen Thousand Eight Hundred Eighty Only",
+    "total_in_words_value": 18880.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "inv01_doe.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9993,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "வெல்ஸ் பெயிண்ட்ஸ்",
+    "vendor_name_latin": "Wells Paints",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/77",
+    "invoice_date": "05/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Enamel paint 20 L (Brilliant White)",
+        "qty": 8,
+        "rate": 4500,
+        "amount": 36000
+      },
+      {
+        "description": "Wall primer 20 L",
+        "qty": 7,
+        "rate": 2000,
+        "amount": 14000
+      }
+    ],
+    "subtotal": 50000,
+    "tax": 9000,
+    "total": 59000,
+    "total_in_words_text": "ஐம்பத்தொன்பதாயிரம் ரூபாய் மட்டும்",
+    "total_in_words_value": 59000,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "inv02_wells.png",
+    "confidence": {
+      "vendor_name": 0.9996,
+      "vendor_name_latin": 0.1328,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 0.9998,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "होप इलेक्ट्रिकल्स",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-305",
+    "invoice_date": "14.11.2026",
+    "due_date": "30.11.2026",
+    "lines": [
+      {
+        "description": "LED panel 12 W",
+        "qty": 30,
+        "rate": 350,
+        "amount": 10500
+      },
+      {
+        "description": "MCB 32 A single pole",
+        "qty": 20,
+        "rate": 240,
+        "amount": 4800
+      },
+      {
+        "description": "Copper wire 1.5 sq mm, 90 m coil",
+        "qty": 3,
+        "rate": 1450,
+        "amount": 4350
+      }
+    ],
+    "subtotal": 19650,
+    "tax": 3537,
+    "total": 23187,
+    "total_in_words_text": "तेईस हज़ार एक सौ सत्तासी रुपये मात्र",
+    "total_in_words_value": 23187,
+    "bank_account": "388108022658",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Bob Hope",
+    "file": "inv03_hope.png",
+    "confidence": {
+      "vendor_name": 0.9995,
+      "vendor_name_latin": 0.1324,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 1,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Hope Electricals",
+    "vendor_name_latin": "Hope Electricals",
+    "gstin": "33KLMN09012P1Z8",
+    "invoice_no": "HE-310",
+    "invoice_date": "2026-11-15",
+    "due_date": "2026-11-29",
+    "lines": [
+      {
+        "description": "Ceiling fan 1200 mm",
+        "qty": 10,
+        "rate": 1600.0,
+        "amount": 16000.0
+      },
+      {
+        "description": "Modular switch board 6 way",
+        "qty": 20,
+        "rate": 200.0,
+        "amount": 4000.0
+      }
+    ],
+    "subtotal": 20000.0,
+    "tax": 3600.0,
+    "total": 23600.0,
+    "total_in_words_text": "Rupees Twenty Three Thousand Six Hundred Only",
+    "total_in_words_value": 23600.0,
+    "bank_account": "026291800001190",
+    "ifsc": "YESB0000262",
+    "account_holder": "Bob Hope",
+    "file": "inv04_hope.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 1,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Wells Paints and Chemicals",
+    "vendor_name_latin": "Wells Paints and Chemicals",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "WP/78",
+    "invoice_date": "10/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "1. Enamel paint 20 L (Signal Red)",
+        "qty": 5,
+        "rate": 4000.0,
+        "amount": 20000.0
+      }
+    ],
+    "subtotal": 20000.0,
+    "tax": 3600.0,
+    "total": 26300.0,
+    "total_in_words_text": "Rupees Twenty Six Thousand Three Hundred Only",
+    "total_in_words_value": 26300.0,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "inv05_wells.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.79,
+      "tax": 0.79,
+      "total": 0.79,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "total"
+    ]
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "dh/101",
+    "invoice_date": "12 Nov 2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 40,
+        "rate": 250.0,
+        "amount": 10000.0
+      },
+      {
+        "description": "PVC elbow 1 inch",
+        "qty": 100,
+        "rate": 18.0,
+        "amount": 1800.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 10,
+        "rate": 420.0,
+        "amount": 4200.0
+      }
+    ],
+    "subtotal": 16000.0,
+    "tax": 2880.0,
+    "total": 18880.0,
+    "total_in_words_text": "Rupees Eighteen Thousand Eight Hundred Eighty Only",
+    "total_in_words_value": 18880.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "inv06_doe.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Jane D Traders",
+    "vendor_name_latin": "Jane D Traders",
+    "gstin": "33PQRST3456U1Z9",
+    "invoice_no": "JDT-21",
+    "invoice_date": "16/11/2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "1. GI pipe 1/2 inch, 6 m",
+        "qty": 20,
+        "rate": 480.0,
+        "amount": 9600.0
+      },
+      {
+        "description": "2. Gate valve 1/2 inch",
+        "qty": 12,
+        "rate": 200.0,
+        "amount": 2400.0
+      }
+    ],
+    "subtotal": 12000.0,
+    "tax": 2160.0,
+    "total": 14160.0,
+    "total_in_words_text": "Rupees Fourteen Thousand One Hundred Sixty Only",
+    "total_in_words_value": 14160.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "inv07_jane.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9999,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "WELLS PAINTS AND CHEMICALS",
+    "vendor_name_latin": "WELLS PAINTS AND CHEMICALS",
+    "gstin": "33FGHIJ5678K1Z2",
+    "invoice_no": "512",
+    "invoice_date": "18/11/26",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "Thinner 5 L",
+        "qty": 6,
+        "rate": 600,
+        "amount": 3600
+      },
+      {
+        "description": "Wall putty 40 kg",
+        "qty": 4,
+        "rate": 1100,
+        "amount": 4400
+      }
+    ],
+    "subtotal": 8000,
+    "tax": 1440,
+    "total": 9440,
+    "total_in_words_text": "Nine Thousand Four Hundred Forty Only",
+    "total_in_words_value": 9440,
+    "bank_account": "1233943142",
+    "ifsc": "ICIC0000009",
+    "account_holder": "Tom Wells",
+    "file": "inv08_wells.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 1,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  }
+]

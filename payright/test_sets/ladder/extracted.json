@@ -1,0 +1,245 @@
+[
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0200",
+    "invoice_date": "13-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 10,
+        "rate": 250.0,
+        "amount": 2500.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 4,
+        "rate": 420.0,
+        "amount": 1680.0
+      }
+    ],
+    "subtotal": 4180.0,
+    "tax": 752.4,
+    "total": 4932.4,
+    "total_in_words_text": "Rupees Four Thousand Nine Hundred Thirty Two Only",
+    "total_in_words_value": 4932.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "lad0_doe.png",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9995,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0201",
+    "invoice_date": "14-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 15,
+        "rate": 250.0,
+        "amount": 3750.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 5,
+        "rate": 420.0,
+        "amount": 2100.0
+      }
+    ],
+    "subtotal": 5850.0,
+    "tax": 1053.0,
+    "total": 6903.0,
+    "total_in_words_text": "Rupees Six Thousand Nine Hundred Three Only",
+    "total_in_words_value": 6903.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "lad1_doe.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9997,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0202",
+    "invoice_date": "15-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "1. PVC pipe 1 inch, 6 m",
+        "qty": 20,
+        "rate": 250.0,
+        "amount": 5000.0
+      },
+      {
+        "description": "2. Brass ball valve 1 inch",
+        "qty": 6,
+        "rate": 420.0,
+        "amount": 2520.0
+      }
+    ],
+    "subtotal": 7520.0,
+    "tax": 1353.6,
+    "total": 8873.6,
+    "total_in_words_text": "Rupees Eight Thousand Eight Hundred Seventy Four Only",
+    "total_in_words_value": 8874.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "lad2_doe.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9997,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "33ABCDE1234F1Z5",
+    "invoice_no": "DH-0203",
+    "invoice_date": "16-11-2026",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 25,
+        "rate": 250.0,
+        "amount": 6250.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 7,
+        "rate": 420.0,
+        "amount": 2940.0
+      }
+    ],
+    "subtotal": 9190.0,
+    "tax": 1654.2,
+    "total": 10844.2,
+    "total_in_words_text": "Rupees Ten Thousand Eight Hundred Forty Four Only",
+    "total_in_words_value": 10844.0,
+    "bank_account": "026291800001191",
+    "ifsc": "YESB0000262",
+    "account_holder": "John Doe",
+    "file": "lad3_doe.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 1,
+      "invoice_date": 1,
+      "due_date": 0,
+      "subtotal": 0.9996,
+      "tax": 1,
+      "total": 1,
+      "total_in_words_text": 1,
+      "total_in_words_value": 0.1328,
+      "bank_account": 1,
+      "ifsc": 1,
+      "account_holder": 1
+    },
+    "unsure_fields": []
+  },
+  {
+    "vendor_name": "Doe Hardware Supplies",
+    "vendor_name_latin": "Doe Hardware Supplies",
+    "gstin": "23AAAPF57799Q2123",
+    "invoice_no": "DN-0234",
+    "invoice_date": "17-11-2023",
+    "due_date": null,
+    "lines": [
+      {
+        "description": "PVC pipe 1 inch, 6 m",
+        "qty": 30,
+        "rate": 250.0,
+        "amount": 7500.0
+      },
+      {
+        "description": "Brass ball valve 1 inch",
+        "qty": 8,
+        "rate": 420.0,
+        "amount": 3360.0
+      }
+    ],
+    "subtotal": 10860.0,
+    "tax": 1954.8,
+    "total": 12814.8,
+    "total_in_words_text": "Rupees Twelve Thousand Eight Hundred Fourteen Only",
+    "total_in_words_value": 12814.0,
+    "bank_account": "0123456789012345",
+    "ifsc": "YESB0000123",
+    "account_holder": "John Doe",
+    "file": "lad4_doe.jpg",
+    "confidence": {
+      "vendor_name": 1,
+      "vendor_name_latin": 1,
+      "gstin": 0.79,
+      "invoice_no": 0.79,
+      "invoice_date": 0.79,
+      "due_date": 0.79,
+      "subtotal": 0.79,
+      "tax": 0,
+      "total": 0.79,
+      "total_in_words_text": 0,
+      "total_in_words_value": 0,
+      "bank_account": 0,
+      "ifsc": 0,
+      "account_holder": 1
+    },
+    "unsure_fields": [
+      "invoice_no",
+      "total"
+    ]
+  }
+]

@@ -1,0 +1,180 @@
+[
+  {
+    "file": "st01_hope.png",
+    "expected": "STOP",
+    "accept": [
+      "STOP"
+    ],
+    "trap": "amount in words (42,700) disagrees with the figures (47,200)",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "Hope Electricals",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-318",
+      "invoice_date": "16-11-2026",
+      "subtotal": 40000,
+      "tax": 7200.0,
+      "total": 47200.0,
+      "total_in_words_value": 42700,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "st02_doe.png",
+    "expected": "STOP",
+    "accept": [
+      "STOP"
+    ],
+    "trap": "one line multiplied wrong: 12 x 450 printed as 5,600",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardware Supplies",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0107",
+      "invoice_date": "17-11-2026",
+      "subtotal": 9800,
+      "tax": 1764.0,
+      "total": 11564.0,
+      "total_in_words_value": 11564.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "st03_wells.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, Hindi invoice with every number in Devanagari digits",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "वेल्स पेंट्स",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/80",
+      "invoice_date": "18/11/2026",
+      "subtotal": 15000,
+      "tax": 2700.0,
+      "total": 17700.0,
+      "total_in_words_value": 17700.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "st04_doe.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, vendor name misspelled on the letterhead ('Doe Hardwares Supply')",
+    "truth": {
+      "vendor_id": "v1",
+      "vendor_printed": "Doe Hardwares Supply",
+      "gstin": "33ABCDE1234F1Z5",
+      "invoice_no": "DH-0108",
+      "invoice_date": "19-11-2026",
+      "subtotal": 6000,
+      "tax": 1080.0,
+      "total": 7080.0,
+      "total_in_words_value": 7080.0,
+      "bank_account": "026291800001191",
+      "ifsc": "YESB0000262",
+      "account_holder": "John Doe"
+    }
+  },
+  {
+    "file": "st05_hope.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "Hope Electricals",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-320",
+      "invoice_date": "17/11/2026",
+      "subtotal": 9500,
+      "tax": 1710.0,
+      "total": 11210.0,
+      "total_in_words_value": 11210.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "st06_hope.png",
+    "expected": "ASK",
+    "accept": [
+      "ASK",
+      "STOP"
+    ],
+    "trap": "same bill as st05 sent again with a new number (HE-321)",
+    "truth": {
+      "vendor_id": "v3",
+      "vendor_printed": "Hope Electricals",
+      "gstin": "33KLMNO9012P1Z8",
+      "invoice_no": "HE-321",
+      "invoice_date": "17/11/2026",
+      "subtotal": 9500,
+      "tax": 1710.0,
+      "total": 11210.0,
+      "total_in_words_value": 11210.0,
+      "bank_account": "388108022658",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Bob Hope"
+    }
+  },
+  {
+    "file": "st07_wells.jpg",
+    "expected": "PAY",
+    "accept": [
+      "PAY",
+      "ASK"
+    ],
+    "trap": "clean, handwritten, photographed in poor light and slightly shaken",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "Wells Paints and Chemicals",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "518",
+      "invoice_date": "20/11/26",
+      "subtotal": 5500,
+      "tax": 990.0,
+      "total": 6490.0,
+      "total_in_words_value": 6490.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  },
+  {
+    "file": "st08_wells.png",
+    "expected": "PAY",
+    "accept": [
+      "PAY"
+    ],
+    "trap": "clean, total above one lakh, amount in words in lakh notation, Tamil labels",
+    "truth": {
+      "vendor_id": "v2",
+      "vendor_printed": "வெல்ஸ் பெயிண்ட்ஸ்",
+      "gstin": "33FGHIJ5678K1Z2",
+      "invoice_no": "WP/81",
+      "invoice_date": "19/11/2026",
+      "subtotal": 100000,
+      "tax": 18000.0,
+      "total": 118000.0,
+      "total_in_words_value": 118000.0,
+      "bank_account": "1233943142",
+      "ifsc": "ICIC0000009",
+      "account_holder": "Tom Wells"
+    }
+  }
+]

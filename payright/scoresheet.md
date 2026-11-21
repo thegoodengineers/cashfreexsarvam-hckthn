@@ -37,3 +37,20 @@ Invoices: `payright/invoices/` (made by `make_invoices.py`). Expected outcomes: 
 ## Honest notes
 - inv08 is a generated handwritten page made to look like a phone photo, not a real pen-and-paper photo. A real photographed bill would be a stronger test.
 - LATER on inv02 depends on the `--cash 100000` limit and today's date (MSME 45-day rule for Wells). With more cash it is PAY.
+
+## Beyond the demo set: 21 invoices, scored field by field
+
+`python payright/evidence.py all` re-scores the saved reads; full report with every image:
+`docs/evidence/PayRight_Evidence.pdf`.
+
+| | Demo (8) | Stress (8) | Fail-safe ladder (5) | All 21 |
+|---|---|---|---|---|
+| Traps caught | 4/4 | 3/3 | 1/1 | **8/8** |
+| Clean invoices wrongly stopped | 0/4 | 0/5 | 0/4 | **0/13** |
+| Wrong payments approved | 0 | 0 | 0 | **0** |
+| Critical fields read right | 78/80 | 77/80 | 45/50 | **200/210 (95%)** |
+| Money fields (total, account, IFSC) read right | | | | **61/63 (97%)** |
+
+- One clean bill was asked about, not paid: `st03` (Devanagari digits). Read right, but Sarvam's confidence was 0.5.
+- The two money-field misses are both on `lad4`, the barely readable photo. Sarvam invented the account and IFSC there; the checker refused the bill.
+- Bug found by this test and fixed in `extract.py`: a confidence of 0 was treated as fully sure (`0 or 1` is `1`).

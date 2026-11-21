@@ -61,10 +61,16 @@ def read(path, key, language):
     inv["file"] = path.name
     conf = {k: a.get("confidence") for k, a in notes.items() if isinstance(a, dict)}
     inv["confidence"] = conf  # kept for the audit trail
-    # Only fields nothing else cross-checks. Totals are checked by arithmetic, GSTIN is optional.
-    inv["unsure_fields"] = [k for k in ("vendor_name", "invoice_no", "total", "bank_account", "ifsc")
-                            if (conf.get(k) or 1) < MIN_CONFIDENCE]
+    inv["unsure_fields"] = unsure_fields(conf)
     return inv
+
+
+def unsure_fields(conf):
+    # Only fields nothing else cross-checks. Totals are checked by arithmetic, GSTIN is optional.
+    # A missing confidence counts as sure; a confidence of 0 is the least sure there is
+    # (on a barely readable photo Sarvam invented an account number and scored it 0).
+    return [k for k in ("vendor_name", "invoice_no", "total", "bank_account", "ifsc")
+            if conf.get(k) is not None and conf[k] < MIN_CONFIDENCE]
 
 
 def main():
