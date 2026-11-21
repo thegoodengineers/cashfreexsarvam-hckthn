@@ -92,10 +92,21 @@ RULES
 - Caller number: on Chirag's account the agent's Test panel -> Phone -> "Call 1 number"
   placed a real call to his phone with no rented number. Use that for all voice tests and
   as the demo route. Calls started from code (approve.py) still need a number: open.
-- [ ] `call_vars.py:61`: add `"user_name": owner_name` (the agent has 7 inputs, you send 6).
-- [ ] `call_vars.py:50-53`: loops are nested the wrong way; a bill with two problems only
-      reports one.
-- [ ] `voice/prompt.md:55`: "Say every amount in Hindi words" breaks Kannada and English.
+- [x] `call_vars.py:61`: add `"user_name": owner_name` (the agent has 7 inputs, you send 6).
+      Done; selftest checks all 7.
+- [x] `call_vars.py:50-53`: loops are nested the wrong way; a bill with two problems only
+      reports one. Done: every problem, most serious first, each once ("..., and
+      also ..."). On the 8-invoice batch Wells WP/78 and Jane D Traders now show both.
+- [x] `voice/prompt.md:55`: "Say every amount in Hindi words" breaks Kannada and English.
       Write "in the language you are speaking". Add real Kannada lines.
+      Done: amounts in the spoken language (Hindi, Kannada, English examples),
+      a KANNADA LINES block, reasons may have "and also". Have a Kannada speaker
+      check the lines on call 14.
+- [ ] At Chirag's laptop first: paste the updated prompt from `prompt.md` into
+      "PayRight Approval" (always give reasons, spoken-language amounts, Kannada
+      lines).
 - [ ] Voice calls on Chirag's phone panel: scenarios 1, 5, 7, 9, 13, 14 first, using the
       8-invoice batch total (110507), and log each in `voice/test_calls.md`.
+      Ready: `test_calls.md` → "First: 6 real voice calls" has the 7 input
+      values to paste in Setup, what to say, and the expected outputs (110507;
+      leave out Wells → 42067). Needs Ayush at Chirag's laptop.

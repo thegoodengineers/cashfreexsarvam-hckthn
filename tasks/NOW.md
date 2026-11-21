@@ -9,7 +9,7 @@ in a personal file says something different, this page wins.
 | 2 | Desk: enable Secure ID / Verification Suite on the test account; ask about test balance | Chirag | 2:00 |
 | 3 | Put the final prompt from `payright/voice/prompt.md` into the agent on CHIRAG's Sarvam account ("PayRight Approval"). That is the only demo agent; the one in Ayush's account is practice | Ayush, at Chirag's laptop | 2:10 |
 | 4 | Six real voice calls from that agent's Test panel -> Phone (scenarios 1, 5, 7, 9, 13, 14), logged in `voice/test_calls.md`; confirm the Aparna voice | Ayush | 2:30 |
-| 5 | `call_vars.py`: send `user_name`; fix the nested loop at lines 50-53. `prompt.md:55`: amounts "in the language you are speaking"; add Kannada lines | Ayush | 2:15 |
+| 5 | DONE: `call_vars.py` sends `user_name` and every problem per bill; `prompt.md` amounts "in the language you are speaking" + Kannada lines | Ayush | 2:15 |
 | 6 | Let `approve.py` read the decision of a call that was started from Sarvam's Test panel (newest attempt for the app), since calls from code have no phone number yet | Abhijeet (IDs from Chirag) | 2:30 |
 | 7 | Fix `lambda/status.py:71-75` (unsent rows show as PAID), then build the Pay / Ask / Stop board from real `decisions.json`, ledger and check.py `evidence`; deploy both Lambdas | Abhijeet | 2:30 |
 | 8 | Stage fallback: `--fake` must read from a file (it crashes in PowerShell); `send.py` must refuse to pay without an approval; `approve.py` must print errors instead of waiting silently | Abhijeet | 2:30 |

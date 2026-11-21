@@ -48,11 +48,16 @@ def numbered(items):
 
 
 def short_reason(reasons):
+    """Every problem on the bill, most serious first, each said once."""
+    found, unmatched = set(), []
     for r in reasons:
-        for key, say in SHORT:
-            if key in r:
-                return say
-    return reasons[0] if reasons else "needs your check"
+        i = next((i for i, (key, _) in enumerate(SHORT) if key in r), None)
+        if i is None:
+            unmatched.append(r.rstrip("."))
+        else:
+            found.add(i)
+    said = [SHORT[i][1] for i in sorted(found)] + unmatched
+    return ", and also ".join(said) if said else "needs your check"
 
 
 def agent_variables(decisions, owner_name=OWNER_NAME):
@@ -60,6 +65,7 @@ def agent_variables(decisions, owner_name=OWNER_NAME):
     held = [d for d in decisions if d["status"] != "PAY"]
     return {
         "owner_name": owner_name,
+        "user_name": owner_name,  # the agent on Chirag's account also has Sarvam's default user_name
         "pay_count": str(len(pay)),
         "pay_total": rupees(sum(d["amount"] for d in pay)),
         # amounts per vendor, so the agent can say the new total when he leaves one out
@@ -140,6 +146,14 @@ def selftest():
     assert ok(decision="REJECT", spoken_total="70800") == [] and ok(decision="CALL_LATER") == []
     assert ok(decision="APPROVE_ALL", spoken_total="94400") == []            # stopped bill never paid
     assert agent_variables([])["pay_list"] == "none"
+    assert len(v) == 7 and v["user_name"] == v["owner_name"] == "Raghu"  # all 7 agent inputs
+    two = short_reason(["Subtotal 20000 plus tax 3600 is 23600, but the total says 26300.",
+                        "I could not read 'total' clearly on the invoice.",
+                        "The bank account on this invoice is not the account we have on file for X."])
+    assert two.startswith("bank account changed") and "total on the bill is wrong" in two \
+        and "could not be read" in two, two  # every problem, most serious first
+    assert short_reason(["I could not read 'a'.", "I could not read 'b'."]).count("could not") == 1
+    assert short_reason(["Something new."]) == "Something new" and short_reason([]) == "needs your check"
     print("selftest ok")
 
 
