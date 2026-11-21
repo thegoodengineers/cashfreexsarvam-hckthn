@@ -1,0 +1,15 @@
+[
+  {"file": "clean.png", "vendor_name": "Doe Hardware Supplies", "invoice_no": "DH-0101", "invoice_date": "12-11-2026",
+   "lines": [{"description": "PVC pipe 1 inch", "qty": 40, "rate": 250, "amount": 10000}],
+   "subtotal": 10000, "tax": 1800, "total": 11800, "total_in_words_value": 11800,
+   "bank_account": "026291800001191", "ifsc": "YESB0000262"},
+  {"file": "tamil_name.png", "vendor_name": "வெல்ஸ் பெயிண்ட்ஸ்", "invoice_no": "WP/77", "invoice_date": "05/11/2026",
+   "subtotal": 50000, "tax": 9000, "total": "59,000", "bank_account": "1233943142", "ifsc": "ICIC0000009"},
+  {"file": "changed_account.png", "vendor_name": "Hope Electricals", "invoice_no": "HE-310", "invoice_date": "2026-11-15",
+   "subtotal": 20000, "tax": 3600, "total": 23600, "bank_account": "026291800001190", "ifsc": "YESB0000262"},
+  {"file": "duplicate.png", "vendor_name": "Doe Hardware Suppliers", "invoice_no": "dh/101", "invoice_date": "12 Nov 2026",
+   "subtotal": 10000, "tax": 1800, "total": 11800, "bank_account": "026291800001191", "ifsc": "YESB0000262"},
+  {"file": "bad_sum.png", "vendor_name": "Wells Paints and Chemicals", "invoice_no": "WP/78", "invoice_date": "10/11/2026",
+   "lines": [{"description": "Enamel paint 20L", "qty": 5, "rate": 4000, "amount": 20000}],
+   "subtotal": 20000, "tax": 3600, "total": 26300, "bank_account": "1233943142", "ifsc": "ICIC0000009"}
+]

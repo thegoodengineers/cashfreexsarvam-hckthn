@@ -1,0 +1,26 @@
+# Chirag — Relay and Cashfree owner, demo operator
+
+You hold the Cashfree login, so everything that needs keys, approvals or a
+money button is yours. Claude builds the Relay canvas with you in the pane.
+
+## Now
+- [ ] Stay near the laptop with the Cashfree pane open; paste keys / click
+      approvals when Claude asks (it cannot type secrets or accept terms).
+- [ ] Relay desk, ask and write the answers here:
+      - Which IPs does Relay call Payouts from? (we whitelisted 52.66.25.127)
+      - Does a test Payouts account have balance? How do we add test funds?
+      - How does "approval before money moves" behave in test mode?
+      - Report: Relay's Payouts actions fail out of the box with
+        "IP not whitelisted". (Feedback to the sponsor counts.)
+- [ ] Ask an organiser: are the 3 problem statements today's tracks, and do
+      we get a fresh batch of invoices at demo time? Demo length: 10 or 13 min?
+
+## By 1:15
+- [ ] One test payout through Relay end to end (you press the button).
+
+## By 2:45
+- [ ] Full run: all invoices -> checker -> Relay -> payouts. Keep every
+      failed run in Relay's Runs tab; we show one failed-then-fixed run.
+
+## Demo
+- [ ] You drive the laptop: canvas, Runs tab, Payouts test dashboard.

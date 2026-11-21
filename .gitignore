@@ -1,0 +1,5 @@
+.env
+ledger.json
+decisions.json
+__pycache__/
+invoices.json

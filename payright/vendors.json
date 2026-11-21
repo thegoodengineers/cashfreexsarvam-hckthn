@@ -1,0 +1,11 @@
+[
+  {"id": "v1", "name": "Doe Hardware Supplies", "aliases": ["டோ ஹார்டுவேர் சப்ளைஸ்", "डो हार्डवेयर सप्लाइज़"],
+   "gstin": "33ABCDE1234F1Z5", "account_holder": "John Doe", "phone": "9999999999",
+   "bank_account": "026291800001191", "ifsc": "YESB0000262", "msme": "micro", "agreement": false},
+  {"id": "v2", "name": "Wells Paints and Chemicals", "aliases": ["வெல்ஸ் பெயிண்ட்ஸ்", "वेल्स पेंट्स"],
+   "gstin": "33FGHIJ5678K1Z2", "account_holder": "Tom Wells", "phone": "9999999999",
+   "bank_account": "1233943142", "ifsc": "ICIC0000009", "msme": "small", "agreement": true},
+  {"id": "v3", "name": "Hope Electricals", "aliases": ["ஹோப் எலக்ட்ரிக்கல்ஸ்", "होप इलेक्ट्रिकल्स"],
+   "gstin": "33KLMNO9012P1Z8", "account_holder": "Bob Hope", "phone": "9999999999",
+   "bank_account": "388108022658", "ifsc": "ICIC0000009", "msme": "medium", "agreement": false}
+]
