@@ -84,10 +84,19 @@ def call_variables(decisions, owner_name=None):
     return call_vars.agent_variables(decisions, owner_name or os.environ.get("OWNER_NAME") or call_vars.OWNER_NAME)
 
 
+NOBODY = set(call_vars.EMPTY) | {"noone", "nothing", "no"}
+
+
+def left_out(text):
+    """The names the owner asked to leave out. Sarvam sends an empty answer as "-", and the agent
+    may write "none" or "N/A": those are nobody, not a vendor."""
+    return [p for p in re.split(r"[,;\n]| and ", str(text or "")) if name_key(p) and name_key(p) not in NOBODY]
+
+
 def excluded(pay, text):
     """Vendors the owner said to leave out -> set of transfer ids, or None if a name is unclear."""
     out = set()
-    for part in [p for p in re.split(r"[,;/\n]| and ", str(text or "")) if name_key(p)]:
+    for part in left_out(text):
         k = name_key(part)
         hits = [d for d in pay if k in name_key(d["vendor"]) or
                 SequenceMatcher(None, k, name_key(d["vendor"])).ratio() >= 0.7 or
@@ -114,7 +123,7 @@ def decide(result, decisions):
     if said is None:
         return [], "The owner did not say the total amount. A yes without the amount approves nothing."
     approved = pay
-    if choice == "APPROVE_ALL" and name_key(v.get("excluded_vendors")):
+    if choice == "APPROVE_ALL" and left_out(v.get("excluded_vendors")):
         return [], ("The owner said pay all, but also named a vendor to leave out "
                     f"('{v.get('excluded_vendors')}'). That is unclear, so nothing is paid.")
     if choice == "APPROVE_SOME":
@@ -414,6 +423,11 @@ def selftest():
     assert decide(ok(decision="APPROVE_ALL", spoken_total="seventy thousand eight hundred"), D)[0] == [doe, wells]
     assert decide(ok(decision="APPROVE_SOME", excluded_vendors="Wells Paints", spoken_total="11800"), D)[0] == [doe]
     assert decide(ok(decision="APPROVE_SOME", excluded_vendors="wells", spoken_total="11,800"), D)[0] == [doe]
+
+    # how Sarvam and the agent write "nobody left out": none of these may block a plain approval
+    for blank in ("-", " - ", "", "none", "None", "N/A", "na", "nil", "no one", "nobody"):
+        assert decide(ok(decision="APPROVE_ALL", excluded_vendors=blank, spoken_total="70800"), D)[0] == [doe, wells], blank
+        assert decide(ok(decision="APPROVE_SOME", excluded_vendors=blank, spoken_total="70800"), D)[0] == [], blank
 
     # things that must approve nothing
     nothing = [
