@@ -25,6 +25,7 @@ import html
 import json
 import os
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 STORE = "/tmp/payright_status.json"
@@ -732,31 +733,84 @@ By then it had left. So the check has to happen before the payment, every time, 
 the original. Amounts and facts are as reported there. Several cases are still under police investigation.</p></div></section>"""
 
 
-# ------------------------------------------------------------ the run page: where the live demo is started
-# The buttons themselves are payright/demo.py, which answers only on the presenter's laptop. This page is the
-# way to it from the site, and says why it is not public.
-CONSOLE = "http://localhost:8765"
-RUN_STEPS = (
-    ("New round", "Sets the ledger aside, so the sandbox accepts the demo bills again. Never pressed in the middle of a run."),
-    ("Read and check", "Sarvam reads the bills and plain code sorts them into Pay, Ask or Stop. Nothing is paid yet."),
-    ("Call the owner", "Placed from Sarvam's own Test panel. He hears every refusal, then has to say the total himself."),
-    ("Pay", "Happens by itself after APPROVED: Relay sends the clean bills to Cashfree Payouts, to the account on file."),
-    ("Ask Cashfree", "A bill shows Paid only when Cashfree confirms it, with its bank reference."),
-    ("Run again", "The same batch a second time pays nothing. One bill, one transfer ID, for life."))
+# ------------------------------------------------------------ the run page: the live demo is started here
+# The buttons do nothing on this server. A press is queued, and payright/demo.py on the presenter's laptop
+# collects it, runs the step there (the keys never leave that laptop) and sends back what it printed.
+# A press needs this server's token, typed once into the page. Pressing Run still pays nothing by itself:
+# money moves only after the owner says the total on the phone.
+RUN_COMMANDS = ("selftest", "round", "live", "saved", "refresh", "again", "stop")
+CON = {"lines": [], "base": 0, "busy": False, "seen": 0.0, "queue": []}
+RUN_BUTTONS = (("selftest", "0 Safety self-tests", 1), ("round", "1 New round", 1), ("saved", "2 Read and check", 0),
+               ("refresh", "5 Ask Cashfree", 0), ("again", "6 Run again: no double pay", 1), ("stop", "Stop", 1))
+RUN_CSS = """<style>
+#rc button{font:inherit;font-weight:600;font-size:15px;cursor:pointer;margin:0 8px 10px 0}#rc button:disabled{opacity:.35;cursor:default}
+#rc .note{display:inline-block;border:1px dashed var(--mute);border-radius:999px;padding:8px 16px;margin:0 8px 10px 0;font-size:15px}
+#rcout{margin:14px 0 0;padding:16px;height:52vh;overflow:auto;background:var(--ink);color:#d6d6d6;border-radius:16px;
+font:14px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap}
+#rcout .ok{color:#7ee787}#rcout .no{color:#ff7b72}#rcout .wait{color:#e3b341}#rcout .hd{color:#79c0ff}
+#rcstate{font-weight:600;margin:0 0 14px}#rckey{font:inherit;padding:9px 14px;border:1px solid var(--ink);border-radius:999px;width:260px;margin-right:8px}
+</style>"""
+RUN_JS = """<script>
+(function(){var n=0,w=null,key="";try{key=sessionStorage.getItem("prkey")||""}catch(e){}
+function $(i){return document.getElementById(i)}
+function say(t){var s=$("rcmsg");if(s)s.textContent=t}
+function add(o,l){var m=l.match(/^\\s*(no call started yet|call in progress)\\.\\.\\. (\\d+s)/);
+if(m){if(!w||!w.isConnected){w=document.createElement("span");w.className="wait";o.appendChild(w)}
+w.textContent="waiting for the owner's answer on the phone... "+m[2]+"\\n";return}
+w=null;var s=document.createElement("span");s.textContent=l+"\\n";
+s.className=/^(PAY\\b|PAID|ACCEPTED|APPROVED)|selftest ok/.test(l)?"ok":/^(STOP|NOT APPROVED|NOT_SENT|FAILED|REVERSED|UNKNOWN)/.test(l)?"no":
+/^(ASK|LATER|waiting|Waiting)/.test(l)?"wait":/^(\\$|ROUND|SCORE)/.test(l)?"hd":"";o.appendChild(s)}
+function paint(d){var st=$("rcstate");if(st)st.textContent=d.online?(d.busy?"The presenter's laptop is running a step.":"The presenter's laptop is connected and idle."):"The presenter's laptop is not connected.";
+var lock=$("rclock");if(lock)lock.style.display=key?"none":"block";
+document.querySelectorAll("#rc [data-step]").forEach(function(b){b.disabled=!key||!d.online||(d.busy&&b.dataset.step!="stop")})}
+document.addEventListener("click",function(ev){var b=ev.target.closest&&ev.target.closest("#rc [data-step],#rcunlock");if(!b)return;
+if(b.id=="rcunlock"){key=($("rckey").value||"").trim();$("rckey").value="";try{sessionStorage.setItem("prkey",key)}catch(e){}say("");return}
+fetch("./",{method:"POST",headers:{"Content-Type":"application/json","x-payright-token":key},body:JSON.stringify({command:b.dataset.step})})
+.then(function(r){if(r.status==403){key="";try{sessionStorage.removeItem("prkey")}catch(e){}say("That key is wrong.")}
+else if(r.status==409)say("The presenter's laptop is not connected.");else say("")})});
+function poll(){var o=$("rcout");if(!o){setTimeout(poll,1000);return}
+if(!o.dataset.live){o.dataset.live="1";n=0;w=null}   // the board swaps the page in place: draw the console again
+fetch("./?format=console&from="+n,{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+var o=$("rcout");if(o&&o.dataset.live){d.lines.forEach(function(l){add(o,l)});if(d.lines.length)o.scrollTop=o.scrollHeight;n=d.next}paint(d)})
+.catch(function(){}).then(function(){setTimeout(poll,1000)})}
+poll()})();
+</script>"""
 
 
 def _run(data, rs):
-    steps = "".join(f'<div class="step" data-r style="--i:{i}"><span class="n">0{i + 1}</span><b>{t}</b><p>{p}</p></div>'
-                    for i, (t, p) in enumerate(RUN_STEPS))
+    buttons = "".join(f'<button class="pill{" ghost" if ghost else ""}" data-step="{k}" disabled>{t}</button>' for k, t, ghost in RUN_BUTTONS)
     return f"""<header>{ART}<div class="wrap"><p class="eyebrow">Run it live</p>
 <h1 class="mega mid">Six buttons. One phone call.</h1>
-<p class="lede"><span class="cap">T</span>he whole chain, started from one page on the presenter's laptop, with this board beside it.</p>
-<div class="cta"><a class="pill" href="{CONSOLE}" target="_top">Open the run console</a><a class="pill ghost" href="./">Watch the live board</a></div></div></header>
-<section class="alt"><div class="wrap"><p class="eyebrow">The console</p><h2 data-r>What each button does.</h2>
-<div class="steps">{steps}</div></div></section>
-<section class="ink"><div class="wrap"><p class="eyebrow">Why it is not public</p><h2 data-r>A public pay button would defeat the point.</h2>
-<p class="serif">The console answers only on the presenter's laptop, and every button needs a token that only that page holds.
-On any other device the button above opens nothing. That is deliberate. Even there, pressing Run pays nothing: money moves only after the owner says the total on the phone.</p></div></section>"""
+<p class="lede"><span class="cap">E</span>very button here is carried out on the presenter's laptop. The keys never leave it.</p></div></header>
+<section class="alt"><div class="wrap">{RUN_CSS}<div id="rc"><p id="rcstate">Looking for the presenter's laptop.</p>
+<div>{buttons}</div>
+<div><span class="note">3 Call the owner: Sarvam's Test panel, 7/7 set, Call 1 number</span><span class="note">4 Pays by itself after APPROVED</span></div>
+<div id="rclock" style="display:none;margin-top:8px"><input id="rckey" type="password" placeholder="presenter's key" autocomplete="off"><button class="pill" id="rcunlock">Unlock the buttons</button></div>
+<p id="rcmsg" class="serif" style="margin:8px 0 0"></p>
+<pre id="rcout"></pre></div></div></section>
+<section class="ink"><div class="wrap"><p class="eyebrow">Why anyone can watch but only we can press</p><h2 data-r>A public pay button would defeat the point.</h2>
+<p class="serif">The output above is public. The buttons need a key that only the presenter has, and the steps run on the presenter's
+laptop, not on this server. Even then, pressing Run pays nothing: money moves only after the owner says the total on the phone.</p></div></section>
+{RUN_JS}"""
+
+
+def _console(body, token):
+    """The run page and the presenter's laptop talk through here. A server without a token refuses."""
+    if not token:
+        return _reply(403, {"error": "this server has no token, so the run page is switched off"})
+    if "command" in body:  # the run page: a button was pressed
+        if body["command"] not in RUN_COMMANDS:
+            return _reply(400, {"error": "unknown step"})
+        if time.time() - CON["seen"] > 10:
+            return _reply(409, {"error": "the presenter's laptop is not connected"})
+        CON["queue"] = (CON["queue"] + [body["command"]])[-5:]
+        return _reply(200, {"ok": True})
+    CON["lines"] += [str(x)[:500] for x in (body.get("console") or [])][:500]  # the laptop: what its console printed
+    drop = max(0, len(CON["lines"]) - 600)
+    CON["lines"], CON["base"] = CON["lines"][drop:], CON["base"] + drop
+    CON["busy"], CON["seen"] = bool(body.get("busy")), time.time()
+    steps, CON["queue"] = CON["queue"], []
+    return _reply(200, {"commands": steps})
 
 
 VIEWS = {"home": ("PayRight: the agent that says no", _home), "evidence": ("PayRight: why we said no", _evidence),
@@ -795,6 +849,8 @@ def handler(event, context=None):
         token = os.environ.get("PAYRIGHT_TOKEN", "")
         if token and headers.get("x-payright-token") != token:
             return _reply(403, {"error": "wrong token"})
+        if isinstance(body, dict) and ("command" in body or "console" in body):
+            return _console(body, token)
         if not isinstance(body, dict) or not isinstance(body.get("decisions"), list):
             return _reply(400, {"error": "expected {decisions: [...], ledger: [...]}"})
         now = datetime.now(IST)
@@ -813,6 +869,11 @@ def handler(event, context=None):
         except OSError:
             pass
         return _reply(200, {"ok": True, "invoices": len(MEM["decisions"])})
+    if query.get("format") == "console":
+        frm = str(query.get("from") or "0")
+        frm = max(int(frm) if frm.isdigit() else 0, CON["base"])
+        return _reply(200, {"lines": CON["lines"][frm - CON["base"]:], "next": CON["base"] + len(CON["lines"]),
+                            "busy": CON["busy"], "online": time.time() - CON["seen"] < 10})
     if query.get("format") == "json":
         return _reply(200, {"rows": rows(data), "updated": data.get("updated"), "events": data.get("events") or []})
     return _reply(200, page(data, str(query.get("page") or "home")), "text/html")
@@ -891,7 +952,18 @@ def selftest():
     assert "It already happened" in q and q.count('<article class="case"') == len(CASES) and "manipal_1cr.jpg" in q
     assert all(c[4].startswith("https://") and c[9] in ("digit", "other_account") for c in CASES)
     r = handler({"httpMethod": "GET", "queryStringParameters": {"page": "run"}})["body"]
-    assert "Open the run console" in r and CONSOLE in r and r.count('class="step"') == len(RUN_STEPS) and "?page=run" in q
+    assert 'data-step="saved"' in r and "?page=run" in q and os.environ["PAYRIGHT_TOKEN"] not in r
+    post = lambda b, t: handler({"httpMethod": "POST", "headers": {"x-payright-token": t}, "body": json.dumps(b)})  # noqa: E731
+    con = lambda n=0: json.loads(handler({"httpMethod": "GET", "queryStringParameters": {"format": "console", "from": str(n)}})["body"])  # noqa: E731
+    tok = os.environ["PAYRIGHT_TOKEN"]
+    assert post({"command": "saved"}, "wrong")["statusCode"] == 403, "a press without the key was accepted"
+    assert post({"command": "saved"}, tok)["statusCode"] == 409, "a press was queued with no laptop connected"
+    assert json.loads(post({"console": ["hello"], "busy": False}, tok)["body"]) == {"commands": []}
+    assert post({"console": ["x"]}, "wrong")["statusCode"] == 403 and con()["lines"] == ["hello"] and con()["online"]
+    assert post({"command": "rm -rf"}, tok)["statusCode"] == 400 and post({"command": "saved"}, tok)["statusCode"] == 200
+    assert json.loads(post({"console": ["two"], "busy": True}, tok)["body"]) == {"commands": ["saved"]}
+    assert json.loads(post({"console": []}, tok)["body"]) == {"commands": []}, "a press was handed out twice"
+    assert con(1) == {"lines": ["two"], "next": 2, "busy": False, "online": True}
     del os.environ["PAYRIGHT_TOKEN"]
     print("selftest ok")
 

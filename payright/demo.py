@@ -10,6 +10,9 @@ run.py pays only after the owner's phone call approves the batch.
 
 The call is placed from Sarvam's Test panel, not from here: a freshly opened Sarvam page starts with
 an empty Setup, and an empty Setup is what lost the 2:50 PM attempt.
+
+The deployed site has the same buttons on its "Run it live" page. They are carried out here: once a second
+this laptop sends the site what the console printed and collects the presses queued there (see remote()).
 """
 import json
 import os
@@ -17,8 +20,11 @@ import secrets
 import subprocess
 import sys
 import threading
+import time
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent
@@ -37,7 +43,38 @@ STEPS = {  # the same commands as docs/RUNBOOK.md
 log, lock, busy, proc = [], threading.Lock(), threading.Event(), [None]
 
 
+def setting(name):
+    if os.environ.get(name):
+        return os.environ[name]
+    f = HERE / ".env"
+    for line in f.read_text(encoding="utf-8").splitlines() if f.exists() else []:
+        k, _, v = line.partition("=")
+        if k.strip() == name:
+            return v.strip()
+    return ""
+
+
+def secrets_here():
+    """Every value in .env that must never reach a screen, plus the path of each address (an error message
+    from the network library prints host and path apart)."""
+    f, out = HERE / ".env", set()
+    for line in f.read_text(encoding="utf-8").splitlines() if f.exists() else []:
+        k, _, v = line.partition("=")
+        if k.strip() not in ("STATUS_URL", "OWNER_NAME") and len(v.strip()) >= 8:
+            out.add(v.strip())
+            if "://" in v and len(urlsplit(v.strip()).path) >= 8:
+                out.add(urlsplit(v.strip()).path)
+    return sorted(out, key=len, reverse=True)
+
+
+def scrub(line, hide=None):
+    for secret in secrets_here() if hide is None else hide:
+        line = line.replace(secret, "[hidden]")
+    return line
+
+
 def say(line):
+    line = scrub(line)  # the console is on the projector and is relayed to the public site
     with lock:
         log.append(line)
 
@@ -60,12 +97,45 @@ def work(cmds):
 
 
 def board_url():
-    env = HERE / ".env"
-    for line in env.read_text(encoding="utf-8").splitlines() if env.exists() else []:
-        k, _, v = line.partition("=")
-        if k.strip() == "STATUS_URL":
-            return "/".join(v.strip().split("/")[:3]) + "/"
-    return ""
+    return "/".join(setting("STATUS_URL").split("/")[:3]) + "/" if setting("STATUS_URL") else ""
+
+
+def start(step):
+    """Begin one step, pressed here or on the deployed site's run page. -> an HTTP status."""
+    if step == "stop":
+        if proc[0] and proc[0].poll() is None:
+            proc[0].terminate()  # same as Ctrl+C in the runbook; the ledger is written before any payment call
+        return 200
+    if step not in STEPS:
+        return 404
+    with lock:
+        if busy.is_set():
+            return 409
+        busy.set()
+    threading.Thread(target=work, args=(STEPS[step],), daemon=True).start()
+    return 200
+
+
+def remote(every_s=1.0, rounds=None):
+    """The deployed site's "Run it live" page presses these same buttons. Once a second this laptop sends the
+    site what the console printed and collects the presses queued there. Nothing here listens to the outside:
+    the laptop only calls out, with the token the site already checks, and the keys never leave it."""
+    url, token = setting("STATUS_URL"), setting("STATUS_TOKEN")
+    sent = n = 0
+    while url and token and (rounds is None or n < rounds):
+        n += 1
+        with lock:
+            new = log[sent:sent + 400]
+        try:
+            req = urllib.request.Request(url, data=json.dumps({"console": new, "busy": busy.is_set()}).encode(),
+                                         headers={"Content-Type": "application/json", "x-payright-token": token})
+            steps = json.load(urllib.request.urlopen(req, timeout=8)).get("commands") or []
+            sent += len(new)
+            for step in steps:
+                start(step)
+        except Exception:  # the site is down or slow: the buttons on this page still work; try again
+            pass
+        time.sleep(every_s)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -95,19 +165,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local() or not secrets.compare_digest(self.headers.get("X-Demo") or "", TOKEN):
             return self.reply("{}", code=403)
-        step = self.path.partition("step=")[2]
-        if step == "stop":
-            if proc[0] and proc[0].poll() is None:
-                proc[0].terminate()  # same as Ctrl+C in the runbook; the ledger is written before any payment call
-            return self.reply("{}")
-        if step not in STEPS:
-            return self.reply("{}", code=404)
-        with lock:
-            if busy.is_set():
-                return self.reply("{}", code=409)
-            busy.set()
-        threading.Thread(target=work, args=(STEPS[step],), daemon=True).start()
-        self.reply("{}")
+        self.reply("{}", code=start(self.path.partition("step=")[2]))
 
 
 PAGE = """<!doctype html><meta charset=utf-8><title>PayRight demo</title>
@@ -154,9 +212,7 @@ poll()
 
 
 def selftest():
-    import time
     import urllib.error
-    import urllib.request
     srv = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_port}"
@@ -177,7 +233,36 @@ def selftest():
         time.sleep(0.2)
     seen = "\n".join(log)
     assert seen.count("selftest ok") == 3 and not busy.is_set(), seen
-    print("selftest ok: buttons need the page's token; the three safety self-tests ran and showed their output")
+    # the deployed site's run page: this laptop reports its output and carries out the press queued there
+    got = []
+
+    class Site(BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_POST(self):
+            got.append((self.headers.get("x-payright-token"), json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
+            out = json.dumps({"commands": ["selftest", "nonsense"] if len(got) == 1 else []}).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+    site = ThreadingHTTPServer(("127.0.0.1", 0), Site)
+    threading.Thread(target=site.serve_forever, daemon=True).start()
+    os.environ["STATUS_URL"], os.environ["STATUS_TOKEN"] = f"http://127.0.0.1:{site.server_port}/status", "tok"
+    del log[:]
+    threading.Thread(target=remote, kwargs={"every_s": 0.2, "rounds": 300}, daemon=True).start()
+    told = ""
+    for _ in range(300):
+        told = "\n".join(line for _, b in got for line in b["console"])
+        if told.count("selftest ok") == 3:
+            break
+        time.sleep(0.2)
+    assert told.count("selftest ok") == 3 and all(t == "tok" for t, _ in got), told
+    assert scrub("x /relay/inbound/webhook/abcdef0123 y", ["/relay/inbound/webhook/abcdef0123"]) == "x [hidden] y"
+    assert all(secret not in scrub("error near " + secret) for secret in secrets_here())
+    print("selftest ok: buttons need the page's token; the three safety self-tests ran and showed their output; "
+          "the deployed run page's press was carried out here and its output sent back; secrets are hidden")
 
 
 if __name__ == "__main__":
@@ -185,4 +270,5 @@ if __name__ == "__main__":
         selftest()
     else:
         print(f"PayRight demo page: http://127.0.0.1:{PORT}   (this laptop only; Ctrl+C to stop)")
+        threading.Thread(target=remote, daemon=True).start()  # carries out presses from the deployed site's run page
         ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
