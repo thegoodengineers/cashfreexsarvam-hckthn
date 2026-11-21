@@ -86,4 +86,7 @@ Your numbers reproduce from the committed files. Fix these before anyone reads t
       details, so the right result is ASK. NOT READ YET (no credits). Chirag: run
       `python payright/evidence.py real --read en-IN`. The photo is only 400x541; a full-size original
       would be a fairer test.
+      Also added `payright/test_sets/real/real02_amazon.jpg`: a real printed Amazon tax invoice (my own;
+      addresses, order number and payment IDs blacked out). Truth: BOM5-540667, 08.05.2025,
+      18,880.50 + 3,398.50 GST = 22,279.00. Seller not on our list: right result ASK. Not read yet.
 - [ ] Task 14: run the timer at the three rehearsals.

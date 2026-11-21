@@ -2,7 +2,10 @@
   {
     "file": "real01_samsuddin.jpg",
     "expected": "ASK",
-    "accept": ["ASK", "STOP"],
+    "accept": [
+      "ASK",
+      "STOP"
+    ],
     "planted": false,
     "trap": "REAL handwritten bill, photographed by the team (low resolution, 400x541; PAN, phone numbers, customer details and signatures blacked out). Vendor is not on our list and the bill has no bank details, so it must not be paid: ASK. Truth transcribed by hand from the photo; 9 lines add up to 7,226.",
     "language": "en-IN",
@@ -16,6 +19,31 @@
       "tax": null,
       "total": 7226,
       "total_in_words_value": 7226,
+      "bank_account": null,
+      "ifsc": null,
+      "account_holder": null
+    }
+  },
+  {
+    "file": "real02_amazon.jpg",
+    "expected": "ASK",
+    "accept": [
+      "ASK",
+      "STOP"
+    ],
+    "planted": false,
+    "trap": "REAL printed tax invoice (Amazon seller), a crumpled sheet photographed on cloth with shadows; addresses, order number and payment transaction IDs blacked out. Seller is not on our list and the bill was already paid by card, with no bank details, so it must not be paid: ASK. Truth transcribed by hand: 18,880.50 + 9% CGST 1,699.25 + 9% SGST 1,699.25 = 22,279.00.",
+    "language": "en-IN",
+    "truth": {
+      "vendor_id": null,
+      "vendor_printed": "Clicktech Retail Private Limited",
+      "gstin": "27AAJCC9783E1Z7",
+      "invoice_no": "BOM5-540667",
+      "invoice_date": "08.05.2025",
+      "subtotal": 18880.5,
+      "tax": 3398.5,
+      "total": 22279.0,
+      "total_in_words_value": 22279,
       "bank_account": null,
       "ifsc": null,
       "account_holder": null

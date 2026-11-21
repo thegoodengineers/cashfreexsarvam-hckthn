@@ -48,8 +48,9 @@ SETS = {"demo": (HERE / "invoices", HERE / "invoice_answer_key.json",
                       "Eighth Schedule (Hindi and Tamil are in the demo set), each read with its own language code. "
                       "Cards marked 'native speaker to review' have best-effort labels and the amount in words in English."),
         "real": (HERE / "test_sets" / "real", None,
-                 "Real handwritten bills", "Real bills photographed by the team, not generated. Private details "
-                 "(PAN, phone numbers, customer, signatures) are blacked out. The truth was transcribed by hand.")}
+                 "Real bills", "Real bills photographed by the team, not generated: one handwritten, one printed Amazon "
+                 "tax invoice. Private details (PAN, phones, addresses, order and payment IDs, signatures) are "
+                 "blacked out. The truth was transcribed by hand.")}
 FIELDS = [("vendor", "Vendor"), ("gstin", "GSTIN"), ("invoice_no", "Invoice no."), ("invoice_date", "Date"),
           ("subtotal", "Subtotal"), ("tax", "Tax"), ("total", "Total"), ("total_in_words_value", "Amount in words"),
           ("bank_account", "Account no."), ("ifsc", "IFSC")]
@@ -295,7 +296,7 @@ def report(results):
 <p class=lede>Every invoice below went through the live Sarvam Document AI reader (advanced mode) and our real
 <span class=mono>check.py</span>. We generated each invoice ourselves, so we know what is truly printed on it and can
 score the reader field by field. Nothing here is typed in by hand. The "handwritten" bills are generated pages in a
-handwriting font made to look like phone photos. One real handwritten bill (team photo, private details blacked out) is in <span class=mono>payright/test_sets/real/</span>, waiting to be read.</p>
+handwriting font made to look like phone photos. Two real bills (one handwritten, one printed; team photos, private details blacked out) are in <span class=mono>payright/test_sets/real/</span>, waiting to be read.</p>
 <div class=kpis>{head}</div>{pending}
 {LEARNED if {'demo', 'stress', 'ladder', 'languages'} <= {s['set'] for s, _ in results} else ''}
 {''.join(sections)}
