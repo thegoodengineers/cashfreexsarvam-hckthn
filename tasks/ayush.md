@@ -15,10 +15,16 @@ live call is a tick-box on the judge's card.
 - [ ] Output variables (filled by Sarvam after the call):
       `decision` (enum: APPROVE_ALL, APPROVE_SOME, REJECT, CALL_LATER),
       `excluded_vendors` (string), `spoken_total` (string).
-- [ ] Rewrite the sample lines of the prompt in the demo language the way a
+- [x] Rewrite the sample lines of the prompt in the demo language the way a
       real shop owner's accountant would speak. Hand the final prompt to Chirag.
+      Done in Hindi/Hinglish, owner "Ramesh": `payright/voice/prompt.md`
+      (settings, variables with descriptions to paste, first message, prompt).
+- [x] Variables come from `python payright/call_vars.py` (reads
+      `decisions.json`). `call_vars.approved()` is the money check on the
+      outputs, for Abhijeet's `approve.py`: pays nothing unless the decision is
+      an approval and `spoken_total` equals what would really be paid.
 
-## Agent prompt (paste, then tune by calling it)
+## Agent prompt: first draft (the final Hindi version is in `payright/voice/prompt.md`)
 ```
 You are the accounts assistant of a hardware wholesale shop, calling the
 owner, @owner_name, to approve this week's vendor payments.
@@ -52,7 +58,7 @@ RULES
 ```
 
 ## By 2:15
-- [ ] Call it 20 times. Interrupt it, mumble, switch language, say "pay the
+- [ ] Call it 20 times. Script and log: `payright/voice/test_calls.md`. Interrupt it, mumble, switch language, say "pay the
       stopped one also". Write down what failed and what you changed.
 - [ ] Pick the best voice; check numbers are spoken correctly.
 
