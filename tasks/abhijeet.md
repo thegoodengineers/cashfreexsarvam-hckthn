@@ -143,8 +143,8 @@ Task 7:
   organisers' call link answers 403 "forbidden" to every outside request (curl and browser, any path). Judges'
   phones cannot reach them that way. Worth one question at the desk: is the call link open only to Relay?
 - Working route: the same code runs on Abhijeet's laptop behind a public tunnel:
-  board https://giants-made-stamp-wines.trycloudflare.com/
-  In Chirag's `payright/.env`: `STATUS_URL=https://giants-made-stamp-wines.trycloudflare.com/status` and
+  board https://hugo-toilet-paths-falling.trycloudflare.com/
+  In Chirag's `payright/.env`: `STATUS_URL=https://hugo-toilet-paths-falling.trycloudflare.com/status` and
   `STATUS_TOKEN=` (Abhijeet sends the value privately). The address dies if that laptop sleeps or the tunnel restarts.
 
 ## Status 2:14 PM (Abhijeet) — task 6 now proven on real Sarvam data

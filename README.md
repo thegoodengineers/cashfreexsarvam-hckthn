@@ -16,10 +16,10 @@ This is not a model with a payout button. The model only reads; everything below
 | What | Why it is different | Proof |
 |---|---|---|
 | **The owner says the total aloud** | A yes, a tap or an OTP is not approval. The voice agent names every stopped bill and its reason in the owner's language, and the spoken total has to match. | [payright/voice/test_calls.md](payright/voice/test_calls.md), [payright/approve.py](payright/approve.py) |
-| **It attacks itself** | 1,000 forged variants of real bills on a number you choose, decided by the same code that guards the money. | [Attack it at scale](https://giants-made-stamp-wines.trycloudflare.com/try#attack), `python payright/attack.py 1000 7` |
+| **It attacks itself** | 1,000 forged variants of real bills on a number you choose, decided by the same code that guards the money. | [Attack it at scale](https://hugo-toilet-paths-falling.trycloudflare.com/try#attack), `python payright/attack.py 1000 7` |
 | **It closed the gap its own attack found** | Price memory: what each vendor charged on bills that were really paid. A quiet raise of more than 10% goes to a person. | `python payright/pricebook.py --selftest`, numbers under Measured |
 | **It repairs the reader's slips by rule** | O read as 0 in a GSTIN no longer hides a vendor. An invented GSTIN fails its own check digit and the refusal says so. | `python payright/check.py --selftest` |
-| **Every refusal names its trick** | A stopped bill shows the two values compared, the known fraud it matches, and the real reported case. | [Live board](https://giants-made-stamp-wines.trycloudflare.com/), [It already happened](https://giants-made-stamp-wines.trycloudflare.com/?page=problem) |
+| **Every refusal names its trick** | A stopped bill shows the two values compared, the known fraud it matches, and the real reported case. | [Live board](https://hugo-toilet-paths-falling.trycloudflare.com/), [It already happened](https://hugo-toilet-paths-falling.trycloudflare.com/?page=problem) |
 | **Deadline first when cash is short** | Bills to micro and small suppliers are ordered by their 15 or 45 day payment deadline; what cash cannot cover waits as LATER. | [payright/check.py](payright/check.py), `plan()` |
 | **One bill, one payment, for life** | The transfer ID comes from the invoice, a ledger row is written before the money moves, and a bill is PAID only when Cashfree confirms. | `python payright/send.py --selftest` |
 
@@ -27,12 +27,12 @@ This is not a model with a payout button. The model only reads; everything below
 
 | Open this | What you see |
 |---|---|
-| **[Attack it at scale](https://giants-made-stamp-wines.trycloudflare.com/try#attack)** | Type any number. We forge 1,000 variants of real bills and the real checker decides each one, in under a second. |
-| [Try to fool it](https://giants-made-stamp-wines.trycloudflare.com/try) | Tamper with one real bill yourself and see the verdict and the two values compared. |
-| [It already happened](https://giants-made-stamp-wines.trycloudflare.com/?page=problem) | 8 real reported fraud cases, each with its source, and what our checker does with the same bill. |
-| [Live board](https://giants-made-stamp-wines.trycloudflare.com/) | Every bill of the last run in a Pay / Ask / Stop lane, the owner's call, and what Cashfree confirmed. |
-| [Evidence](https://giants-made-stamp-wines.trycloudflare.com/?page=evidence) | Why each bill was refused, and the trail of each payment. |
-| [How it works](https://giants-made-stamp-wines.trycloudflare.com/?page=how) | The five steps, and what we chose not to build. |
+| **[Attack it at scale](https://hugo-toilet-paths-falling.trycloudflare.com/try#attack)** | Type any number. We forge 1,000 variants of real bills and the real checker decides each one, in under a second. |
+| [Try to fool it](https://hugo-toilet-paths-falling.trycloudflare.com/try) | Tamper with one real bill yourself and see the verdict and the two values compared. |
+| [It already happened](https://hugo-toilet-paths-falling.trycloudflare.com/?page=problem) | 8 real reported fraud cases, each with its source, and what our checker does with the same bill. |
+| [Live board](https://hugo-toilet-paths-falling.trycloudflare.com/) | Every bill of the last run in a Pay / Ask / Stop lane, the owner's call, and what Cashfree confirmed. |
+| [Evidence](https://hugo-toilet-paths-falling.trycloudflare.com/?page=evidence) | Why each bill was refused, and the trail of each payment. |
+| [How it works](https://hugo-toilet-paths-falling.trycloudflare.com/?page=how) | The five steps, and what we chose not to build. |
 
 These links are a tunnel to a team laptop, so they work only while that laptop is serving. To run the same site yourself:
 

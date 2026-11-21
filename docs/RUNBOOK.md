@@ -23,7 +23,7 @@ Roles: **Chirag** drives the laptop. **Bhumika** narrates. **Ayush** has the own
 | 6 | Run the command from step 2 again. | Paid bills come back as `STOP ... has already been ...`, the `SCORE` line ends with `already paid N`, then `nothing to pay.` Nothing new appears in Relay. | If a bill is offered again, stop: someone ran `new_round.py` in between. |
 | 7 | Open the board and tap a stopped bill. | The two values the checker compared, the wrong one in red; account numbers show the last four digits only. | **Board unreachable:** the terminal table from step 2 is the fallback. To bring it back on Abhijeet's laptop: `python payright/serve.py`, then `cloudflared tunnel --url http://localhost:8765`. The address changes, so update `STATUS_URL`. |
 
-Board: https://giants-made-stamp-wines.trycloudflare.com/
+Board: https://hugo-toilet-paths-falling.trycloudflare.com/
 
 ## Rules for the stage
 - `--fake` is never used without saying the answer is simulated.
