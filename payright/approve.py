@@ -39,6 +39,7 @@ from pathlib import Path
 
 import requests
 
+import call_vars
 from check import amount, name_key
 from send import HERE, batch_id, load, load_env, save_ledger
 
@@ -75,19 +76,9 @@ def money(x):
     return f"{x:.0f}"
 
 
-def call_variables(decisions, owner_name):
-    """What the voice agent is told. Strings only, plain words."""
-    pay = [d for d in decisions if d["status"] == "PAY"]
-    held = [d for d in decisions if d["status"] != "PAY"]
-    return {
-        "owner_name": owner_name,
-        "pay_count": str(len(pay)),
-        "pay_total": money(sum(d["amount"] for d in pay)),
-        "pay_list": "; ".join(f"{d['vendor']}, {money(d['amount'])} rupees" for d in pay) or "none",
-        "held_count": str(len(held)),
-        "held_list": "; ".join(
-            f"{d['vendor']}, invoice {d['invoice_no']}: {(d['reasons'] or ['needs a check'])[0]}" for d in held) or "none",
-    }
+def call_variables(decisions, owner_name=None):
+    """What the voice agent is told. Built by call_vars.py, which the agent prompt is tuned to."""
+    return call_vars.agent_variables(decisions, owner_name or os.environ.get("OWNER_NAME") or call_vars.OWNER_NAME)
 
 
 def excluded(pay, text):
@@ -119,8 +110,10 @@ def decide(result, decisions):
     said = spoken_amount(v.get("spoken_total"))
     if said is None:
         return [], "The owner did not say the total amount. A yes without the amount approves nothing."
-    full = sum(d["amount"] for d in pay)
     approved = pay
+    if choice == "APPROVE_ALL" and name_key(v.get("excluded_vendors")):
+        return [], ("The owner said pay all, but also named a vendor to leave out "
+                    f"('{v.get('excluded_vendors')}'). That is unclear, so nothing is paid.")
     if choice == "APPROVE_SOME":
         skip = excluded(pay, v.get("excluded_vendors"))
         if not skip:
@@ -128,13 +121,16 @@ def decide(result, decisions):
                         f"('{v.get('excluded_vendors') or ''}'). Nothing is paid.")
         approved = [d for d in pay if d["transfer_id"] not in skip]
     part = sum(d["amount"] for d in approved)
-    # He may say the new total, or the total he was read before leaving a vendor out.
-    # Either way we never pay more than the amount he spoke.
-    if abs(said - part) > 1 and not (choice == "APPROVE_SOME" and abs(said - full) <= 1):
+    if abs(said - part) > 1:
         return [], (f"The owner said {money(said)} rupees, but the amount to be paid is {money(part)}. "
                     "The amounts do not match, so nothing is paid.")
     if not approved:
         return [], "The owner left every vendor out. Nothing is paid."
+    # Second opinion: call_vars.approved() is written separately. Both must agree, or nothing is paid.
+    # (It gets the amount as digits: it does not read amounts spoken in words.)
+    second = call_vars.approved(decisions, {**v, "spoken_total": money(said)})
+    if {d["transfer_id"] for d in second} != {d["transfer_id"] for d in approved}:
+        return [], "The two approval checks disagree about what the owner approved. Nothing is paid."
     return [d["transfer_id"] for d in approved], (
         f"The owner approved {len(approved)} payment(s), {money(part)} rupees, and said the amount himself.")
 
@@ -233,7 +229,7 @@ def main(argv):
     decisions = load(HERE / "decisions.json", None)
     if decisions is None:
         sys.exit("No decisions.json. Run: python check.py invoices.json")
-    variables = call_variables(decisions, os.environ.get("OWNER_NAME", "sir"))
+    variables = call_variables(decisions, os.environ.get("OWNER_NAME"))
     bid = batch_id(decisions)
     c, missing = cfg()
     if "--dry-run" in argv:
@@ -270,14 +266,14 @@ def selftest():
     ok = lambda **v: {"status": "connected", "variables": v}
 
     v = call_variables(D, "Raghu")
-    assert (v["pay_count"], v["pay_total"], v["held_count"]) == ("2", "70800", "3") and "HE-310" in v["held_list"]
+    assert (v["pay_count"], v["pay_total"], v["held_count"]) == ("2", "70800", "3") and "bank account changed" in v["held_list"]
 
     # approvals that count
     assert decide(ok(decision="APPROVE_ALL", spoken_total="70800"), D)[0] == [doe, wells]
     assert decide(ok(decision="approve_all", spoken_total="70,800 rupees"), D)[0] == [doe, wells]
     assert decide(ok(decision="APPROVE_ALL", spoken_total="seventy thousand eight hundred"), D)[0] == [doe, wells]
     assert decide(ok(decision="APPROVE_SOME", excluded_vendors="Wells Paints", spoken_total="11800"), D)[0] == [doe]
-    assert decide(ok(decision="APPROVE_SOME", excluded_vendors="wells", spoken_total="70800"), D)[0] == [doe]
+    assert decide(ok(decision="APPROVE_SOME", excluded_vendors="wells", spoken_total="11,800"), D)[0] == [doe]
 
     # things that must approve nothing
     nothing = [
@@ -288,6 +284,8 @@ def selftest():
         ok(decision="CALL_LATER", spoken_total="70800"),
         ok(spoken_total="70800"),                                            # no decision
         ok(decision="APPROVE_SOME", spoken_total="70800"),                   # leave out whom?
+        ok(decision="APPROVE_SOME", excluded_vendors="Wells", spoken_total="70800"),         # the old total
+        ok(decision="APPROVE_ALL", excluded_vendors="Doe", spoken_total="70800"),            # all, except...?
         ok(decision="APPROVE_SOME", excluded_vendors="Sharma Steel", spoken_total="70800"),  # unknown vendor
         ok(decision="APPROVE_SOME", excluded_vendors="Doe, Wells", spoken_total="70800"),    # left everyone out
         {"status": "no_answer", "variables": {"decision": "APPROVE_ALL", "spoken_total": "70800"}},

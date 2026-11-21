@@ -103,7 +103,7 @@ def main(argv):
         return print("\nnothing to pay." if not pay else "\n--no-pay: stopped before the approval call.")
 
     # 3. the owner approves by phone
-    variables = approve.call_variables(decisions, os.environ.get("OWNER_NAME", "sir"))
+    variables = approve.call_variables(decisions, os.environ.get("OWNER_NAME"))
     bid = send.batch_id(decisions)
     print(f"\nbatch {bid}: asking the owner to approve {variables['pay_count']} payment(s), {variables['pay_total']} rupees")
     c, missing = approve.cfg()
