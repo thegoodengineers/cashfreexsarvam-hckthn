@@ -75,16 +75,21 @@ def settle(decisions, ledger_path, approval=None, tries=6, wait_s=5):
         return print("(no Cashfree Payouts keys in .env: the board shows 'sent, waiting for Cashfree'. "
                      "Check the Payouts test dashboard.)")
     import time
+    lines = []
     for i in range(tries):
-        waiting = send.confirm(ledger_path, cid, sec, out=print if i in (0, tries - 1) else (lambda *a: None))
+        lines = []  # only the last check is shown: right after sending, Cashfree has not registered the transfers yet
+        waiting = send.confirm(ledger_path, cid, sec, out=lines.append)
         publish(decisions, ledger_path, approval, stage="sent" if waiting else "confirmed")
-        if not waiting:
+        if not waiting or any("not whitelisted" in x for x in lines) or i == tries - 1:
             break
         time.sleep(wait_s)
+    for line in lines:  # the ledger keeps the value NOT_FOUND; on screen it reads as what it means
+        print("waiting for Cashfree  " + line[len("NOT_FOUND"):].strip() if line.startswith("NOT_FOUND") else line)
     rows = send.load(ledger_path, [])
-    print("Cashfree: " + ", ".join(f"{sum(r.get('payout') == s for r in rows)} {s.lower().replace('_', ' ')}"
-                                    for s in ("PAID", "PENDING", "FAILED", "REVERSED", "NOT_FOUND") if any(r.get("payout") == s for r in rows))
-          or "Cashfree: nothing to report")
+    words = {"NOT_FOUND": "waiting for Cashfree", "PENDING": "pending"}
+    print("Cashfree: " + (", ".join(f"{sum(r.get('payout') == s for r in rows)} {words.get(s, s.lower())}"
+                                     for s in ("PAID", "PENDING", "FAILED", "REVERSED", "NOT_FOUND")
+                                     if any(r.get("payout") == s for r in rows)) or "nothing to report"))
 
 
 def table(decisions):
