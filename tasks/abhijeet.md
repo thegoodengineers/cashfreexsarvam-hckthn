@@ -13,20 +13,20 @@ Work top to bottom; do not start a lower item until the one above runs.
 - Bank details for a payment come from `vendors.json`, never from the invoice.
 
 ## 0. Check the base (5 min)
-- [ ] `python payright/check.py --selftest` prints "selftest ok".
-- [ ] `python payright/check.py payright/sample_invoices.json --cash 100000`
+- [x] `python payright/check.py --selftest` prints "selftest ok".
+- [x] `python payright/check.py payright/sample_invoices.json --cash 100000`
       prints 2 PAY and 3 STOP with reasons.
 
 ## 1. `payright/send.py` (by 1:15)
 For each PAY row in `decisions.json`, POST one event to `RELAY_WEBHOOK_URL`.
-- [ ] Body is `{"data": {...}}` with exactly these fields (the Relay agent
+- [x] Body is `{"data": {...}}` with exactly these fields (the Relay agent
       maps them): `invoice_no, vendor, account_holder, phone, email,
       bank_account, ifsc, address, city, state, pincode, beneficiary_id,
       amount, transfer_id`. `beneficiary_id` = the vendor `id`, alphanumeric.
-- [ ] Write-ahead ledger: append the row to `ledger.json` with status SENT
+- [x] Write-ahead ledger: append the row to `ledger.json` with status SENT
       BEFORE the POST. `check.py` already refuses anything in the ledger, so
       running the batch twice must pay nothing the second time. Prove it.
-- [ ] `--dry-run` prints the events without sending. Chirag presses the real
+- [x] `--dry-run` prints the events without sending. Chirag presses the real
       run; it triggers sandbox payouts.
 
 ## 2. `payright/approve.py`: the owner's approval call (by 2:00)
